@@ -2913,6 +2913,114 @@ textarea {
   line-height: 1.65;
   opacity: 0.82;
 }
+
+
+/* =====================================================
+   2026-09-20 スマホ専用表示修正
+   PC（fine pointer / mouse環境）には適用しない
+   ===================================================== */
+@media (pointer: coarse) and (max-width: 1024px) and (orientation: landscape) and (max-height: 700px) {
+  .game-shell.title-screen .title-ui,
+  .game-shell.chapter-screen .chapter-title-ui {
+    left: 5.2vw !important;
+    top: 58vh !important;
+    width: min(36vw, 470px) !important;
+    min-width: 0 !important;
+    max-width: 470px !important;
+    gap: 8px !important;
+  }
+  .game-shell.chapter-screen .chapter-title-ui { top: 60vh !important; }
+  .game-shell.title-screen .title-ui-button,
+  .game-shell.chapter-screen .title-ui-button {
+    min-height: 44px !important;
+    padding: 8px 14px !important;
+    font-size: 16px !important;
+  }
+  .game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen) .message-window {
+    left: 10px !important;
+    right: 10px !important;
+    bottom: 7px !important;
+    width: auto !important;
+    min-height: 132px !important;
+    max-height: 144px !important;
+    padding: 18px 16px 14px !important;
+    overflow-y: auto !important;
+  }
+  .game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen) .message-text {
+    min-height: 78px !important;
+    padding-top: 30px !important;
+    font-size: 17px !important;
+    line-height: 1.55 !important;
+  }
+  .game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen) .speaker-portrait-wrap {
+    left: 12px !important;
+    top: 12px !important;
+    width: 52px !important;
+    height: 52px !important;
+    border-radius: 8px !important;
+  }
+  .game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen) .speaker-name {
+    left: 74px !important;
+    top: 10px !important;
+    min-width: 120px !important;
+    max-width: calc(100% - 90px) !important;
+    padding: 5px 10px !important;
+    font-size: 13px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  .command-panel {
+    top: 8px !important;
+    right: 10px !important;
+    bottom: 138px !important;
+    left: auto !important;
+    width: min(460px, 48vw) !important;
+    max-height: none !important;
+    padding: 10px !important;
+    gap: 8px !important;
+  }
+  .command-panel-title { padding: 0 4px 6px !important; font-size: 11px !important; }
+  .command-main-buttons { gap: 7px !important; }
+  .command-button {
+    grid-template-columns: 24px 1fr !important;
+    min-height: 44px !important;
+    padding: 7px 9px !important;
+    font-size: 16px !important;
+  }
+  .command-no { font-size: 14px !important; }
+  .command-menu-button,
+  .choice-button { min-height: 42px !important; font-size: 15px !important; }
+  .command-subchoice-button {
+    min-height: 42px !important;
+    padding: 8px 10px !important;
+    font-size: 15px !important;
+  }
+  .game-shell.mobile-evidence-focus .command-panel { display: none !important; }
+  .game-shell.mobile-evidence-focus .evidence-stage { inset: 10px 12px 146px 12px !important; }
+  .game-shell.mobile-evidence-focus .evidence-image {
+    max-width: calc(100vw - 24px) !important;
+    max-height: calc(100dvh - 170px) !important;
+  }
+}
+@media (pointer: coarse) and (max-width: 640px) and (orientation: portrait) {
+  .game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen) .message-window {
+    min-height: 172px !important;
+    padding: 26px 18px 18px !important;
+  }
+  .game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen) .message-text {
+    min-height: 86px !important;
+    font-size: 17px !important;
+    line-height: 1.65 !important;
+  }
+  .game-shell.mobile-evidence-focus .command-panel { display: none !important; }
+  .game-shell.mobile-evidence-focus .evidence-stage { inset: 14px 10px 192px 10px !important; }
+  .game-shell.mobile-evidence-focus .evidence-image {
+    max-width: calc(100vw - 20px) !important;
+    max-height: calc(100dvh - 230px) !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -9185,6 +9293,29 @@ const el = {
 let audioContext = null;
 let audioUnlocked = false;
 
+
+function isSmartphoneLike() {
+  try {
+    const coarse = window.matchMedia?.("(pointer: coarse)")?.matches;
+    const shortSide = Math.min(window.innerWidth, window.innerHeight);
+    return !!coarse && shortSide <= 700;
+  } catch {
+    return false;
+  }
+}
+
+function refreshMobileAudioContext() {
+  if (!isSmartphoneLike() || !settings.soundOn || !audioContext) return;
+  try {
+    if (audioContext.state !== "running") {
+      const result = audioContext.resume();
+      if (result?.catch) result.catch(() => {});
+    }
+  } catch (error) {
+    console.warn("スマホの音声機能を再開できませんでした。", error);
+  }
+}
+
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
@@ -10253,12 +10384,14 @@ function showEvidenceImage(path) {
   if (!el.evidenceImage) return;
   el.evidenceImage.src = path;
   el.evidenceImage.hidden = false;
+  if (isSmartphoneLike()) el.game?.classList.add("mobile-evidence-focus");
 }
 
 function clearEvidenceImage() {
   if (!el.evidenceImage) return;
   el.evidenceImage.hidden = true;
   el.evidenceImage.removeAttribute("src");
+  el.game?.classList.remove("mobile-evidence-focus");
 }
 
 function renderTitleScene(scene) {
@@ -10587,6 +10720,18 @@ function openSystemMenu() {
 
 function bindEvents() {
   document.addEventListener("pointerdown", ensureAudioContext, { once: true });
+
+  // iPhone / Android で一度鳴った文字音が、タブ復帰後などに止まる場合だけ再開する。
+  // PCではこの追加処理を実行しない。
+  if (isSmartphoneLike()) {
+    document.addEventListener("pointerdown", refreshMobileAudioContext);
+    document.addEventListener("touchstart", refreshMobileAudioContext, { passive: true });
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) refreshMobileAudioContext();
+    });
+    window.addEventListener("pageshow", refreshMobileAudioContext);
+  }
+
   el.game?.addEventListener("click", handleGameAdvance);
   document.addEventListener("keydown", handleKeydown);
 

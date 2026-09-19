@@ -76,6 +76,29 @@ const el = {
 let audioContext = null;
 let audioUnlocked = false;
 
+
+function isSmartphoneLike() {
+  try {
+    const coarse = window.matchMedia?.("(pointer: coarse)")?.matches;
+    const shortSide = Math.min(window.innerWidth, window.innerHeight);
+    return !!coarse && shortSide <= 700;
+  } catch {
+    return false;
+  }
+}
+
+function refreshMobileAudioContext() {
+  if (!isSmartphoneLike() || !settings.soundOn || !audioContext) return;
+  try {
+    if (audioContext.state !== "running") {
+      const result = audioContext.resume();
+      if (result?.catch) result.catch(() => {});
+    }
+  } catch (error) {
+    console.warn("スマホの音声機能を再開できませんでした。", error);
+  }
+}
+
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
@@ -1144,12 +1167,14 @@ function showEvidenceImage(path) {
   if (!el.evidenceImage) return;
   el.evidenceImage.src = path;
   el.evidenceImage.hidden = false;
+  if (isSmartphoneLike()) el.game?.classList.add("mobile-evidence-focus");
 }
 
 function clearEvidenceImage() {
   if (!el.evidenceImage) return;
   el.evidenceImage.hidden = true;
   el.evidenceImage.removeAttribute("src");
+  el.game?.classList.remove("mobile-evidence-focus");
 }
 
 function renderTitleScene(scene) {
@@ -1478,6 +1503,18 @@ function openSystemMenu() {
 
 function bindEvents() {
   document.addEventListener("pointerdown", ensureAudioContext, { once: true });
+
+  // iPhone / Android で一度鳴った文字音が、タブ復帰後などに止まる場合だけ再開する。
+  // PCではこの追加処理を実行しない。
+  if (isSmartphoneLike()) {
+    document.addEventListener("pointerdown", refreshMobileAudioContext);
+    document.addEventListener("touchstart", refreshMobileAudioContext, { passive: true });
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) refreshMobileAudioContext();
+    });
+    window.addEventListener("pageshow", refreshMobileAudioContext);
+  }
+
   el.game?.addEventListener("click", handleGameAdvance);
   document.addEventListener("keydown", handleKeydown);
 
