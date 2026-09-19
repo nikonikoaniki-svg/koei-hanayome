@@ -1,0 +1,5400 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#111111">
+  <title>湖影に消えた花嫁</title>
+  <style>
+/* =====================================================
+   湖影に消えた花嫁
+   style.css
+   ===================================================== */
+
+
+/* -----------------------------------------------------
+   1. 基本
+   ----------------------------------------------------- */
+
+:root {
+  --ui-bg: rgba(12, 16, 22, 0.90);
+  --ui-bg-soft: rgba(18, 24, 32, 0.78);
+  --ui-border: rgba(255, 255, 255, 0.34);
+  --ui-border-strong: rgba(255, 255, 255, 0.58);
+  --text-main: #ffffff;
+  --text-sub: #d8dde6;
+  --accent: #f2d48a;
+  --danger: #ffb0b0;
+  --shadow: rgba(0, 0, 0, 0.55);
+
+  --message-max-width: 1180px;
+  --choice-max-width: 760px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
+  background: #000;
+  color: var(--text-main);
+  font-family:
+    "Yu Gothic",
+    "YuGothic",
+    "Hiragino Kaku Gothic ProN",
+    "Meiryo",
+    sans-serif;
+}
+
+body {
+  overflow: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+
+/* -----------------------------------------------------
+   2. ゲーム画面
+   ----------------------------------------------------- */
+
+.game-shell {
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  min-height: 640px;
+  overflow: hidden;
+  background: #000;
+  user-select: none;
+  cursor: default;
+}
+
+.background-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  transition:
+    background-image 0.25s ease,
+    opacity 0.25s ease;
+}
+
+.scene-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.05) 0%,
+      rgba(0, 0, 0, 0.00) 45%,
+      rgba(0, 0, 0, 0.28) 100%
+    );
+}
+
+
+/* -----------------------------------------------------
+   3. 立ち絵
+   ----------------------------------------------------- */
+
+.character-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: min(4vw, 54px);
+
+  padding:
+    7vh
+    5vw
+    168px;
+
+  pointer-events: none;
+}
+
+.character-sprite {
+  display: block;
+  max-height: 78vh;
+  max-width: 38vw;
+  object-fit: contain;
+
+  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.42));
+}
+
+.character-sprite[data-position="0"] {
+  transform: translateX(-6vw);
+}
+
+.character-sprite[data-position="1"] {
+  transform: translateX(6vw);
+}
+
+.character-sprite:only-child {
+  transform: translateX(0);
+}
+
+
+/* -----------------------------------------------------
+   4. 証拠画像
+   ----------------------------------------------------- */
+
+.evidence-stage {
+  position: absolute;
+  inset: 10vh 8vw 27vh 8vw;
+  z-index: 4;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  pointer-events: none;
+}
+
+.evidence-image {
+  max-width: min(900px, 80vw);
+  max-height: 56vh;
+  object-fit: contain;
+
+  border: 2px solid rgba(255, 255, 255, 0.78);
+  border-radius: 8px;
+
+  background: rgba(0, 0, 0, 0.36);
+
+  box-shadow:
+    0 20px 55px rgba(0, 0, 0, 0.55),
+    0 0 0 6px rgba(0, 0, 0, 0.20);
+}
+
+
+/* -----------------------------------------------------
+   5. 上部UI
+   ----------------------------------------------------- */
+
+.top-ui {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  z-index: 20;
+}
+
+.system-button {
+  min-width: 92px;
+  min-height: 42px;
+
+  padding: 8px 16px;
+
+  border: 1px solid var(--ui-border);
+  border-radius: 7px;
+
+  color: #fff;
+  background: rgba(8, 12, 17, 0.74);
+
+  letter-spacing: 0.12em;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 5px 18px rgba(0, 0, 0, 0.38);
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.system-button:hover {
+  background: rgba(30, 38, 50, 0.94);
+  border-color: var(--ui-border-strong);
+}
+
+.system-button:active {
+  transform: translateY(1px);
+}
+
+
+/* -----------------------------------------------------
+   6. メッセージウィンドウ
+   ----------------------------------------------------- */
+
+.message-window {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  z-index: 12;
+
+  transform: translateX(-50%);
+
+  width: min(
+    var(--message-max-width),
+    calc(100vw - 44px)
+  );
+
+  min-height: 142px;
+
+  padding:
+    28px
+    34px
+    26px;
+
+  border: 1px solid var(--ui-border);
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(17, 23, 31, 0.94),
+      rgba(8, 12, 18, 0.94)
+    );
+
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.52),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+  backdrop-filter: blur(4px);
+}
+
+.speaker-name {
+  position: absolute;
+  top: -20px;
+  left: 24px;
+
+  min-width: 150px;
+
+  padding:
+    7px
+    18px;
+
+  border: 1px solid var(--ui-border);
+  border-radius: 7px;
+
+  color: var(--accent);
+  background: rgba(10, 14, 20, 0.96);
+
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+
+  box-shadow:
+    0 5px 15px rgba(0, 0, 0, 0.36);
+}
+
+.message-text {
+  min-height: 74px;
+
+  color: var(--text-main);
+
+  font-size: clamp(18px, 1.65vw, 27px);
+  font-weight: 500;
+
+  line-height: 1.85;
+  letter-spacing: 0.035em;
+
+  white-space: pre-wrap;
+  word-break: auto-phrase;
+}
+
+.next-indicator {
+  position: absolute;
+  right: 24px;
+  bottom: 14px;
+
+  color: var(--accent);
+
+  font-size: 18px;
+
+  animation: nextBlink 0.9s infinite ease-in-out;
+}
+
+@keyframes nextBlink {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+
+  50% {
+    transform: translateY(4px);
+    opacity: 1;
+  }
+}
+
+
+/* -----------------------------------------------------
+   7. 選択肢
+   ----------------------------------------------------- */
+
+.choice-area {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  z-index: 15;
+
+  transform: translate(-50%, -50%);
+
+  width: min(
+    var(--choice-max-width),
+    calc(100vw - 48px)
+  );
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  pointer-events: auto;
+}
+
+.choice-button,
+.title-menu-button,
+.menu-action-button,
+.speed-button,
+.evidence-card {
+  border: 1px solid var(--ui-border);
+  color: #fff;
+  background: var(--ui-bg);
+
+  cursor: pointer;
+
+  transition:
+    transform 0.12s ease,
+    background 0.12s ease,
+    border-color 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.choice-button {
+  width: 100%;
+
+  padding:
+    15px
+    22px;
+
+  border-radius: 8px;
+
+  font-size: clamp(16px, 1.45vw, 22px);
+  text-align: left;
+
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.34);
+}
+
+.choice-button:hover,
+.title-menu-button:hover,
+.menu-action-button:hover,
+.speed-button:hover {
+  transform: translateY(-1px);
+
+  border-color: var(--ui-border-strong);
+
+  background: rgba(31, 40, 52, 0.96);
+}
+
+.choice-button.is-visited {
+  color: #aeb7c4;
+  background: rgba(10, 14, 18, 0.72);
+}
+
+.choice-next {
+  margin-top: 8px;
+
+  color: #111;
+  background: var(--accent);
+
+  border-color: rgba(255, 255, 255, 0.55);
+
+  font-weight: 700;
+  text-align: center;
+}
+
+.choice-next:hover {
+  color: #111;
+  background: #ffe3a3;
+}
+
+
+/* -----------------------------------------------------
+   8. タイトルメニュー
+   ----------------------------------------------------- */
+
+.title-menu-button {
+  width: min(460px, 80vw);
+  align-self: center;
+
+  padding: 14px 26px;
+
+  border-radius: 8px;
+
+  font-size: clamp(17px, 1.6vw, 23px);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+
+  text-align: center;
+
+  background: rgba(7, 11, 16, 0.76);
+
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.35);
+}
+
+
+/* -----------------------------------------------------
+   9. 比較画面
+   ----------------------------------------------------- */
+
+.compare-view {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+
+  padding: 18px;
+
+  border: 1px solid var(--ui-border);
+  border-radius: 10px;
+
+  background: rgba(8, 12, 18, 0.82);
+
+  box-shadow:
+    0 12px 38px rgba(0, 0, 0, 0.40);
+}
+
+.compare-view img {
+  width: 100%;
+  height: min(36vh, 360px);
+
+  object-fit: contain;
+
+  border-radius: 6px;
+
+  background: rgba(255, 255, 255, 0.04);
+}
+
+
+/* -----------------------------------------------------
+   10. オーバーレイ
+   ----------------------------------------------------- */
+
+.game-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+
+  background: rgba(0, 0, 0, 0.72);
+
+  backdrop-filter: blur(5px);
+}
+
+.overlay-panel {
+  width: min(760px, 94vw);
+  max-height: 86vh;
+
+  overflow: hidden;
+
+  border: 1px solid var(--ui-border);
+  border-radius: 12px;
+
+  color: #fff;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(22, 28, 37, 0.98),
+      rgba(10, 14, 20, 0.98)
+    );
+
+  box-shadow:
+    0 25px 70px rgba(0, 0, 0, 0.62);
+}
+
+.overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 18px;
+
+  padding:
+    18px
+    20px;
+
+  border-bottom: 1px solid var(--ui-border);
+}
+
+.overlay-header h2 {
+  margin: 0;
+
+  font-size: 1.25rem;
+  letter-spacing: 0.06em;
+}
+
+.overlay-close {
+  padding: 8px 14px;
+
+  border: 1px solid var(--ui-border);
+  border-radius: 6px;
+
+  color: #fff;
+  background: rgba(255, 255, 255, 0.07);
+
+  cursor: pointer;
+}
+
+.overlay-body {
+  max-height: calc(86vh - 74px);
+
+  overflow-y: auto;
+
+  padding: 22px;
+
+  line-height: 1.7;
+}
+
+
+/* -----------------------------------------------------
+   11. メニュー
+   ----------------------------------------------------- */
+
+.menu-action-button {
+  display: block;
+
+  width: 100%;
+
+  margin-bottom: 12px;
+
+  padding: 14px 18px;
+
+  border-radius: 7px;
+
+  text-align: left;
+
+  font-size: 1rem;
+}
+
+
+/* -----------------------------------------------------
+   12. 設定
+   ----------------------------------------------------- */
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 18px;
+
+  padding: 12px 0 18px;
+}
+
+.setting-row button {
+  min-width: 90px;
+
+  padding: 9px 16px;
+
+  border: 1px solid var(--ui-border);
+  border-radius: 7px;
+
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+
+  cursor: pointer;
+}
+
+.setting-label {
+  margin:
+    18px
+    0
+    12px;
+
+  color: var(--accent);
+
+  font-weight: 700;
+}
+
+.speed-group {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 9px;
+}
+
+.speed-button {
+  padding: 12px 16px;
+
+  border-radius: 7px;
+
+  text-align: left;
+}
+
+.speed-button.is-selected {
+  color: #111;
+  background: var(--accent);
+
+  border-color: #fff;
+}
+
+
+/* -----------------------------------------------------
+   13. 証拠一覧
+   ----------------------------------------------------- */
+
+.evidence-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.evidence-card {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 16px;
+
+  padding: 12px;
+
+  border-radius: 8px;
+
+  text-align: left;
+}
+
+.evidence-card:hover {
+  border-color: var(--ui-border-strong);
+  background: rgba(31, 40, 52, 0.96);
+}
+
+.evidence-card img {
+  width: 140px;
+  height: 92px;
+
+  object-fit: cover;
+
+  border-radius: 5px;
+
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.evidence-card strong {
+  color: var(--accent);
+}
+
+.evidence-card p {
+  margin:
+    7px
+    0
+    0;
+
+  color: var(--text-sub);
+
+  line-height: 1.55;
+}
+
+.evidence-viewer-image {
+  display: block;
+
+  max-width: 100%;
+  max-height: 58vh;
+
+  margin: 0 auto 18px;
+
+  object-fit: contain;
+
+  border-radius: 7px;
+}
+
+
+/* -----------------------------------------------------
+   14. スクロールバー
+   ----------------------------------------------------- */
+
+.overlay-body::-webkit-scrollbar {
+  width: 10px;
+}
+
+.overlay-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 10px;
+}
+
+
+/* -----------------------------------------------------
+   15. レスポンシブ
+   ----------------------------------------------------- */
+
+@media (max-width: 900px) {
+
+  .game-shell {
+    min-height: 560px;
+  }
+
+  .character-layer {
+    gap: 0;
+
+    padding:
+      9vh
+      2vw
+      178px;
+  }
+
+  .character-sprite {
+    max-height: 66vh;
+    max-width: 47vw;
+  }
+
+  .message-window {
+    bottom: 12px;
+
+    width: calc(100vw - 24px);
+
+    min-height: 150px;
+
+    padding:
+      28px
+      22px
+      24px;
+  }
+
+  .message-text {
+    font-size: clamp(17px, 2.5vw, 23px);
+  }
+
+  .choice-area {
+    width: calc(100vw - 36px);
+  }
+
+  .evidence-stage {
+    inset:
+      10vh
+      4vw
+      31vh
+      4vw;
+  }
+
+  .evidence-image {
+    max-width: 88vw;
+    max-height: 50vh;
+  }
+}
+
+
+@media (max-width: 640px) {
+
+  .top-ui {
+    top: 10px;
+    right: 10px;
+  }
+
+  .system-button {
+    min-width: 72px;
+    min-height: 38px;
+
+    padding: 7px 11px;
+
+    font-size: 0.82rem;
+  }
+
+  .character-layer {
+    padding-bottom: 182px;
+  }
+
+  .character-sprite {
+    max-height: 57vh;
+    max-width: 58vw;
+  }
+
+  .message-window {
+    min-height: 166px;
+
+    border-radius: 8px;
+  }
+
+  .speaker-name {
+    left: 14px;
+
+    min-width: 120px;
+
+    font-size: 0.9rem;
+  }
+
+  .message-text {
+    font-size: 17px;
+    line-height: 1.72;
+  }
+
+  .choice-button {
+    padding: 13px 16px;
+
+    font-size: 16px;
+  }
+
+  .compare-view {
+    grid-template-columns: 1fr;
+  }
+
+  .compare-view img {
+    height: 24vh;
+  }
+
+  .evidence-card {
+    grid-template-columns: 95px 1fr;
+  }
+
+  .evidence-card img {
+    width: 95px;
+    height: 76px;
+  }
+}
+
+
+/* -----------------------------------------------------
+   16. 横長Chromebook向け
+   ----------------------------------------------------- */
+
+@media (min-width: 1000px) and (max-height: 760px) {
+
+  .character-layer {
+    padding-bottom: 145px;
+  }
+
+  .character-sprite {
+    max-height: 70vh;
+  }
+
+  .message-window {
+    bottom: 10px;
+
+    min-height: 122px;
+
+    padding:
+      22px
+      30px
+      20px;
+  }
+
+  .message-text {
+    min-height: 60px;
+
+    font-size: clamp(17px, 1.45vw, 22px);
+    line-height: 1.7;
+  }
+
+  .choice-area {
+    top: 42%;
+  }
+
+  .evidence-image {
+    max-height: 50vh;
+  }
+}
+
+
+/* =====================================================
+   タイトル・章扉：画像内メニューをそのまま使う
+   ===================================================== */
+
+.game-shell.art-menu-screen .background-layer {
+  background-size: contain;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-color: #000;
+}
+
+.game-shell.art-menu-screen .message-window,
+.game-shell.art-menu-screen .top-ui,
+.game-shell.art-menu-screen .character-layer,
+.game-shell.art-menu-screen .evidence-stage {
+  display: none !important;
+}
+
+.game-shell.art-menu-screen .choice-area {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  transform: none;
+  display: block;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.art-menu-hotspot {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: transparent;
+  font-size: 0;
+  box-shadow: none;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.art-menu-hotspot:hover,
+.art-menu-hotspot:focus-visible {
+  background: rgba(255,255,255,0.055);
+  outline: 2px solid rgba(255,255,255,0.28);
+  outline-offset: -2px;
+}
+
+/* 通常場面へ戻ったときの表示を保証 */
+.game-shell:not(.art-menu-screen) .message-window {
+  display: block;
+}
+
+.game-shell:not(.art-menu-screen) .top-ui {
+  display: block;
+}
+
+
+/* =====================================================
+   顔アイコン＋名前＋現在地表示
+   ===================================================== */
+
+/* 全身立ち絵は表示しない */
+.character-layer {
+  display: none !important;
+}
+
+/* 現在地 */
+.location-badge {
+  position: absolute;
+  top: 18px;
+  left: 22px;
+  z-index: 25;
+
+  padding: 9px 18px;
+
+  border: 1px solid rgba(255,255,255,0.40);
+  border-radius: 7px;
+
+  color: #fff;
+  background: rgba(8, 12, 17, 0.78);
+
+  font-size: clamp(13px, 1.15vw, 17px);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+
+  box-shadow: 0 6px 18px rgba(0,0,0,0.36);
+  backdrop-filter: blur(4px);
+}
+
+.location-badge::before {
+  content: "現在地　";
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* 話者の顔 */
+.speaker-portrait-wrap {
+  position: absolute;
+  left: 22px;
+  top: -104px;
+  z-index: 4;
+
+  width: 104px;
+  height: 104px;
+  overflow: hidden;
+
+  border: 2px solid rgba(255,255,255,0.65);
+  border-radius: 10px;
+
+  background: rgba(9, 13, 19, 0.94);
+
+  box-shadow:
+    0 10px 26px rgba(0,0,0,0.46),
+    inset 0 0 0 1px rgba(255,255,255,0.06);
+}
+
+.speaker-portrait {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+/* 名前は顔の右側 */
+.speaker-name {
+  top: -58px;
+  left: 136px;
+  min-width: 170px;
+  padding: 8px 18px;
+  font-size: 1rem;
+}
+
+/* タイトル／章扉では非表示 */
+.game-shell.art-menu-screen .speaker-portrait-wrap,
+.game-shell.art-menu-screen .location-badge,
+.game-shell.art-menu-screen .speaker-name {
+  display: none !important;
+}
+
+@media (max-width: 640px) {
+  .location-badge {
+    top: 10px;
+    left: 10px;
+    padding: 7px 11px;
+    font-size: 12px;
+  }
+
+  .speaker-portrait-wrap {
+    left: 14px;
+    top: -78px;
+    width: 78px;
+    height: 78px;
+  }
+
+  .speaker-name {
+    top: -46px;
+    left: 102px;
+    min-width: 130px;
+    padding: 6px 12px;
+    font-size: 0.88rem;
+  }
+}
+
+
+/* ===== タイトルUI再設計 ===== */
+.game-shell.title-screen .message-window,
+.game-shell.title-screen .top-ui,
+.game-shell.title-screen .character-layer,
+.game-shell.title-screen .evidence-stage,
+.game-shell.title-screen .location-badge {
+  display: none !important;
+}
+
+/* 元画像に描かれている旧メニューを隠す */
+.game-shell.title-screen::after {
+  content: "";
+  position: absolute;
+  z-index: 18;
+  left: 0;
+  top: 42%;
+  width: 43%;
+  height: 48%;
+  background: linear-gradient(90deg,
+    rgba(7,22,39,0.995) 0%,
+    rgba(7,22,39,0.985) 75%,
+    rgba(7,22,39,0) 100%);
+  pointer-events: none;
+}
+
+.game-shell.title-screen .background-layer,
+.game-shell.chapter-screen .background-layer {
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #000;
+}
+
+.title-ui {
+  position: absolute;
+  z-index: 40;
+  left: clamp(70px, 8vw, 160px);
+  top: 46%;
+  width: clamp(300px, 28vw, 440px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: auto;
+}
+
+.title-ui-button {
+  width: 100%;
+  min-height: 58px;
+  padding: 12px 24px;
+  border: 1px solid rgba(180,220,255,.5);
+  border-radius: 8px;
+  color: #fff;
+  background: linear-gradient(180deg,rgba(11,31,52,.96),rgba(5,18,34,.98));
+  font-size: clamp(19px,1.55vw,26px);
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 7px 22px rgba(0,0,0,.34);
+}
+
+.title-ui-button:hover,
+.title-ui-button:focus-visible {
+  transform: translateX(4px);
+  border-color: rgba(130,220,255,.92);
+  background: linear-gradient(180deg,rgba(16,52,84,.98),rgba(7,28,50,.98));
+}
+
+.title-settings-button {
+  position: absolute;
+  z-index: 42;
+  left: clamp(22px,3vw,52px);
+  bottom: clamp(20px,4vh,48px);
+  min-width: 130px;
+  min-height: 48px;
+  padding: 10px 18px;
+  border: 1px solid rgba(230,210,160,.58);
+  border-radius: 8px;
+  color: #f8e6b5;
+  background: rgba(8,14,22,.92);
+  font-size: clamp(15px,1.1vw,19px);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.game-shell.chapter-screen .message-window,
+.game-shell.chapter-screen .top-ui,
+.game-shell.chapter-screen .character-layer,
+.game-shell.chapter-screen .evidence-stage,
+.game-shell.chapter-screen .location-badge {
+  display: none !important;
+}
+
+.chapter-start-button {
+  position: absolute;
+  z-index: 40;
+  left: clamp(70px,8vw,160px);
+  bottom: clamp(50px,8vh,105px);
+  min-width: clamp(260px,28vw,430px);
+  min-height: 58px;
+  padding: 14px 28px;
+  border: 1px solid rgba(140,25,38,.72);
+  border-radius: 8px;
+  color: #fff;
+  background: rgba(122,22,35,.95);
+  font-size: clamp(18px,1.45vw,24px);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 700px) {
+  .title-ui {
+    left: 5vw;
+    top: 46%;
+    width: 56vw;
+    min-width: 220px;
+    gap: 8px;
+  }
+  .title-ui-button {
+    min-height: 44px;
+    font-size: 15px;
+    padding: 8px 12px;
+  }
+  .game-shell.title-screen::after {
+    width: 67%;
+  }
+  .title-settings-button {
+    left: 10px;
+    bottom: 10px;
+    min-width: 105px;
+    min-height: 40px;
+    font-size: 13px;
+  }
+}
+
+
+/* ===== 第1章OP画像差し替え＋設定はゲーム内のみ ===== */
+
+/* ゲーム内設定ボタン */
+.ingame-settings-button[hidden] {
+  display: none !important;
+}
+
+.ingame-settings-button {
+  position: absolute;
+  z-index: 42;
+  left: clamp(18px, 2.6vw, 44px);
+  bottom: clamp(18px, 3vh, 40px);
+
+  min-width: 124px;
+  min-height: 46px;
+  padding: 10px 16px;
+
+  border: 1px solid rgba(230,210,160,.58);
+  border-radius: 8px;
+
+  color: #f8e6b5;
+  background: rgba(8,14,22,.90);
+
+  font-size: clamp(14px, 1.0vw, 18px);
+  font-weight: 700;
+  letter-spacing: .06em;
+
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0,0,0,.30);
+}
+
+.ingame-settings-button:hover,
+.ingame-settings-button:focus-visible {
+  border-color: rgba(255,235,185,.92);
+  background: rgba(27,36,48,.96);
+}
+
+.game-shell.title-screen .ingame-settings-button,
+.game-shell.chapter-screen .ingame-settings-button {
+  display: none !important;
+}
+
+/* タイトル画面では設定ボタンを出さない */
+.title-settings-button {
+  display: none !important;
+}
+
+/* 第1章OP画像内の旧メニューを隠す */
+.game-shell.chapter-screen::after {
+  content: "";
+  position: absolute;
+  z-index: 18;
+  left: 0;
+  top: 42%;
+  width: 45%;
+  height: 49%;
+  background: linear-gradient(
+    90deg,
+    rgba(248,242,232,.985) 0%,
+    rgba(248,242,232,.92) 74%,
+    rgba(248,242,232,0) 100%
+  );
+  pointer-events: none;
+}
+
+/* 第1章開始ボタンは表紙と同系統の配置 */
+.chapter-start-button {
+  position: absolute;
+  z-index: 40;
+
+  left: clamp(72px, 8vw, 160px);
+  top: 48%;
+
+  width: clamp(300px, 28vw, 440px);
+  min-height: 58px;
+  padding: 12px 24px;
+
+  border: 1px solid rgba(140,25,38,.72);
+  border-radius: 8px;
+
+  color: #fff;
+  background: linear-gradient(180deg, rgba(150,32,49,.95), rgba(118,22,36,.96));
+
+  font-size: clamp(19px, 1.55vw, 26px);
+  font-weight: 700;
+  letter-spacing: .10em;
+  text-align: center;
+
+  cursor: pointer;
+  box-shadow: 0 7px 22px rgba(0,0,0,.24);
+}
+
+.chapter-start-button:hover,
+.chapter-start-button:focus-visible {
+  transform: translateX(4px);
+  background: linear-gradient(180deg, rgba(168,37,56,.97), rgba(130,24,40,.98));
+}
+
+@media (max-width: 700px) {
+  .ingame-settings-button {
+    left: 10px;
+    bottom: 10px;
+    min-width: 104px;
+    min-height: 40px;
+    font-size: 13px;
+  }
+
+  .game-shell.chapter-screen::after {
+    width: 67%;
+  }
+
+  .chapter-start-button {
+    left: 5vw;
+    top: 48%;
+    width: 56vw;
+    min-width: 220px;
+    min-height: 44px;
+    font-size: 15px;
+    padding: 8px 12px;
+  }
+}
+
+
+/* ===== 2026-09-19 update ===== */
+
+/* 選択済みの暗転表示は使わない */
+.choice-button.is-visited {
+  color: inherit;
+  opacity: 1;
+  background: linear-gradient(180deg, rgba(11,31,52,.96), rgba(5,18,34,.98));
+  border-color: rgba(180,220,255,.5);
+}
+
+/* 表紙画像・第1章OP画像はメニュー文字なし版を使うため、覆い隠しレイヤーを外す */
+.game-shell.title-screen::after,
+.game-shell.chapter-screen::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* 移動ボタンを少し分かりやすく */
+.choice-button.choice-move {
+  border-color: rgba(244, 211, 94, 0.6);
+}
+
+
+/* =====================================================
+   移動マップ確定版
+   ===================================================== */
+
+.move-button[hidden],
+.ingame-settings-button[hidden] {
+  display: none !important;
+}
+
+.move-button {
+  position: absolute;
+  right: clamp(18px, 2.6vw, 44px);
+  bottom: clamp(18px, 3vh, 40px);
+  z-index: 44;
+
+  min-width: 126px;
+  min-height: 46px;
+  padding: 10px 18px;
+
+  border: 1px solid rgba(135, 211, 255, .68);
+  border-radius: 8px;
+
+  color: #eefaff;
+  background: rgba(7, 24, 39, .92);
+
+  font-size: clamp(14px, 1vw, 18px);
+  font-weight: 700;
+  letter-spacing: .08em;
+
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0,0,0,.32);
+}
+
+.move-button:hover,
+.move-button:focus-visible {
+  border-color: rgba(180, 232, 255, .95);
+  background: rgba(13, 45, 70, .98);
+}
+
+.move-current {
+  margin: 0 0 16px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.move-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.move-destination {
+  width: 100%;
+  padding: 14px 18px;
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: 8px;
+  color: #fff;
+  background: rgba(15, 25, 36, .94);
+  text-align: left;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.move-destination:hover,
+.move-destination:focus-visible {
+  border-color: rgba(135, 211, 255, .75);
+  background: rgba(25, 43, 61, .98);
+}
+
+/* タイトル・章扉では設定と移動を出さない */
+.game-shell.title-screen .move-button,
+.game-shell.chapter-screen .move-button,
+.game-shell.title-screen .ingame-settings-button,
+.game-shell.chapter-screen .ingame-settings-button {
+  display: none !important;
+}
+
+@media (max-width: 640px) {
+  .move-button {
+    right: 10px;
+    bottom: 10px;
+    min-width: 102px;
+    min-height: 40px;
+    font-size: 13px;
+  }
+}
+
+
+/* =====================================================
+   2026-09-19 MENU UI 修正版
+   ===================================================== */
+
+/* 右上のMENUを廃止し、左下へ固定 */
+.top-ui {
+  position: absolute !important;
+  left: clamp(18px, 2.6vw, 44px) !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: clamp(18px, 3vh, 40px) !important;
+  z-index: 60 !important;
+}
+
+.system-button {
+  min-width: 124px;
+  min-height: 46px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: clamp(14px, 1vw, 18px);
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+/* 独立した設定ボタンは使わない。設定はMENU内へ */
+.ingame-settings-button,
+.title-settings-button {
+  display: none !important;
+}
+
+/* タイトル画面でもMENUボタンは左下に表示 */
+.game-shell.title-screen .top-ui {
+  display: block !important;
+}
+
+/* タイトルメニューは、タイトル文字の直下・左側に配置。
+   花嫁の体に重ならない幅に抑える。 */
+.title-ui {
+  position: absolute !important;
+  z-index: 45 !important;
+
+  left: clamp(70px, 5.5vw, 115px) !important;
+  top: clamp(365px, 42vh, 430px) !important;
+
+  width: clamp(300px, 30vw, 470px) !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+
+  pointer-events: auto !important;
+
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition:
+    opacity .18s ease,
+    transform .18s ease,
+    visibility .18s ease;
+}
+
+/* MENUを押すまでは非表示 */
+.title-ui.title-ui-collapsed {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: translateY(-8px) !important;
+}
+
+.title-ui-button {
+  width: 100% !important;
+  min-height: 54px !important;
+  padding: 10px 22px !important;
+  font-size: clamp(18px, 1.4vw, 24px) !important;
+}
+
+/* タイトル画面では左下MENUとタイトル下メニュー以外のUIを隠す */
+.game-shell.title-screen .message-window,
+.game-shell.title-screen .character-layer,
+.game-shell.title-screen .evidence-stage,
+.game-shell.title-screen .location-badge,
+.game-shell.title-screen .move-button {
+  display: none !important;
+}
+
+/* ゲーム中：MENUは左下、いどうは右下 */
+.game-shell:not(.title-screen) .top-ui {
+  display: block !important;
+}
+
+/* 以前のタイトル用レイアウト指定を確実に上書き */
+.game-shell.title-screen::after {
+  content: none !important;
+  display: none !important;
+}
+
+@media (max-width: 900px) {
+  .title-ui {
+    left: 5vw !important;
+    top: 41vh !important;
+    width: 38vw !important;
+    min-width: 260px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .top-ui {
+    left: 10px !important;
+    bottom: 10px !important;
+  }
+
+  .system-button {
+    min-width: 102px;
+    min-height: 40px;
+    font-size: 13px;
+  }
+
+  .title-ui {
+    left: 5vw !important;
+    top: 40vh !important;
+    width: 54vw !important;
+    min-width: 220px !important;
+    gap: 7px !important;
+  }
+
+  .title-ui-button {
+    min-height: 42px !important;
+    padding: 7px 12px !important;
+    font-size: 15px !important;
+  }
+}
+
+
+/* =====================================================
+   表紙・各章OP メニュー位置調整 v2
+   ===================================================== */
+
+/* 表紙・章OPではMENUボタンを表示しない */
+.game-shell.title-screen .top-ui,
+.game-shell.chapter-screen .top-ui {
+  display: none !important;
+}
+
+/* ゲーム本編ではMENUを左下に表示 */
+.game-shell:not(.title-screen):not(.chapter-screen) .top-ui {
+  display: block !important;
+}
+
+/* 表紙・各章OPは最初からHTMLメニューを展開 */
+.title-ui,
+.chapter-title-ui {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: none !important;
+}
+
+/* タイトル文字の真下。赤枠相当の左側エリアへ固定配置 */
+.game-shell.title-screen .title-ui {
+  position: fixed !important;
+  left: clamp(160px, 10vw, 180px) !important;
+  top: clamp(420px, 47vh, 438px) !important;
+  width: min(620px, 43vw) !important;
+  max-width: 620px !important;
+}
+
+/* 第1章OPも同様に左側エリアへ固定配置 */
+.game-shell.chapter-screen .chapter-title-ui {
+  position: fixed !important;
+  left: clamp(160px, 10vw, 180px) !important;
+  top: clamp(440px, 49vh, 458px) !important;
+  width: min(620px, 43vw) !important;
+  max-width: 620px !important;
+}
+
+/* 旧「第1章をはじめる」単独ボタンは使わない */
+.chapter-start-button {
+  display: none !important;
+}
+
+/* 以前の折りたたみ指定を無効化 */
+.title-ui.title-ui-collapsed {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: none !important;
+}
+
+@media (max-width: 900px) {
+  .game-shell.title-screen .title-ui,
+  .game-shell.chapter-screen .chapter-title-ui {
+    position: fixed !important;
+    left: 8vw !important;
+    top: 44vh !important;
+    width: min(520px, 48vw) !important;
+    min-width: 280px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .game-shell.title-screen .title-ui,
+  .game-shell.chapter-screen .chapter-title-ui {
+    position: fixed !important;
+    left: 5vw !important;
+    top: 48vh !important;
+    width: 56vw !important;
+    min-width: 220px !important;
+  }
+
+  .title-ui-button {
+    min-height: 40px !important;
+    font-size: 14px !important;
+    padding: 7px 10px !important;
+  }
+}
+
+
+/* =====================================================
+   表紙・章OP メニュー再配置 v4
+   ボタン配置を一旦クリアして、タイトル直下に再配置
+   ===================================================== */
+
+/* タイトル画面・章OPでは、choice-area の中央寄せを無効化 */
+.game-shell.title-screen .choice-area,
+.game-shell.chapter-screen .choice-area {
+  position: fixed !important;
+  inset: 0 !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  transform: none !important;
+  display: block !important;
+  pointer-events: none !important;
+  overflow: visible !important;
+}
+
+/* ボタン本体はクリック可能に戻す */
+.game-shell.title-screen .title-ui,
+.game-shell.chapter-screen .chapter-title-ui {
+  position: absolute !important;
+  left: 220px !important;
+  top: 420px !important;
+  width: 620px !important;
+  max-width: 620px !important;
+  min-width: 620px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+  pointer-events: auto !important;
+  z-index: 80 !important;
+}
+
+/* 第1章OPは少しだけ下に */
+.game-shell.chapter-screen .chapter-title-ui {
+  top: 450px !important;
+}
+
+/* ボタン幅を揃えて、タイトル直下の矩形エリアに収める */
+.game-shell.title-screen .title-ui-button,
+.game-shell.chapter-screen .title-ui-button {
+  width: 100% !important;
+  min-height: 58px !important;
+  padding: 12px 24px !important;
+  font-size: 22px !important;
+  line-height: 1.2 !important;
+}
+
+/* 表紙・章OPでは下部メッセージ欄等を出さない */
+.game-shell.title-screen .message-window,
+.game-shell.chapter-screen .message-window,
+.game-shell.title-screen .character-layer,
+.game-shell.chapter-screen .character-layer,
+.game-shell.title-screen .evidence-stage,
+.game-shell.chapter-screen .evidence-stage,
+.game-shell.title-screen .location-badge,
+.game-shell.chapter-screen .location-badge,
+.game-shell.title-screen .move-button,
+.game-shell.chapter-screen .move-button,
+.game-shell.title-screen .ingame-settings-button,
+.game-shell.chapter-screen .ingame-settings-button,
+.game-shell.title-screen .top-ui,
+.game-shell.chapter-screen .top-ui {
+  display: none !important;
+}
+
+@media (max-width: 1280px) {
+  .game-shell.title-screen .title-ui,
+  .game-shell.chapter-screen .chapter-title-ui {
+    left: 170px !important;
+    top: 400px !important;
+    width: 520px !important;
+    min-width: 520px !important;
+    max-width: 520px !important;
+  }
+  .game-shell.chapter-screen .chapter-title-ui {
+    top: 425px !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .game-shell.title-screen .title-ui,
+  .game-shell.chapter-screen .chapter-title-ui {
+    left: 10vw !important;
+    top: 46vh !important;
+    width: 44vw !important;
+    min-width: 320px !important;
+    max-width: 440px !important;
+  }
+  .game-shell.chapter-screen .chapter-title-ui {
+    top: 48vh !important;
+  }
+  .game-shell.title-screen .title-ui-button,
+  .game-shell.chapter-screen .title-ui-button {
+    min-height: 50px !important;
+    font-size: 18px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .game-shell.title-screen .title-ui,
+  .game-shell.chapter-screen .chapter-title-ui {
+    left: 8vw !important;
+    top: 50vh !important;
+    width: 60vw !important;
+    min-width: 240px !important;
+    max-width: 340px !important;
+  }
+  .game-shell.chapter-screen .chapter-title-ui {
+    top: 52vh !important;
+  }
+  .game-shell.title-screen .title-ui-button,
+  .game-shell.chapter-screen .title-ui-button {
+    min-height: 42px !important;
+    font-size: 15px !important;
+    padding: 8px 12px !important;
+  }
+}
+
+
+/* =====================================================
+   ADVコマンド欄分離 UI v1
+   ===================================================== */
+:root {
+  --command-panel-width: 250px;
+}
+
+/* 本編だけ、右側を完全にコマンド専用スペースにする */
+.game-shell:not(.title-screen):not(.chapter-screen) .background-layer,
+.game-shell:not(.title-screen):not(.chapter-screen) .scene-shade,
+.game-shell:not(.title-screen):not(.chapter-screen) .character-layer,
+.game-shell:not(.title-screen):not(.chapter-screen) .evidence-stage {
+  right: var(--command-panel-width) !important;
+  width: auto !important;
+}
+
+/* メッセージ欄もコマンド欄に侵入させない */
+.game-shell:not(.title-screen):not(.chapter-screen) .message-window {
+  left: 24px !important;
+  right: calc(var(--command-panel-width) + 24px) !important;
+  width: auto !important;
+  max-width: none !important;
+  transform: none !important;
+}
+
+/* 通常の選択肢エリアも左のゲーム領域内だけにする */
+.game-shell:not(.title-screen):not(.chapter-screen) .choice-area {
+  left: calc((100vw - var(--command-panel-width)) / 2) !important;
+  width: min(720px, calc(100vw - var(--command-panel-width) - 64px)) !important;
+}
+
+.command-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 70;
+  width: var(--command-panel-width);
+  padding: 18px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  background: #05080c;
+  border-left: 2px solid rgba(118, 187, 220, .55);
+  box-shadow: -10px 0 28px rgba(0,0,0,.38);
+}
+
+.command-panel-title {
+  padding: 2px 6px 10px;
+  color: #59d9ff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  border-bottom: 1px solid rgba(255,255,255,.14);
+}
+
+.command-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.command-button {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: #f7f8fb;
+  background: transparent;
+  text-align: left;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.command-button:hover,
+.command-button:focus-visible,
+.command-button.is-active {
+  color: #fff;
+  background: rgba(31, 67, 89, .72);
+  border-color: rgba(89, 217, 255, .55);
+}
+
+.command-no {
+  color: #50d9ff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.command-subchoices {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,.14);
+}
+
+.command-subchoice-button {
+  width: 100%;
+  padding: 10px 11px;
+  border: 1px solid rgba(255,255,255,.24);
+  border-radius: 5px;
+  color: #fff;
+  background: rgba(14, 21, 29, .96);
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+.command-subchoice-button:hover,
+.command-subchoice-button:focus-visible {
+  border-color: rgba(89,217,255,.7);
+  background: rgba(25,45,59,.98);
+}
+
+.command-feedback {
+  margin: 0;
+  padding: 8px 5px;
+  color: #bfc9d3;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.command-menu-button {
+  margin-top: auto;
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid rgba(242, 212, 138, .5);
+  border-radius: 5px;
+  color: #f2d48a;
+  background: rgba(22, 22, 24, .96);
+  font-weight: 800;
+  letter-spacing: .12em;
+  cursor: pointer;
+}
+
+.command-menu-button:hover,
+.command-menu-button:focus-visible {
+  background: rgba(48, 43, 29, .98);
+}
+
+/* 表紙・章OPは従来どおり全画面。コマンド欄は出さない */
+.game-shell.title-screen .command-panel,
+.game-shell.chapter-screen .command-panel {
+  display: none !important;
+}
+.game-shell.title-screen .background-layer,
+.game-shell.chapter-screen .background-layer,
+.game-shell.title-screen .scene-shade,
+.game-shell.chapter-screen .scene-shade,
+.game-shell.title-screen .evidence-stage,
+.game-shell.chapter-screen .evidence-stage {
+  right: 0 !important;
+}
+
+/* 旧独立MENU/移動/設定UIは使わない */
+.top-ui,
+.move-button,
+.ingame-settings-button {
+  display: none !important;
+}
+
+/* 次へボタンは完全に廃止 */
+.choice-next {
+  display: none !important;
+}
+
+@media (max-width: 900px) {
+  :root { --command-panel-width: 205px; }
+  .command-panel { padding: 12px 10px; }
+  .command-button { font-size: 15px; min-height: 40px; grid-template-columns: 26px 1fr; }
+  .command-no { font-size: 15px; }
+  .game-shell:not(.title-screen):not(.chapter-screen) .message-window {
+    left: 12px !important;
+    right: calc(var(--command-panel-width) + 12px) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  :root { --command-panel-width: 155px; }
+  .command-panel { padding: 8px 7px; gap: 6px; }
+  .command-panel-title { font-size: 10px; }
+  .command-button { font-size: 12px; min-height: 34px; padding: 5px 6px; grid-template-columns: 21px 1fr; }
+  .command-no { font-size: 12px; }
+  .command-subchoice-button { font-size: 11px; padding: 7px; }
+  .command-feedback { font-size: 10px; }
+}
+
+
+/* =====================================================
+   自動進行撤廃・移動主導型
+   ===================================================== */
+
+/* ゲーム中の画像上には選択肢ボタンを出さない */
+.game-shell:not(.title-screen):not(.chapter-screen) .choice-area {
+  pointer-events: none !important;
+}
+
+/* 「次へ」系ボタンはゲーム本編で使用しない */
+.game-shell:not(.title-screen):not(.chapter-screen) .choice-next {
+  display: none !important;
+}
+
+/* タイトル／章OPではコマンド欄を完全に隠す */
+.game-shell.title-screen .command-panel,
+.game-shell.chapter-screen .command-panel {
+  display: none !important;
+}
+
+/* 本編ではコマンド欄を表示 */
+.game-shell:not(.title-screen):not(.chapter-screen) .command-panel {
+  display: flex !important;
+}
+
+/* コマンド欄のサブ選択肢をスクロール可能に */
+.command-subchoices {
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* 現在地を画像スペース側に表示 */
+.location-badge {
+  right: calc(var(--command-panel-width, 310px) + 18px) !important;
+}
+
+/* 画面クリックで文章送りはできるが、ボタンによる「次へ」は置かない */
+.next-indicator {
+  pointer-events: none;
+}
+
+/* タイトルメニューは既存の左側配置を維持しつつ、画像とコマンド欄を分離 */
+.game-shell.title-screen .choice-area,
+.game-shell.chapter-screen .choice-area {
+  pointer-events: auto !important;
+}
+
+
+/* =====================================================
+   移動先一覧：解放済みの全場所へ直接移動
+   ===================================================== */
+.move-group-title {
+  margin: 10px 0 4px;
+  padding: 6px 8px;
+  font-weight: 700;
+  font-size: 0.92rem;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid rgba(255,255,255,0.28);
+  opacity: 0.92;
+}
+
+
+/* =====================================================
+   コマンドUI調整：レトロADV＋現代的な分かりやすさ
+   ===================================================== */
+
+/* 使えそうなコマンドを少しだけ強調。押せない状態にはしない */
+.command-button.is-available {
+  border-color: rgba(255, 255, 255, 0.88) !important;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(52, 64, 82, 0.96),
+      rgba(24, 31, 42, 0.96)
+    ) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.10),
+    0 6px 18px rgba(0, 0, 0, 0.32) !important;
+}
+
+/* 非強調コマンドも押せることが分かるよう、暗くしすぎない */
+.command-button:not(.is-available) {
+  opacity: 0.78;
+}
+
+/* 押したコマンドは従来どおりアクティブ表示 */
+.command-button.is-active {
+  opacity: 1 !important;
+}
+
+/* 最初だけ出る簡単な遊び方 */
+.tutorial-box {
+  display: grid;
+  gap: 12px;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.tutorial-box p {
+  margin: 0;
+}
+
+/* 6コマンドを右側に縦一列で固定 */
+.command-main-buttons {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 10px !important;
+}
+
+/* MENUはコマンド群とは分離し、下部に置く */
+.command-panel .system-button,
+.command-panel #menu-button {
+  margin-top: auto;
+}
+
+/* =====================================================
+   セーブ説明・ヘルプ
+   ===================================================== */
+.save-help-list {
+  margin: 8px 0 0;
+  padding-left: 1.4em;
+  display: grid;
+  gap: 10px;
+  line-height: 1.65;
+}
+
+.save-notice-small {
+  margin-top: 16px;
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+
+  </style>
+</head>
+<body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <main id="game" class="game-shell">
+
+    <!-- 背景 -->
+    <section id="background" class="background-layer" aria-hidden="true"></section>
+
+    <!-- 暗めの演出用オーバーレイ -->
+    <div class="scene-shade" aria-hidden="true"></div>
+
+    <!-- コマンド欄：ゲーム画面とは別スペース -->
+    <aside id="command-panel" class="command-panel" aria-label="コマンド">
+      <div class="command-panel-title">COMMAND</div>
+      <div class="command-buttons">
+        <button id="cmd-talk" class="command-button" type="button"><span class="command-no">1</span><span>はなす</span></button>
+        <button id="cmd-ask" class="command-button" type="button"><span class="command-no">2</span><span>きく</span></button>
+        <button id="cmd-look" class="command-button" type="button"><span class="command-no">3</span><span>みる</span></button>
+        <button id="cmd-search" class="command-button" type="button"><span class="command-no">4</span><span>しらべる</span></button>
+        <button id="cmd-evidence" class="command-button" type="button"><span class="command-no">5</span><span>しょうこ</span></button>
+        <button id="cmd-move" class="command-button" type="button"><span class="command-no">6</span><span>いどう</span></button>
+      </div>
+      <div id="command-subchoices" class="command-subchoices" aria-live="polite"></div>
+      <button id="menu-button" class="command-menu-button" type="button">MENU</button>
+    </aside>
+
+
+    <!-- 現在地 -->
+    <div id="location-badge" class="location-badge" hidden></div>
+
+    <!-- 立ち絵 -->
+    <section
+      id="character-layer"
+      class="character-layer"
+      aria-label="登場人物"
+    ></section>
+
+    <!-- 証拠画像 -->
+    <section class="evidence-stage">
+      <img
+        id="evidence-image"
+        class="evidence-image"
+        alt="証拠画像"
+        hidden
+      />
+    </section>
+
+    <!-- 選択肢 -->
+    <section
+      id="choice-area"
+      class="choice-area"
+      aria-live="polite"
+    ></section>
+
+    <!-- メッセージウィンドウ -->
+    <section
+      class="message-window"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      <div id="speaker-portrait-wrap" class="speaker-portrait-wrap" hidden>
+        <img id="speaker-portrait" class="speaker-portrait" alt="" />
+      </div>
+      <div
+        id="speaker-name"
+        class="speaker-name"
+        hidden
+      ></div>
+
+      <div
+        id="message-text"
+        class="message-text"
+      ></div>
+
+      <div
+        id="next-indicator"
+        class="next-indicator"
+        hidden
+        aria-hidden="true"
+      >
+        ▼
+      </div>
+    </section>
+
+  </main>
+
+  <noscript>
+    このゲームを遊ぶにはJavaScriptを有効にしてください。
+  </noscript>
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+window.addEventListener("error", function (event) {
+  const box = document.getElementById("message-text");
+  if (box) {
+    box.textContent =
+      "ゲームの起動中にエラーが発生しました。\n" +
+      (event.message || "不明なエラー") +
+      "\n\nこの画面をスクリーンショットして教えてください。";
+  }
+});
+</script>
+<script>
+window.KOEI_GAME_DATA = {
+  "initialFlags": {
+    "tutorialShown": false,
+    "requestAccepted": false,
+    "hotelStaffAsked": false,
+    "roomLooked": false,
+    "roomSearched": false,
+    "flowerStaffKnown": false,
+    "hotelConfirmUnlocked": false,
+    "entryCountKnown": false,
+    "exitCountKnown": false,
+    "fifthPersonInspected": false,
+    "outerCameraKnown": false,
+    "needRecentPhoto": false,
+    "kiryuyaUnlocked": false,
+    "sojiroTalked": false,
+    "sayaMet": false,
+    "sayaSuspicious": false,
+    "preWeddingPhotoKnown": false,
+    "nailFound": false,
+    "nailMatched": false,
+    "fifthIsSatsuki": false,
+    "kyotoStationUnlocked": false,
+    "stationVisited": false,
+    "shopPhotoShown": false,
+    "shopClothesKnown": false,
+    "shopBagKnown": false,
+    "shopDirectionKnown": false,
+    "shopWitness": false,
+    "lockerChecked": false,
+    "toiletUnlocked": false,
+    "stationStaffTalked": false,
+    "foldedBoxFound": false,
+    "gateUnlocked": false,
+    "departureBoardChecked": false,
+    "stationMysterySolved": false,
+    "hotelReturnUnlocked": false,
+    "chapterMysterySolved": false,
+    "giftAreaUnlocked": false,
+    "telegramFound": false,
+    "telegramAsked": false,
+    "chapter1Clear": false
+  },
+  "initialEvidence": {
+    "fifthStaff": false,
+    "hotelOuterCamera": false,
+    "satsukiPhoto": false,
+    "satsukiNail": false,
+    "nailCompare": false,
+    "foldedBox": false,
+    "telegram": false
+  },
+  "characters": {
+    "shichijo": {
+      "name": "七条智門",
+      "image": "images/characters/ch_shichijo.webp"
+    },
+    "soichiro": {
+      "name": "桐生宗一郎",
+      "image": "images/characters/ch_soichiro.webp"
+    },
+    "sojiro": {
+      "name": "桐生宗次郎",
+      "image": "images/characters/ch_sojiro.webp"
+    },
+    "saya": {
+      "name": "日野沙耶",
+      "image": "images/characters/ch_saya.webp"
+    },
+    "hotelStaff": {
+      "name": "ホテル係員",
+      "image": "images/characters/ch_hotel_staff.webp"
+    },
+    "hotelManager": {
+      "name": "ホテル責任者",
+      "image": "images/characters/ch_hotel_manager.webp"
+    },
+    "shopClerk": {
+      "name": "売店店員",
+      "image": "images/characters/ch_shop_clerk.webp"
+    }
+  },
+  "evidenceMaster": {
+    "fifthStaff": {
+      "name": "5人目の装花スタッフ",
+      "image": "images/evidence/ev_fifth_staff.webp",
+      "description": "装花スタッフの退館時に映っていた5人目。帽子とマスク、大きな箱で顔や体格を隠している。"
+    },
+    "hotelOuterCamera": {
+      "name": "ホテル外部カメラ",
+      "image": "images/evidence/ev_hotel_outer_camera.webp",
+      "description": "大きな箱を持った作業着姿の人物が、一人で京都駅方向へ歩いている。"
+    },
+    "satsukiPhoto": {
+      "name": "紗月の前撮り写真",
+      "image": "images/evidence/ev_satsuki_photo.webp",
+      "description": "北野天満宮で撮影された紗月の前撮り写真。"
+    },
+    "satsukiNail": {
+      "name": "紗月のネイル",
+      "image": "images/evidence/ev_satsuki_nail.webp",
+      "description": "前撮り写真から確認できる、紗月の特徴的なネイル。"
+    },
+    "foldedBox": {
+      "name": "畳まれた段ボール箱",
+      "image": "images/evidence/ev_folded_box.webp",
+      "description": "京都駅の多目的トイレ内で見つかった、装花資材用と思われる畳まれた箱。"
+    },
+    "telegram": {
+      "name": "写真電報",
+      "image": "images/evidence/ev_photo_telegram.webp",
+      "description": "湖上の灯浮標の写真と『あの日のことを、すべて話してください。』という文面。"
+    },
+    "nailCompare": {
+      "name": "ネイル比較写真",
+      "image": "images/evidence/ev_nail_compare.webp",
+      "description": "前撮り写真の手元と、5人目の装花スタッフの手元を並べた比較写真。"
+    }
+  },
+  "movementMap": {
+    "spots": {
+      "H1": {
+        "label": "ホテル・披露宴会場前",
+        "background": "images/backgrounds/bg_hotel_entrance.webp",
+        "sceneId": "H1",
+        "links": [
+          "H2",
+          "H4",
+          "H6"
+        ]
+      },
+      "H2": {
+        "label": "花嫁控室前",
+        "background": "images/backgrounds/bg_bridal_room_hallway.webp",
+        "sceneId": "H2",
+        "links": [
+          "H1",
+          "H3",
+          "H4"
+        ]
+      },
+      "H3": {
+        "label": "花嫁控室",
+        "background": "images/backgrounds/bg_bridal_room.webp",
+        "sceneId": "H3",
+        "links": [
+          "H2",
+          "H4"
+        ]
+      },
+      "H4": {
+        "label": "ホテル廊下",
+        "background": "images/backgrounds/bg_hotel_corridor.webp",
+        "sceneId": "H4",
+        "links": [
+          "H1",
+          "H2",
+          "H3",
+          "H5"
+        ]
+      },
+      "H5": {
+        "label": "ホテル・確認室",
+        "background": "images/backgrounds/bg_hotel_meetingroom.webp",
+        "sceneId": "H5",
+        "links": [
+          "H4",
+          "K1",
+          "S1"
+        ]
+      },
+      "H6": {
+        "label": "ホテル・祝電置き場",
+        "background": "images/backgrounds/bg_hotel_gift_area.webp",
+        "sceneId": "H6",
+        "links": [
+          "H1",
+          "H4"
+        ]
+      },
+      "K1": {
+        "label": "桐生屋前",
+        "background": "images/backgrounds/bg_kiryuya_outside.webp",
+        "sceneId": "K1",
+        "links": [
+          "K2",
+          "H5"
+        ]
+      },
+      "K2": {
+        "label": "桐生屋店内",
+        "background": "images/backgrounds/bg_kiryuya_inside.webp",
+        "sceneId": "K2",
+        "links": [
+          "K1",
+          "H5"
+        ]
+      },
+      "K3": {
+        "label": "桐生屋店内",
+        "background": "images/backgrounds/bg_kiryuya_inside.webp",
+        "sceneId": "K3",
+        "links": [
+          "K1",
+          "H5"
+        ]
+      },
+      "S1": {
+        "label": "京都駅構内",
+        "background": "images/backgrounds/bg_kyoto_station_concourse.webp",
+        "sceneId": "S1",
+        "links": [
+          "S2",
+          "S3",
+          "S4",
+          "S5"
+        ]
+      },
+      "S2": {
+        "label": "京都駅・売店",
+        "background": "images/backgrounds/bg_kyoto_station_shop.webp",
+        "sceneId": "S2",
+        "links": [
+          "S1",
+          "S3",
+          "S5"
+        ]
+      },
+      "S3": {
+        "label": "京都駅・コインロッカー",
+        "background": "images/backgrounds/bg_kyoto_station_locker.webp",
+        "sceneId": "S3",
+        "links": [
+          "S1",
+          "S2",
+          "S4"
+        ]
+      },
+      "S4": {
+        "label": "京都駅・多目的トイレ前",
+        "background": "images/backgrounds/bg_kyoto_station_multipurpose_toilet.webp",
+        "sceneId": "S4",
+        "links": [
+          "S1",
+          "S3",
+          "S5"
+        ]
+      },
+      "S5": {
+        "label": "京都駅・在来線改札前",
+        "background": "images/backgrounds/bg_kyoto_station_gate.webp",
+        "sceneId": "S5",
+        "links": [
+          "S1",
+          "S2",
+          "S4",
+          "H1"
+        ]
+      }
+    }
+  },
+  "scenes": {
+    "T00": {
+      "type": "title",
+      "background": "images/title/cover_title_main.webp"
+    },
+    "OP01": {
+      "type": "chapter",
+      "background": "images/title/op_chapter1.webp",
+      "startScene": "H1"
+    },
+    "H1": {
+      "type": "location",
+      "spotId": "H1",
+      "location": "ホテル・披露宴会場前",
+      "background": "images/backgrounds/bg_hotel_entrance.webp",
+      "enterVariants": [
+        {
+          "id": "h1_return",
+          "requiresAll": [
+            "stationMysterySolved"
+          ],
+          "notFlags": [
+            "chapterMysterySolved"
+          ],
+          "onceFlag": "_seen_h1_return",
+          "lines": [
+            {
+              "speaker": "soichiro",
+              "text": "七条さん！"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "まだ紗月さんを見つけたわけではありません。ですが、ホテルからどうやって姿を消したのかは分かりました"
+            }
+          ]
+        },
+        {
+          "id": "h1_intro",
+          "notFlags": [
+            "requestAccepted"
+          ],
+          "onceFlag": "_seen_h1_intro",
+          "lines": [
+            {
+              "narrator": "午前九時四十五分。京都駅近くのホテル。披露宴会場の前では、スタッフが慌ただしく行き交っていた。"
+            },
+            {
+              "speaker": "soichiro",
+              "text": "七条さん。少し、よろしいでしょうか"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "どうされました"
+            },
+            {
+              "speaker": "soichiro",
+              "text": "娘がいないんです。花嫁控室から、いなくなりました"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "警察には？"
+            },
+            {
+              "speaker": "soichiro",
+              "text": "まだです。まず、七条さんに探していただきたい"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "分かりました。ただし、私にできる範囲で調べます"
+            }
+          ],
+          "setFlags": {
+            "requestAccepted": true
+          }
+        }
+      ],
+      "idleText": "宗一郎が落ち着かない様子で、披露宴会場前に立っている。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_soichiro",
+            "label": "桐生宗一郎",
+            "lines": [
+              {
+                "speaker": "soichiro",
+                "text": "何か分かりましたか"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "まだ調べているところです"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_lastseen",
+            "label": "最後に紗月を見たのは？",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "最後に紗月さんを見たのは？"
+              },
+              {
+                "speaker": "soichiro",
+                "text": "私は今朝、まだ会っていません。最後に確認したのはホテルの方です"
+              }
+            ]
+          },
+          {
+            "id": "ask_morning",
+            "label": "今朝の様子",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "何か変わった様子があったとは？"
+              },
+              {
+                "speaker": "soichiro",
+                "text": "聞いていません"
+              }
+            ]
+          },
+          {
+            "id": "ask_police",
+            "label": "警察について",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "事件性が見えれば、警察への連絡も考えてください"
+              },
+              {
+                "speaker": "soichiro",
+                "text": "……ええ"
+              }
+            ]
+          },
+          {
+            "id": "ask_final_report",
+            "label": "紗月が消えた方法を説明する",
+            "lines": [
+              {
+                "speaker": "soichiro",
+                "text": "ホテルからどうやって出たんです？"
+              }
+            ],
+            "requiresAll": [
+              "stationMysterySolved"
+            ],
+            "notFlags": [
+              "chapterMysterySolved"
+            ],
+            "quiz": {
+              "question": "紗月はどのようにホテルから姿を消したのか？",
+              "choices": [
+                {
+                  "text": "何者かに連れ出された",
+                  "correct": false
+                },
+                {
+                  "text": "非常口から逃げた",
+                  "correct": false
+                },
+                {
+                  "text": "装花スタッフに変装してホテルを出た",
+                  "correct": true
+                },
+                {
+                  "text": "沙耶に手引きされた",
+                  "correct": false
+                }
+              ],
+              "correctText": "ホテルに入った装花スタッフは四人。出たのは五人。五人目が紗月さんでした。",
+              "wrongText": "そこまでの証拠はありません。もう一度考えましょう。",
+              "setFlags": {
+                "chapterMysterySolved": true,
+                "giftAreaUnlocked": true
+              },
+              "afterLines": [
+                {
+                  "speaker": "soichiro",
+                  "text": "どこへ行ったんです"
+                },
+                {
+                  "speaker": "shichijo",
+                  "text": "京都駅です。駅では私服姿で、女性用のバッグを持っていました"
+                },
+                {
+                  "speaker": "shichijo",
+                  "text": "コインロッカーは空振りでしたが、多目的トイレで畳まれた箱が見つかっています"
+                },
+                {
+                  "speaker": "shichijo",
+                  "text": "在来線改札方向へ向かい、その時間帯では琵琶湖線方面が有力です"
+                },
+                {
+                  "speaker": "soichiro",
+                  "text": "では、それに乗った？"
+                },
+                {
+                  "speaker": "shichijo",
+                  "text": "そこまでは言えません。有力な候補というだけです"
+                },
+                {
+                  "narrator": "そのとき、ホテル係員が祝電置き場の方から宗一郎を呼んだ。"
+                }
+              ]
+            }
+          }
+        ],
+        "look": [
+          {
+            "id": "look_hall",
+            "label": "披露宴会場前を見る",
+            "lines": [
+              {
+                "narrator": "式の準備は続いている。しかし、主役の花嫁だけがいない。"
+              }
+            ]
+          }
+        ],
+        "search": [],
+        "evidence": []
+      }
+    },
+    "H2": {
+      "type": "location",
+      "spotId": "H2",
+      "location": "花嫁控室前",
+      "background": "images/backgrounds/bg_bridal_room_hallway.webp",
+      "enterVariants": [
+        {
+          "id": "h2_intro",
+          "onceFlag": "_seen_h2_intro",
+          "lines": [
+            {
+              "speaker": "hotelStaff",
+              "text": "こちらです。九時三十五分ごろ、お迎えに来たところ、紗月様がおられませんでした"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "まず中を確認しましょう"
+            }
+          ]
+        }
+      ],
+      "idleText": "花嫁控室の扉が目の前にある。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_staff",
+            "label": "ホテル係員",
+            "lines": [
+              {
+                "speaker": "hotelStaff",
+                "text": "私が来たときには、もういらっしゃいませんでした"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_noise",
+            "label": "物音や叫び声",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "叫び声や大きな物音は？"
+              },
+              {
+                "speaker": "hotelStaff",
+                "text": "聞いていません"
+              }
+            ],
+            "setFlags": {
+              "hotelStaffAsked": true
+            }
+          }
+        ],
+        "look": [
+          {
+            "id": "look_door",
+            "label": "控室の扉",
+            "lines": [
+              {
+                "narrator": "外から見て、扉や鍵に不自然な傷はない。"
+              }
+            ]
+          }
+        ],
+        "search": [],
+        "evidence": []
+      }
+    },
+    "H3": {
+      "type": "location",
+      "spotId": "H3",
+      "location": "花嫁控室",
+      "background": "images/backgrounds/bg_bridal_room.webp",
+      "idleText": "紗月が支度をしていた控室。室内は大きく荒れていない。",
+      "commands": {
+        "talk": [],
+        "ask": [
+          {
+            "id": "ask_staff_inside",
+            "label": "ホテル係員に聞く",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "誰かが紗月さんを連れ出したところは？"
+              },
+              {
+                "speaker": "hotelStaff",
+                "text": "見ていません"
+              }
+            ]
+          }
+        ],
+        "look": [
+          {
+            "id": "look_room",
+            "label": "部屋全体",
+            "lines": [
+              {
+                "narrator": "室内に大きく荒れた跡はない。家具や衣装も乱れていない。"
+              }
+            ],
+            "setFlags": {
+              "roomLooked": true
+            }
+          }
+        ],
+        "search": [
+          {
+            "id": "search_mirror",
+            "label": "鏡台",
+            "lines": [
+              {
+                "narrator": "化粧道具が並んでいる。急に何かが起きたようには見えない。"
+              }
+            ]
+          },
+          {
+            "id": "search_costume",
+            "label": "衣装まわり",
+            "lines": [
+              {
+                "narrator": "衣装の周囲にも、乱れた様子はない。"
+              }
+            ]
+          },
+          {
+            "id": "search_belongings",
+            "label": "私物",
+            "lines": [
+              {
+                "narrator": "いくつかの私物が控室に残されている。"
+              }
+            ],
+            "setFlags": {
+              "roomSearched": true
+            }
+          }
+        ],
+        "evidence": []
+      }
+    },
+    "H4": {
+      "type": "location",
+      "spotId": "H4",
+      "location": "ホテル廊下",
+      "background": "images/backgrounds/bg_hotel_corridor.webp",
+      "idleText": "花嫁控室と披露宴会場をつなぐホテルの廊下。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_staff_corridor",
+            "label": "ホテル係員",
+            "lines": [
+              {
+                "speaker": "hotelStaff",
+                "text": "何か確認できることがあれば、お手伝いします"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_contractors",
+            "label": "今朝の外部業者",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "今朝、この付近に出入りした外部業者は？"
+              },
+              {
+                "speaker": "hotelStaff",
+                "text": "装花のスタッフさんが来ています"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "人数は？"
+              },
+              {
+                "speaker": "hotelStaff",
+                "text": "人数までは分かりません"
+              }
+            ],
+            "setFlags": {
+              "flowerStaffKnown": true
+            }
+          },
+          {
+            "id": "ask_camera",
+            "label": "出入口の記録",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "出入口の記録はありますか"
+              },
+              {
+                "speaker": "hotelStaff",
+                "text": "防犯カメラがあります。ホテル側で確認できます"
+              },
+              {
+                "speaker": "hotelStaff",
+                "text": "確認室で映像を確認します。必要でしたら、そちらへどうぞ"
+              }
+            ],
+            "setFlags": {
+              "hotelConfirmUnlocked": true
+            },
+            "requiresAll": [
+              "flowerStaffKnown"
+            ]
+          }
+        ],
+        "look": [
+          {
+            "id": "look_corridor",
+            "label": "廊下を見る",
+            "lines": [
+              {
+                "narrator": "式場スタッフや業者が行き交う。花嫁が作業員に紛れても、目立たないかもしれない。"
+              }
+            ]
+          }
+        ],
+        "search": [],
+        "evidence": []
+      }
+    },
+    "H5": {
+      "type": "location",
+      "spotId": "H5",
+      "location": "ホテル・確認室",
+      "background": "images/backgrounds/bg_hotel_meetingroom.webp",
+      "enterVariants": [
+        {
+          "id": "h5_first",
+          "requiresAll": [
+            "hotelConfirmUnlocked"
+          ],
+          "notFlags": [
+            "entryCountKnown"
+          ],
+          "onceFlag": "_seen_h5_first",
+          "lines": [
+            {
+              "speaker": "hotelManager",
+              "text": "事情は伺いました。当館で映像を確認します"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "装花スタッフの入館時と退館時を確認してください"
+            }
+          ]
+        },
+        {
+          "id": "h5_return_nail",
+          "requiresAll": [
+            "nailFound"
+          ],
+          "notFlags": [
+            "nailMatched"
+          ],
+          "onceFlag": "_seen_h5_return_nail",
+          "lines": [
+            {
+              "speaker": "shichijo",
+              "text": "先ほどの五人目の静止画を、もう一度お願いします"
+            }
+          ]
+        }
+      ],
+      "idleText": "ホテル側が確認した映像や静止画を整理できる。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_manager",
+            "label": "ホテル責任者",
+            "lines": [
+              {
+                "speaker": "hotelManager",
+                "text": "必要な範囲で、当館側で映像を確認します"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_entry_count",
+            "label": "装花スタッフの入館人数",
+            "lines": [
+              {
+                "speaker": "hotelManager",
+                "text": "午前八時十二分ごろ、装花スタッフが入館しています。四人です"
+              }
+            ],
+            "setFlags": {
+              "entryCountKnown": true
+            }
+          },
+          {
+            "id": "ask_exit_count",
+            "label": "装花スタッフの退館人数",
+            "lines": [
+              {
+                "speaker": "hotelManager",
+                "text": "退館時は……五人映っています"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "入館は四人、退館は五人。五人目を確認しましょう"
+              }
+            ],
+            "setFlags": {
+              "exitCountKnown": true,
+              "fifthPersonInspected": true
+            },
+            "evidence": {
+              "fifthStaff": true
+            },
+            "requiresAll": [
+              "entryCountKnown"
+            ]
+          },
+          {
+            "id": "ask_outer_camera",
+            "label": "ホテル外側の映像",
+            "lines": [
+              {
+                "speaker": "hotelManager",
+                "text": "建物の外側のカメラにも、それらしい人物が映っています"
+              },
+              {
+                "narrator": "大きな箱を持った作業着姿の人物が、一人でホテルを離れていく。"
+              },
+              {
+                "speaker": "hotelManager",
+                "text": "京都駅の方向へ歩いています"
+              }
+            ],
+            "setFlags": {
+              "outerCameraKnown": true
+            },
+            "evidence": {
+              "hotelOuterCamera": true
+            },
+            "requiresAll": [
+              "exitCountKnown"
+            ]
+          },
+          {
+            "id": "ask_recent_photo",
+            "label": "紗月の最近の写真",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "この人物が紗月さんか確認したいですね。最近の写真はありますか。できれば手元が写っているものを"
+              },
+              {
+                "speaker": "soichiro",
+                "text": "前撮りの写真ならあります。桐生屋に。弟の宗次郎が預かっているはずです"
+              }
+            ],
+            "setFlags": {
+              "needRecentPhoto": true,
+              "kiryuyaUnlocked": true
+            },
+            "requiresAll": [
+              "outerCameraKnown"
+            ]
+          }
+        ],
+        "look": [
+          {
+            "id": "look_fifth_face",
+            "label": "5人目の顔",
+            "lines": [
+              {
+                "narrator": "帽子とマスクで顔は判別できない。"
+              }
+            ],
+            "requiresAll": [
+              "fifthPersonInspected"
+            ],
+            "image": "images/evidence/ev_fifth_staff.webp"
+          },
+          {
+            "id": "look_fifth_box",
+            "label": "5人目の箱",
+            "lines": [
+              {
+                "narrator": "大きな箱が体の前を隠している。"
+              }
+            ],
+            "requiresAll": [
+              "fifthPersonInspected"
+            ],
+            "image": "images/evidence/ev_fifth_staff.webp"
+          },
+          {
+            "id": "look_fifth_hand",
+            "label": "5人目の手元",
+            "lines": [
+              {
+                "narrator": "箱を支える指先だけが、映像に残っている。"
+              }
+            ],
+            "requiresAll": [
+              "fifthPersonInspected"
+            ],
+            "image": "images/evidence/ev_fifth_staff.webp"
+          },
+          {
+            "id": "look_fifth_bag",
+            "label": "5人目の持ち物",
+            "lines": [
+              {
+                "narrator": "私物用のバッグらしいものは見当たらない。"
+              }
+            ],
+            "requiresAll": [
+              "fifthPersonInspected"
+            ],
+            "image": "images/evidence/ev_fifth_staff.webp"
+          }
+        ],
+        "search": [],
+        "evidence": [
+          {
+            "id": "compare_nails",
+            "label": "紗月のネイルと5人目の手元を比較する",
+            "lines": [
+              {
+                "narrator": "前撮り写真の手元と、5人目の装花スタッフの手元。色と飾りの位置が一致している。"
+              }
+            ],
+            "setFlags": {
+              "nailMatched": true
+            },
+            "evidence": {
+              "nailCompare": true
+            },
+            "requiresAll": [
+              "nailFound"
+            ],
+            "notFlags": [
+              "nailMatched"
+            ],
+            "image": "images/evidence/ev_nail_compare.webp",
+            "quiz": {
+              "question": "5人目の装花スタッフは誰か？",
+              "choices": [
+                {
+                  "text": "日野沙耶",
+                  "correct": false
+                },
+                {
+                  "text": "桐生紗月",
+                  "correct": true
+                },
+                {
+                  "text": "桐生宗次郎",
+                  "correct": false
+                },
+                {
+                  "text": "別の人物",
+                  "correct": false
+                }
+              ],
+              "correctText": "五人目は紗月さんです。装花スタッフに紛れてホテルを出ています。",
+              "wrongText": "証拠と合いませんね。もう一度考えましょう。",
+              "setFlags": {
+                "fifthIsSatsuki": true,
+                "kyotoStationUnlocked": true
+              },
+              "afterLines": [
+                {
+                  "speaker": "soichiro",
+                  "text": "では、本当にホテルを出た……"
+                },
+                {
+                  "speaker": "shichijo",
+                  "text": "ええ。次は京都駅で、その先の足取りを追えます"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "K1": {
+      "type": "location",
+      "spotId": "K1",
+      "location": "桐生屋前",
+      "background": "images/backgrounds/bg_kiryuya_outside.webp",
+      "enterVariants": [
+        {
+          "id": "k1_intro",
+          "onceFlag": "_seen_k1_intro",
+          "lines": [
+            {
+              "speaker": "sojiro",
+              "text": "七条さんですね。兄から話は聞いています"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "宗次郎さん。少しお話を"
+            },
+            {
+              "speaker": "sojiro",
+              "text": "紗月のことですね"
+            }
+          ],
+          "setFlags": {
+            "sojiroTalked": true
+          }
+        }
+      ],
+      "idleText": "桐生家の家業である桐生屋。その店先。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_sojiro",
+            "label": "桐生宗次郎",
+            "lines": [
+              {
+                "speaker": "sojiro",
+                "text": "分かることならお話しします"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_satsuki_personality",
+            "label": "紗月について",
+            "lines": [
+              {
+                "speaker": "sojiro",
+                "text": "真面目な子です。何も言わずに結婚式から逃げるような子には見えません"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "見えません、ですか"
+              },
+              {
+                "speaker": "sojiro",
+                "text": "人の胸の中までは分かりませんから"
+              }
+            ]
+          },
+          {
+            "id": "ask_recent",
+            "label": "最近の様子",
+            "lines": [
+              {
+                "speaker": "sojiro",
+                "text": "特に変わった話は聞いていません"
+              }
+            ]
+          },
+          {
+            "id": "ask_soichiro",
+            "label": "宗一郎について",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "宗一郎さんに、顔がそっくりですね"
+              },
+              {
+                "speaker": "sojiro",
+                "text": "ははは、双子ですから"
+              }
+            ]
+          }
+        ],
+        "look": [
+          {
+            "id": "look_kiryuya_front",
+            "label": "店構え",
+            "lines": [
+              {
+                "narrator": "老舗らしい落ち着いた店構えだ。"
+              }
+            ]
+          }
+        ],
+        "search": [],
+        "evidence": []
+      }
+    },
+    "K2": {
+      "type": "location",
+      "spotId": "K2",
+      "location": "桐生屋店内",
+      "background": "images/backgrounds/bg_kiryuya_inside.webp",
+      "enterVariants": [
+        {
+          "id": "k2_intro",
+          "notFlags": [
+            "sayaMet"
+          ],
+          "onceFlag": "_seen_k2_intro",
+          "lines": [
+            {
+              "speaker": "saya",
+              "text": "いらっしゃいませ"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "紗月さんのことで、お聞きしたいことがあります"
+            },
+            {
+              "speaker": "saya",
+              "text": "私に？"
+            }
+          ],
+          "setFlags": {
+            "sayaMet": true
+          }
+        }
+      ],
+      "idleText": "染織関係の資料や道具が並ぶ桐生屋の店内。沙耶や宗次郎が応対している。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_saya",
+            "label": "日野沙耶",
+            "lines": [
+              {
+                "speaker": "saya",
+                "text": "私に分かることなら……"
+              }
+            ]
+          },
+          {
+            "id": "talk_sojiro_inside",
+            "label": "桐生宗次郎",
+            "lines": [
+              {
+                "speaker": "sojiro",
+                "text": "前撮り写真のことでしたら、こちらでご覧ください"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_saya_morning",
+            "label": "沙耶：今朝の紗月",
+            "lines": [
+              {
+                "speaker": "saya",
+                "text": "会っていません。連絡もありません"
+              }
+            ]
+          },
+          {
+            "id": "ask_saya_wedding",
+            "label": "沙耶：婚礼について",
+            "lines": [
+              {
+                "speaker": "saya",
+                "text": "楽しみにしていたと思います"
+              }
+            ]
+          },
+          {
+            "id": "ask_saya_hotel",
+            "label": "沙耶：ホテルへ行った？",
+            "lines": [
+              {
+                "speaker": "saya",
+                "text": "行ってません"
+              },
+              {
+                "narrator": "返事の前に、わずかな間があった。"
+              }
+            ]
+          },
+          {
+            "id": "ask_photo",
+            "label": "宗次郎：前撮り写真",
+            "lines": [
+              {
+                "speaker": "sojiro",
+                "text": "前撮りの写真ならあります。こちらでお見せします"
+              },
+              {
+                "narrator": "宗次郎は北野天満宮で撮られた前撮り写真を、七条の前に広げた。"
+              }
+            ],
+            "setFlags": {
+              "preWeddingPhotoKnown": true
+            },
+            "evidence": {
+              "satsukiPhoto": true
+            }
+          }
+        ],
+        "look": [
+          {
+            "id": "look_desk",
+            "label": "作業台",
+            "lines": [
+              {
+                "narrator": "染織関係の資料が広げられている。"
+              }
+            ]
+          },
+          {
+            "id": "look_shelf",
+            "label": "棚",
+            "lines": [
+              {
+                "narrator": "古い帳面や資料が並んでいる。"
+              }
+            ]
+          },
+          {
+            "id": "look_photo_face",
+            "label": "前撮り写真：顔",
+            "lines": [
+              {
+                "narrator": "紗月が穏やかに笑っている。"
+              }
+            ],
+            "requiresAll": [
+              "preWeddingPhotoKnown"
+            ],
+            "image": "images/evidence/ev_satsuki_photo.webp"
+          },
+          {
+            "id": "look_photo_kimono",
+            "label": "前撮り写真：着物",
+            "lines": [
+              {
+                "narrator": "華やかな意匠の着物だ。"
+              }
+            ],
+            "requiresAll": [
+              "preWeddingPhotoKnown"
+            ],
+            "image": "images/evidence/ev_satsuki_photo.webp"
+          },
+          {
+            "id": "look_photo_hand",
+            "label": "前撮り写真：手",
+            "lines": [
+              {
+                "narrator": "紗月の指先には、特徴的なネイルが施されている。"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "この手元を記録させていただいても？"
+              },
+              {
+                "speaker": "sojiro",
+                "text": "構いませんよ"
+              }
+            ],
+            "setFlags": {
+              "nailFound": true
+            },
+            "evidence": {
+              "satsukiNail": true
+            },
+            "requiresAll": [
+              "preWeddingPhotoKnown"
+            ],
+            "image": "images/evidence/ev_satsuki_nail.webp"
+          }
+        ],
+        "search": [
+          {
+            "id": "search_package",
+            "label": "紙包み",
+            "lines": [
+              {
+                "narrator": "七条が作業台へ目を向けた、その瞬間だった。"
+              },
+              {
+                "narrator": "沙耶は、広げていた書類の一枚をさりげなく紙包みの下へ滑り込ませた。"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "その書類は？"
+              },
+              {
+                "speaker": "saya",
+                "text": "仕事のものです"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "少し見せていただけますか"
+              },
+              {
+                "speaker": "saya",
+                "text": "……それは困ります"
+              },
+              {
+                "narrator": "沙耶は紙包みに手を置いたまま、七条から視線を外した。"
+              }
+            ],
+            "setFlags": {
+              "sayaSuspicious": true
+            }
+          }
+        ],
+        "evidence": []
+      }
+    },
+    "K3": {
+      "type": "location",
+      "spotId": "K3",
+      "location": "桐生屋店内",
+      "background": "images/backgrounds/bg_kiryuya_inside.webp",
+      "enterVariants": [
+        {
+          "id": "k3_intro",
+          "requiresAll": [
+            "preWeddingPhotoKnown"
+          ],
+          "onceFlag": "_seen_k3_intro",
+          "lines": [
+            {
+              "speaker": "sojiro",
+              "text": "これが前撮りの写真です"
+            },
+            {
+              "narrator": "北野天満宮で撮られた紗月の写真が置かれた。"
+            }
+          ],
+          "evidence": {
+            "satsukiPhoto": true
+          }
+        }
+      ],
+      "idleText": "桐生屋店内。前撮り写真もこの場で確認できる。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_sojiro_photo",
+            "label": "桐生宗次郎",
+            "lines": [
+              {
+                "speaker": "sojiro",
+                "text": "必要なら、写真をよく見てください"
+              }
+            ]
+          }
+        ],
+        "ask": [],
+        "look": [
+          {
+            "id": "look_photo_face",
+            "label": "前撮り写真：顔",
+            "lines": [
+              {
+                "narrator": "紗月が穏やかに笑っている。"
+              }
+            ],
+            "requiresAll": [
+              "preWeddingPhotoKnown"
+            ]
+          },
+          {
+            "id": "look_photo_kimono",
+            "label": "前撮り写真：着物",
+            "lines": [
+              {
+                "narrator": "華やかな意匠の着物だ。"
+              }
+            ],
+            "requiresAll": [
+              "preWeddingPhotoKnown"
+            ]
+          },
+          {
+            "id": "look_photo_hand",
+            "label": "前撮り写真：手",
+            "lines": [
+              {
+                "narrator": "紗月の指先には、特徴的なネイルが施されている。"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "この手元を記録させていただいても？"
+              },
+              {
+                "speaker": "sojiro",
+                "text": "構いませんよ"
+              }
+            ],
+            "setFlags": {
+              "nailFound": true
+            },
+            "evidence": {
+              "satsukiNail": true
+            },
+            "requiresAll": [
+              "preWeddingPhotoKnown"
+            ]
+          }
+        ],
+        "search": [],
+        "evidence": []
+      }
+    },
+    "S1": {
+      "type": "location",
+      "spotId": "S1",
+      "location": "京都駅構内",
+      "background": "images/backgrounds/bg_kyoto_station_concourse.webp",
+      "enterVariants": [
+        {
+          "id": "s1_intro",
+          "notFlags": [
+            "stationVisited"
+          ],
+          "onceFlag": "_seen_s1_intro",
+          "lines": [
+            {
+              "narrator": "七条は京都駅へ向かった。人の流れが絶えない。"
+            },
+            {
+              "narrator": "ホテルを出た5人目は、作業着姿で大きな箱を持っていた。"
+            }
+          ],
+          "setFlags": {
+            "stationVisited": true
+          }
+        }
+      ],
+      "idleText": "人の流れが絶えない京都駅構内。",
+      "commands": {
+        "talk": [],
+        "ask": [],
+        "look": [
+          {
+            "id": "look_station_flow",
+            "label": "駅構内を見る",
+            "lines": [
+              {
+                "narrator": "売店、コインロッカー、在来線改札へ人が流れている。"
+              }
+            ]
+          }
+        ],
+        "search": [],
+        "evidence": []
+      }
+    },
+    "S2": {
+      "type": "location",
+      "spotId": "S2",
+      "location": "京都駅・売店",
+      "background": "images/backgrounds/bg_kyoto_station_shop.webp",
+      "idleText": "駅構内の売店。店員がレジに立っている。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_clerk",
+            "label": "売店店員",
+            "lines": [
+              {
+                "speaker": "shopClerk",
+                "text": "何でしょうか"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_show_photo",
+            "label": "紗月の写真を見せる",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "この女性を見ませんでしたか"
+              },
+              {
+                "speaker": "shopClerk",
+                "text": "あ、この人なら覚えています。ここで飲み物を買われました"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "なぜ覚えていたのです？"
+              },
+              {
+                "speaker": "shopClerk",
+                "text": "支払いのとき、小銭を何枚も床に落としてしまって。私も一緒に拾ったんです"
+              }
+            ],
+            "setFlags": {
+              "shopPhotoShown": true
+            }
+          },
+          {
+            "id": "ask_clothes",
+            "label": "その時の服装",
+            "lines": [
+              {
+                "speaker": "shopClerk",
+                "text": "普通の服でしたよ"
+              }
+            ],
+            "setFlags": {
+              "shopClothesKnown": true
+            },
+            "requiresAll": [
+              "shopPhotoShown"
+            ]
+          },
+          {
+            "id": "ask_bag",
+            "label": "バッグを持っていた？",
+            "lines": [
+              {
+                "speaker": "shopClerk",
+                "text": "女性もののバッグを持っていました"
+              }
+            ],
+            "setFlags": {
+              "shopBagKnown": true
+            },
+            "requiresAll": [
+              "shopPhotoShown"
+            ]
+          },
+          {
+            "id": "ask_direction",
+            "label": "買い物の後、どちらへ？",
+            "lines": [
+              {
+                "speaker": "shopClerk",
+                "text": "在来線の改札の方へ行きました。一人でしたよ"
+              }
+            ],
+            "setFlags": {
+              "shopDirectionKnown": true,
+              "shopWitness": true
+            },
+            "requiresAll": [
+              "shopPhotoShown"
+            ]
+          }
+        ],
+        "look": [],
+        "search": [],
+        "evidence": []
+      }
+    },
+    "S3": {
+      "type": "location",
+      "spotId": "S3",
+      "location": "京都駅・コインロッカー",
+      "background": "images/backgrounds/bg_kyoto_station_locker.webp",
+      "idleText": "駅構内のコインロッカーが並んでいる。",
+      "commands": {
+        "talk": [],
+        "ask": [
+          {
+            "id": "ask_around_locker",
+            "label": "周辺で聞き込む",
+            "lines": [
+              {
+                "narrator": "周辺で聞き込むが、紗月を覚えている人物はいなかった。"
+              }
+            ]
+          }
+        ],
+        "look": [
+          {
+            "id": "look_lockers",
+            "label": "ロッカーを見る",
+            "lines": [
+              {
+                "narrator": "コインロッカーが並んでいる。どれを使ったかを示す手掛かりはない。"
+              }
+            ]
+          }
+        ],
+        "search": [
+          {
+            "id": "search_lockers",
+            "label": "コインロッカー周辺",
+            "lines": [
+              {
+                "narrator": "周囲を調べても、紗月がここを使ったと確認できる材料は見つからない。"
+              },
+              {
+                "narrator": "そのとき、少し離れた多目的トイレの前で、駅員と清掃員が何か話しているのが見えた。"
+              }
+            ],
+            "setFlags": {
+              "lockerChecked": true,
+              "toiletUnlocked": true
+            }
+          }
+        ],
+        "evidence": []
+      }
+    },
+    "S4": {
+      "type": "location",
+      "spotId": "S4",
+      "location": "京都駅・多目的トイレ前",
+      "background": "images/backgrounds/bg_kyoto_station_multipurpose_toilet.webp",
+      "enterVariants": [
+        {
+          "id": "s4_intro",
+          "onceFlag": "_seen_s4_intro",
+          "lines": [
+            {
+              "narrator": "多目的トイレの前で、駅員と清掃員が話している。足元には、平たく畳まれた大きな段ボール箱があった。"
+            }
+          ]
+        }
+      ],
+      "idleText": "駅員と清掃員が、多目的トイレ前で話している。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_station_staff",
+            "label": "駅員",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "失礼。何かあったのですか"
+              },
+              {
+                "narrator": "駅員が七条に向き直った。"
+              }
+            ],
+            "setFlags": {
+              "stationStaffTalked": true
+            }
+          },
+          {
+            "id": "talk_cleaner",
+            "label": "清掃員",
+            "lines": [
+              {
+                "narrator": "清掃員は、トイレ内に残されていた箱を指さした。"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_what_happened",
+            "label": "何があった？",
+            "lines": [
+              {
+                "narrator": "駅員は、多目的トイレの中に大きな箱が置かれていたと説明した。"
+              }
+            ],
+            "requiresAny": [
+              "stationStaffTalked"
+            ]
+          },
+          {
+            "id": "ask_when_found",
+            "label": "いつ見つかった？",
+            "lines": [
+              {
+                "narrator": "清掃の際に見つかったという。ホテルから五人目が出た後の時間帯と大きく矛盾しない。"
+              }
+            ],
+            "requiresAny": [
+              "stationStaffTalked"
+            ]
+          }
+        ],
+        "look": [
+          {
+            "id": "look_folded_box",
+            "label": "畳まれた箱",
+            "lines": [
+              {
+                "narrator": "ホテルを出た5人目が持っていたものと同じくらいの大きさの箱だ。"
+              }
+            ],
+            "image": "images/evidence/ev_folded_box.webp"
+          }
+        ],
+        "search": [
+          {
+            "id": "search_folded_box",
+            "label": "畳まれた段ボール箱",
+            "lines": [
+              {
+                "narrator": "箱は平たく畳まれている。持ち主を特定できる表示はない。"
+              }
+            ],
+            "setFlags": {
+              "foldedBoxFound": true,
+              "gateUnlocked": true
+            },
+            "evidence": {
+              "foldedBox": true
+            },
+            "requiresAny": [
+              "stationStaffTalked"
+            ],
+            "image": "images/evidence/ev_folded_box.webp"
+          }
+        ],
+        "evidence": []
+      }
+    },
+    "S5": {
+      "type": "location",
+      "spotId": "S5",
+      "location": "京都駅・在来線改札前",
+      "background": "images/backgrounds/bg_kyoto_station_gate.webp",
+      "idleText": "在来線改札前。発車案内が見える。",
+      "commands": {
+        "talk": [],
+        "ask": [],
+        "look": [
+          {
+            "id": "look_departures",
+            "label": "発車案内",
+            "lines": [
+              {
+                "narrator": "売店で紗月が目撃されたのは、10時前。"
+              },
+              {
+                "narrator": "その時間帯の発車案内には、琵琶湖線方面の列車が表示されている。"
+              }
+            ],
+            "setFlags": {
+              "departureBoardChecked": true
+            }
+          }
+        ],
+        "search": [],
+        "evidence": [
+          {
+            "id": "organize_station",
+            "label": "京都駅で得た情報を整理する",
+            "requiresAll": [
+              "departureBoardChecked",
+              "foldedBoxFound",
+              "shopWitness"
+            ],
+            "notFlags": [
+              "stationMysterySolved"
+            ],
+            "quiz": {
+              "question": "ホテルを出た後、紗月はどうしたと考えられるか？",
+              "choices": [
+                {
+                  "text": "そのまま作業着で移動した",
+                  "correct": false
+                },
+                {
+                  "text": "どこかで私服に着替えた",
+                  "correct": true
+                },
+                {
+                  "text": "ホテルへ戻った",
+                  "correct": false
+                },
+                {
+                  "text": "沙耶と合流した",
+                  "correct": false
+                }
+              ],
+              "correctText": "売店では私服姿でした。ホテルを出た後、どこかで着替えたと考えられます。",
+              "wrongText": "売店での服装を思い出してみましょう。",
+              "nextQuiz": {
+                "question": "箱を処理した可能性が高い場所は？",
+                "choices": [
+                  {
+                    "text": "売店",
+                    "correct": false
+                  },
+                  {
+                    "text": "コインロッカー",
+                    "correct": false
+                  },
+                  {
+                    "text": "多目的トイレ",
+                    "correct": true
+                  },
+                  {
+                    "text": "ホテルの外",
+                    "correct": false
+                  }
+                ],
+                "correctText": "多目的トイレで畳まれた大きな箱が見つかっています。",
+                "wrongText": "畳まれた箱が見つかった場所を確認しましょう。",
+                "nextQuiz": {
+                  "question": "紗月が次に向かった可能性が最も高いのは？",
+                  "choices": [
+                    {
+                      "text": "新幹線方面",
+                      "correct": false
+                    },
+                    {
+                      "text": "近鉄線方面",
+                      "correct": false
+                    },
+                    {
+                      "text": "琵琶湖線方面",
+                      "correct": true
+                    },
+                    {
+                      "text": "京都駅の外",
+                      "correct": false
+                    }
+                  ],
+                  "correctText": "琵琶湖線方面が有力です。ただし、実際に乗車したとは断定できません。",
+                  "wrongText": "売店を出た時刻と発車案内を確認してみましょう。",
+                  "setFlags": {
+                    "stationMysterySolved": true,
+                    "hotelReturnUnlocked": true
+                  },
+                  "afterLines": [
+                    {
+                      "narrator": "京都駅で得られた情報が一通りそろった。"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "H6": {
+      "type": "location",
+      "spotId": "H6",
+      "location": "ホテル・祝電置き場",
+      "background": "images/backgrounds/bg_hotel_gift_area.webp",
+      "enterVariants": [
+        {
+          "id": "h6_intro",
+          "onceFlag": "_seen_h6_intro",
+          "lines": [
+            {
+              "narrator": "披露宴会場の一角には、届いた祝電がまとめられていた。"
+            },
+            {
+              "speaker": "hotelStaff",
+              "text": "桐生様、こちらの祝電ですが……"
+            },
+            {
+              "speaker": "soichiro",
+              "text": "今はそのままにしておいてください"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "宗一郎さん。これも祝電ですか"
+            }
+          ]
+        }
+      ],
+      "idleText": "祝電の束の中に、一通だけ雰囲気の違う写真電報がある。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_soichiro_telegram",
+            "label": "桐生宗一郎",
+            "lines": [
+              {
+                "speaker": "soichiro",
+                "text": "その電報が、どうかしましたか"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_sender",
+            "label": "差出人",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "差出人は？"
+              },
+              {
+                "speaker": "soichiro",
+                "text": "……分かりません"
+              }
+            ],
+            "requiresAll": [
+              "telegramFound"
+            ]
+          },
+          {
+            "id": "ask_clue",
+            "label": "『あの日』に心当たりは？",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "『あの日』という言葉に、心当たりは？"
+              },
+              {
+                "speaker": "soichiro",
+                "text": "ありません"
+              }
+            ],
+            "setFlags": {
+              "telegramAsked": true,
+              "chapter1Clear": true
+            },
+            "requiresAll": [
+              "telegramFound"
+            ],
+            "notFlags": [
+              "chapter1Clear"
+            ]
+          }
+        ],
+        "look": [
+          {
+            "id": "look_telegram",
+            "label": "写真電報",
+            "lines": [
+              {
+                "narrator": "湖上に浮かぶ灯浮標。その下には一文だけが記されていた。"
+              },
+              {
+                "narrator": "『あの日のことを、すべて話してください。』"
+              }
+            ],
+            "setFlags": {
+              "telegramFound": true
+            },
+            "evidence": {
+              "telegram": true
+            },
+            "image": "images/evidence/ev_photo_telegram.webp"
+          }
+        ],
+        "search": [
+          {
+            "id": "search_telegram",
+            "label": "写真と文面",
+            "lines": [
+              {
+                "narrator": "写真には湖上の灯浮標が写っている。失踪事件との関係を示すものは、まだない。"
+              }
+            ],
+            "requiresAll": [
+              "telegramFound"
+            ]
+          }
+        ],
+        "evidence": []
+      }
+    }
+  }
+};
+
+</script>
+<script>
+// ======================================================
+// 湖影に消えた花嫁
+// 第1章 自動進行撤廃・移動主導型エンジン
+// ======================================================
+
+const {
+  scenes,
+  characters,
+  evidenceMaster,
+  movementMap,
+  initialFlags,
+  initialEvidence
+} = window.KOEI_GAME_DATA;
+
+const SAVE_KEY = "koeiBrideSave_moveDriven_v1";
+const SETTINGS_KEY = "koeiBrideSettings_v1";
+const PROGRESS_KEY = "koeiBrideProgress_v1";
+const SAVE_NOTICE_KEY = "koeiBrideSaveNoticeSeen_v1";
+
+const DEFAULT_SETTINGS = { soundOn: true, speedLevel: 3 };
+const SPEED_TABLE = { 1: 90, 2: 65, 3: 45, 4: 25, 5: 10 };
+
+const VOICE_TABLE = {
+  shichijo:     { frequency: 175, type: "square" },
+  soichiro:     { frequency: 160, type: "square" },
+  sojiro:       { frequency: 190, type: "square" },
+  saya:         { frequency: 330, type: "square" },
+  hotelStaff:   { frequency: 310, type: "square" },
+  hotelManager: { frequency: 180, type: "square" },
+  shopClerk:    { frequency: 340, type: "square" },
+  stationStaff: { frequency: 205, type: "square" }
+};
+
+const FACE_TABLE = {
+  shichijo: "images/faces/face_shichijo.webp",
+  soichiro: "images/faces/face_soichiro.webp",
+  sojiro: "images/faces/face_sojiro.webp",
+  saya: "images/faces/face_saya.webp",
+  hotelStaff: "images/faces/face_hotel_staff.webp",
+  hotelManager: "images/faces/face_hotel_manager.webp",
+  shopClerk: "images/faces/face_shop_clerk.webp"
+};
+
+let settings = loadSettings();
+let game = createFreshGameState();
+
+const el = {
+  game: document.querySelector("#game"),
+  background: document.querySelector("#background"),
+  characterLayer: document.querySelector("#character-layer"),
+  speaker: document.querySelector("#speaker-name"),
+  portraitWrap: document.querySelector("#speaker-portrait-wrap"),
+  portrait: document.querySelector("#speaker-portrait"),
+  locationBadge: document.querySelector("#location-badge"),
+  message: document.querySelector("#message-text"),
+  choiceArea: document.querySelector("#choice-area"),
+  evidenceImage: document.querySelector("#evidence-image"),
+  nextIndicator: document.querySelector("#next-indicator"),
+  menuButton: document.querySelector("#menu-button"),
+  commandPanel: document.querySelector("#command-panel"),
+  commandSubchoices: document.querySelector("#command-subchoices"),
+  cmdTalk: document.querySelector("#cmd-talk"),
+  cmdAsk: document.querySelector("#cmd-ask"),
+  cmdLook: document.querySelector("#cmd-look"),
+  cmdSearch: document.querySelector("#cmd-search"),
+  cmdEvidence: document.querySelector("#cmd-evidence"),
+  cmdMove: document.querySelector("#cmd-move")
+};
+
+let audioContext = null;
+let audioUnlocked = false;
+
+function clone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function createFreshGameState() {
+  return {
+    sceneId: "T00",
+    currentSpotId: null,
+    flags: clone(initialFlags),
+    evidence: clone(initialEvidence),
+    actionHistory: {},
+    lineQueue: [],
+    lineIndex: -1,
+    currentFullText: "",
+    isTyping: false,
+    typingTimer: null,
+    autoAdvanceTimer: null,
+    waitingForAdvance: false,
+    lineFinishCallback: null,
+    activeQuiz: null
+  };
+}
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return { ...DEFAULT_SETTINGS };
+    return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
+  } catch {
+    return { ...DEFAULT_SETTINGS };
+  }
+}
+
+function saveSettings() {
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  } catch (error) {
+    console.warn("設定を保存できませんでした。", error);
+  }
+}
+
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(PROGRESS_KEY);
+    if (!raw) return { version: 1, chapters: {} };
+    const parsed = JSON.parse(raw);
+    return {
+      version: 1,
+      chapters: { ...(parsed.chapters ?? {}) }
+    };
+  } catch (error) {
+    console.warn("章クリア情報を読み込めませんでした。", error);
+    return { version: 1, chapters: {} };
+  }
+}
+
+function saveProgress(progress) {
+  try {
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+  } catch (error) {
+    console.warn("章クリア情報を保存できませんでした。", error);
+  }
+}
+
+function markChapterCleared(chapterNumber) {
+  const progress = loadProgress();
+  const key = String(chapterNumber);
+  if (progress.chapters[key]?.cleared) return;
+  progress.chapters[key] = {
+    cleared: true,
+    clearedAt: new Date().toISOString()
+  };
+  saveProgress(progress);
+}
+
+function syncChapterProgressFromFlags() {
+  if (game?.flags?.chapter1Clear) markChapterCleared(1);
+}
+
+function hasSeenSaveNotice() {
+  try {
+    return localStorage.getItem(SAVE_NOTICE_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function markSaveNoticeSeen() {
+  try {
+    localStorage.setItem(SAVE_NOTICE_KEY, "true");
+  } catch (error) {
+    console.warn("セーブ案内の確認状態を保存できませんでした。", error);
+  }
+}
+
+function ensureAudioContext() {
+  if (!settings.soundOn) return;
+  if (!audioContext) {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    audioContext = new AudioCtx();
+  }
+  if (audioContext.state === "suspended") audioContext.resume().catch(() => {});
+  audioUnlocked = true;
+}
+
+function playTextSound(speakerId, charIndex, char) {
+  if (!settings.soundOn || !audioUnlocked || !audioContext || !speakerId) return;
+  if (charIndex % 2 !== 0) return;
+  if (/[\s。、！？!?…「」『』（）()・：:；;―ー\-]/.test(char)) return;
+
+  const voice = VOICE_TABLE[speakerId];
+  if (!voice) return;
+
+  const osc = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  osc.type = voice.type;
+  osc.frequency.setValueAtTime(voice.frequency, audioContext.currentTime);
+  gain.gain.setValueAtTime(0.018, audioContext.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.0008, audioContext.currentTime + 0.026);
+  osc.connect(gain);
+  gain.connect(audioContext.destination);
+  osc.start();
+  osc.stop(audioContext.currentTime + 0.027);
+}
+
+function clearTypingTimer() {
+  if (game.typingTimer) clearTimeout(game.typingTimer);
+  if (game.autoAdvanceTimer) clearTimeout(game.autoAdvanceTimer);
+  game.typingTimer = null;
+  game.autoAdvanceTimer = null;
+}
+
+function isCurrentLineLast() {
+  return game.lineIndex >= 0 && game.lineIndex >= game.lineQueue.length - 1;
+}
+
+function scheduleAutoReturnAfterLastLine() {
+  if (!isCurrentLineLast()) return false;
+  if (game.autoAdvanceTimer) clearTimeout(game.autoAdvanceTimer);
+  game.waitingForAdvance = false;
+  setNextIndicator(false);
+  game.autoAdvanceTimer = setTimeout(() => {
+    game.autoAdvanceTimer = null;
+    showNextLine();
+  }, 1100);
+  return true;
+}
+
+function setNextIndicator(show) {
+  if (el.nextIndicator) el.nextIndicator.hidden = !show;
+}
+
+function typeText(text, speakerId = null) {
+  clearTypingTimer();
+  game.currentFullText = text ?? "";
+  game.isTyping = true;
+  game.waitingForAdvance = false;
+  if (el.message) el.message.textContent = "";
+  setNextIndicator(false);
+
+  let index = 0;
+  const interval = SPEED_TABLE[settings.speedLevel] ?? SPEED_TABLE[3];
+
+  const step = () => {
+    if (!game.isTyping) return;
+    if (index >= game.currentFullText.length) {
+      game.isTyping = false;
+      if (scheduleAutoReturnAfterLastLine()) return;
+      game.waitingForAdvance = true;
+      setNextIndicator(true);
+      return;
+    }
+
+    const char = game.currentFullText[index];
+    if (el.message) el.message.textContent += char;
+    playTextSound(speakerId, index, char);
+    index += 1;
+    game.typingTimer = setTimeout(step, interval);
+  };
+
+  step();
+}
+
+function skipTyping() {
+  if (!game.isTyping) return false;
+  clearTypingTimer();
+  if (el.message) el.message.textContent = game.currentFullText;
+  game.isTyping = false;
+  if (scheduleAutoReturnAfterLastLine()) return true;
+  game.waitingForAdvance = true;
+  setNextIndicator(true);
+  return true;
+}
+
+function showSpeaker(speakerId) {
+  const char = characters[speakerId];
+
+  if (el.speaker) {
+    el.speaker.textContent = char?.name ?? "";
+    el.speaker.hidden = false;
+  }
+
+  const face = FACE_TABLE[speakerId];
+  if (el.portraitWrap && el.portrait && face) {
+    el.portrait.src = face;
+    el.portrait.alt = char?.name ?? "";
+    el.portraitWrap.hidden = false;
+  } else {
+    hidePortrait();
+  }
+}
+
+function hidePortrait() {
+  if (el.portraitWrap) el.portraitWrap.hidden = true;
+  if (el.portrait) {
+    el.portrait.removeAttribute("src");
+    el.portrait.alt = "";
+  }
+}
+
+function hideSpeaker() {
+  if (el.speaker) {
+    el.speaker.textContent = "";
+    el.speaker.hidden = true;
+  }
+  hidePortrait();
+}
+
+function clearMessage() {
+  hideSpeaker();
+  if (el.message) el.message.textContent = "";
+  setNextIndicator(false);
+}
+
+function startLines(lines, callback = null) {
+  clearCommandAvailability();
+  game.lineQueue = lines ?? [];
+  game.lineIndex = -1;
+  game.lineFinishCallback = callback;
+  showNextLine();
+}
+
+function showNextLine() {
+  game.lineIndex += 1;
+
+  if (game.lineIndex >= game.lineQueue.length) {
+    game.waitingForAdvance = false;
+    setNextIndicator(false);
+    const callback = game.lineFinishCallback;
+    game.lineFinishCallback = null;
+    game.lineQueue = [];
+    game.lineIndex = -1;
+    if (callback) callback();
+    else showLocationIdle();
+    return;
+  }
+
+  const line = game.lineQueue[game.lineIndex];
+  let text = "";
+  let speakerId = null;
+
+  if (line.speaker) {
+    speakerId = line.speaker;
+    text = line.text ?? "";
+    showSpeaker(speakerId);
+  } else if (line.thought) {
+    text = line.thought;
+    showSpeaker("shichijo");
+  } else {
+    text = line.narrator ?? "";
+    hideSpeaker();
+  }
+
+  typeText(text, line.speaker ? speakerId : null);
+}
+
+function handleGameAdvance(event) {
+  if (event?.target?.closest("button")) return;
+  if (skipTyping()) return;
+  if (!game.waitingForAdvance) return;
+
+  game.waitingForAdvance = false;
+  setNextIndicator(false);
+  showNextLine();
+}
+
+function handleKeydown(event) {
+  if (event.key === "Enter" || event.key === " " || event.key === "ArrowDown") {
+    event.preventDefault();
+    handleGameAdvance();
+  }
+}
+
+function clearCommandSubchoices() {
+  if (el.commandSubchoices) el.commandSubchoices.innerHTML = "";
+  document.querySelectorAll(".command-button.is-active").forEach((node) => node.classList.remove("is-active"));
+}
+
+function setActiveCommand(type) {
+  document.querySelectorAll(".command-button.is-active").forEach((node) => node.classList.remove("is-active"));
+  const map = {
+    talk: el.cmdTalk,
+    ask: el.cmdAsk,
+    look: el.cmdLook,
+    search: el.cmdSearch,
+    evidence: el.cmdEvidence,
+    move: el.cmdMove
+  };
+  map[type]?.classList.add("is-active");
+}
+
+
+function hasAvailableActions(command) {
+  const scene = getCurrentScene();
+  if (!scene || scene.type !== "location") return false;
+
+  if (command === "move") {
+    return Object.entries(movementMap?.spots ?? {})
+      .some(([id]) => id !== game.currentSpotId && isSpotUnlocked(id));
+  }
+
+  if (command === "evidence") {
+    const actionAvailable = (scene.commands?.evidence ?? [])
+      .some(action => isActionAvailable(action, "evidence"));
+    const evidenceOwned = Object.values(game.evidence ?? {}).some(Boolean);
+    return actionAvailable || evidenceOwned;
+  }
+
+  return (scene.commands?.[command] ?? [])
+    .some(action => isActionAvailable(action, command));
+}
+
+function updateCommandAvailability() {
+  const pairs = [
+    ["talk", el.cmdTalk],
+    ["ask", el.cmdAsk],
+    ["look", el.cmdLook],
+    ["search", el.cmdSearch],
+    ["evidence", el.cmdEvidence],
+    ["move", el.cmdMove]
+  ];
+
+  pairs.forEach(([command, button]) => {
+    if (!button) return;
+    button.classList.toggle("is-available", hasAvailableActions(command));
+  });
+}
+
+function clearCommandAvailability() {
+  [el.cmdTalk, el.cmdAsk, el.cmdLook, el.cmdSearch, el.cmdEvidence, el.cmdMove]
+    .forEach(button => button?.classList.remove("is-available"));
+}
+
+function maybeShowTutorial(callback = null) {
+  if (game.flags.tutorialShown) {
+    if (callback) callback();
+    return;
+  }
+
+  game.flags.tutorialShown = true;
+
+  const overlay = makeOverlay("遊び方");
+  const box = document.createElement("div");
+  box.className = "tutorial-box";
+
+  const p1 = document.createElement("p");
+  p1.textContent = "右側の6つのコマンドから行動を選びます。";
+  const p2 = document.createElement("p");
+  p2.textContent = "情報が増えると、使えそうなコマンドが少し明るくなり、行ける場所も増えます。";
+  const p3 = document.createElement("p");
+  p3.textContent = "迷ったときは、気になるコマンドを押してみてください。使えない場合も、その場で案内が出ます。";
+
+  box.append(p1, p2, p3);
+  overlay.body.appendChild(box);
+
+  const closeButton = overlay.panel.querySelector(".overlay-close");
+  if (closeButton && callback) {
+    closeButton.addEventListener("click", () => callback(), { once: true });
+  } else if (callback) {
+    callback();
+  }
+}
+
+function showCommandFeedback(text) {
+  if (!el.commandSubchoices) return;
+  el.commandSubchoices.innerHTML = "";
+  const p = document.createElement("p");
+  p.className = "command-feedback";
+  p.textContent = text;
+  el.commandSubchoices.appendChild(p);
+}
+
+function checkCondition(item) {
+  if (!item) return false;
+
+  if (item.requiresAll && !item.requiresAll.every(flag => !!game.flags[flag])) return false;
+  if (item.requiresAny && !item.requiresAny.some(flag => !!game.flags[flag])) return false;
+  if (item.notFlags && item.notFlags.some(flag => !!game.flags[flag])) return false;
+
+  return true;
+}
+
+function applyEffects(effect) {
+  if (!effect) return;
+  if (effect.setFlags) Object.assign(game.flags, effect.setFlags);
+  if (effect.evidence) Object.assign(game.evidence, effect.evidence);
+  syncChapterProgressFromFlags();
+}
+
+function getEffectImage(effect) {
+  if (!effect) return null;
+  if (effect.image) return effect.image;
+  const evidence = effect.evidence ?? null;
+  if (!evidence) return null;
+  for (const [id, enabled] of Object.entries(evidence)) {
+    if (enabled && evidenceMaster[id]?.image) return evidenceMaster[id].image;
+  }
+  return null;
+}
+
+function getCurrentScene() {
+  return scenes[game.sceneId];
+}
+
+function getActionKey(command, action) {
+  return `${game.sceneId}:${command}:${action.id}`;
+}
+
+function isActionAvailable(action, command) {
+  if (!checkCondition(action)) return false;
+  if (action.once && game.actionHistory[getActionKey(command, action)]) return false;
+  return true;
+}
+
+function renderActionChoices(command) {
+  if (game.isTyping || game.waitingForAdvance || game.activeQuiz) return;
+
+  const scene = getCurrentScene();
+  if (!scene || scene.type !== "location") return;
+
+  clearCommandSubchoices();
+  setActiveCommand(command);
+
+  const actions = (scene.commands?.[command] ?? []).filter(action => isActionAvailable(action, command));
+
+  if (command === "evidence") {
+    actions.forEach(action => appendActionButton(command, action));
+
+    const owned = Object.entries(game.evidence).filter(([, value]) => value);
+    const listButton = document.createElement("button");
+    listButton.type = "button";
+    listButton.className = "command-subchoice-button";
+    listButton.textContent = "証拠一覧";
+    listButton.addEventListener("click", event => {
+      event.stopPropagation();
+      openEvidenceList();
+    });
+    el.commandSubchoices?.appendChild(listButton);
+
+    if (!actions.length && !owned.length) {
+      return showCommandFeedback("まだ証拠はありません。");
+    }
+    return;
+  }
+
+  if (!actions.length) {
+    const messages = {
+      talk: "今は話しかける相手はいない。",
+      ask: "今、聞けることはなさそうだ。",
+      look: "特に見るものはなさそうだ。",
+      search: "ここで調べるものはなさそうだ。"
+    };
+    return showCommandFeedback(messages[command] ?? "今は使えないコマンドだ。");
+  }
+
+  actions.forEach(action => appendActionButton(command, action));
+}
+
+function appendActionButton(command, action) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "command-subchoice-button";
+  button.textContent = action.label;
+  button.addEventListener("click", event => {
+    event.stopPropagation();
+    ensureAudioContext();
+    executeAction(command, action);
+  });
+  el.commandSubchoices?.appendChild(button);
+}
+
+function executeAction(command, action) {
+  if (!checkCondition(action)) return;
+
+  clearCommandSubchoices();
+  if (action.once) game.actionHistory[getActionKey(command, action)] = true;
+
+  applyEffects(action);
+
+  const previewImage = getEffectImage(action);
+  if (previewImage) showEvidenceImage(previewImage);
+
+  const afterLines = () => {
+    if (action.quiz) startQuiz(action.quiz);
+    else showLocationIdle();
+  };
+
+  if (action.lines?.length) startLines(action.lines, afterLines);
+  else afterLines();
+}
+
+function startQuiz(quiz) {
+  clearCommandAvailability();
+  game.activeQuiz = quiz;
+  clearCommandSubchoices();
+  clearMessage();
+  if (el.message) el.message.textContent = quiz.question ?? "";
+  setActiveCommand("evidence");
+
+  quiz.choices.forEach(choice => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "command-subchoice-button quiz-command-choice";
+    button.textContent = choice.text;
+    button.addEventListener("click", event => {
+      event.stopPropagation();
+      ensureAudioContext();
+
+      if (!choice.correct) {
+        showQuizFeedback(quiz.wrongText ?? "もう一度考えましょう。", () => startQuiz(quiz));
+        return;
+      }
+
+      applyEffects(choice);
+      applyEffects(quiz);
+
+      const finishCorrect = () => {
+        if (quiz.nextQuiz) startQuiz(quiz.nextQuiz);
+        else {
+          game.activeQuiz = null;
+          if (quiz.afterLines?.length) startLines(quiz.afterLines, showLocationIdle);
+          else showLocationIdle();
+        }
+      };
+
+      showQuizFeedback(quiz.correctText ?? "正解です。", finishCorrect);
+    });
+    el.commandSubchoices?.appendChild(button);
+  });
+}
+
+function showQuizFeedback(text, callback) {
+  clearCommandSubchoices();
+  hideSpeaker();
+  if (el.message) el.message.textContent = text;
+  game.waitingForAdvance = true;
+  setNextIndicator(true);
+  game.lineQueue = [];
+  game.lineIndex = -1;
+  game.lineFinishCallback = () => {
+    game.waitingForAdvance = false;
+    callback();
+  };
+}
+
+function handleCommand(type) {
+  if (game.isTyping || game.waitingForAdvance || game.activeQuiz) return;
+
+  if (type === "move") {
+    openMoveChoices();
+    return;
+  }
+
+  renderActionChoices(type);
+}
+
+function isSpotUnlocked(spotId) {
+  if (!movementMap?.spots?.[spotId]) return false;
+
+  if (["H1", "H2", "H3", "H4"].includes(spotId)) return true;
+  if (spotId === "H5") return !!game.flags.hotelConfirmUnlocked;
+  if (spotId === "H6") return !!game.flags.giftAreaUnlocked;
+
+  if (["K1", "K2", "K3"].includes(spotId)) return !!game.flags.kiryuyaUnlocked;
+
+  if (spotId === "S1" || spotId === "S2") return !!game.flags.kyotoStationUnlocked;
+  if (spotId === "S3") return !!game.flags.shopWitness;
+  if (spotId === "S4") return !!game.flags.toiletUnlocked;
+  if (spotId === "S5") return !!game.flags.gateUnlocked;
+
+  return false;
+}
+
+function openMoveChoices() {
+  if (game.isTyping || game.waitingForAdvance || game.activeQuiz) return;
+
+  if (!movementMap?.spots?.[game.currentSpotId]) {
+    return showCommandFeedback("この場面では移動できません。");
+  }
+
+  clearCommandSubchoices();
+  setActiveCommand("move");
+
+  // 現在地との隣接関係には制限しない。
+  // 一度解放された場所なら、どこからでも直接移動できる。
+  const destinations = Object.entries(movementMap.spots)
+    .filter(([id]) => id !== game.currentSpotId && isSpotUnlocked(id))
+    .map(([id, spot]) => ({ id, ...spot }));
+
+  if (!destinations.length) {
+    return showCommandFeedback("今は移動できる場所がありません。");
+  }
+
+  const groups = [
+    { title: "ホテル", ids: ["H1", "H2", "H3", "H4", "H5", "H6"] },
+    { title: "桐生屋", ids: ["K1", "K2"] },
+    { title: "京都駅", ids: ["S1", "S2", "S3", "S4", "S5"] }
+  ];
+
+  groups.forEach(group => {
+    const groupSpots = destinations.filter(spot => group.ids.includes(spot.id));
+    if (!groupSpots.length) return;
+
+    const heading = document.createElement("div");
+    heading.className = "move-group-title";
+    heading.textContent = group.title;
+    el.commandSubchoices?.appendChild(heading);
+
+    groupSpots.forEach(spot => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "command-subchoice-button";
+      button.textContent = spot.label;
+      button.addEventListener("click", event => {
+        event.stopPropagation();
+        travelToSpot(spot.id);
+      });
+      el.commandSubchoices?.appendChild(button);
+    });
+  });
+}
+
+function travelToSpot(spotId) {
+  if (spotId === "K3") spotId = "K2";
+  if (!isSpotUnlocked(spotId)) return;
+  const spot = movementMap.spots[spotId];
+  if (!spot) return;
+  renderScene(spot.sceneId);
+}
+
+function selectEnterVariant(scene) {
+  const variants = scene.enterVariants ?? [];
+  for (const variant of variants) {
+    if (!checkCondition(variant)) continue;
+    if (variant.onceFlag && game.flags[variant.onceFlag]) continue;
+    return variant;
+  }
+  return null;
+}
+
+function renderScene(sceneId) {
+  if (sceneId === "K3") sceneId = "K2";
+  const scene = scenes[sceneId];
+  if (!scene) return console.error(`Scene not found: ${sceneId}`);
+
+  clearTypingTimer();
+
+  // 表紙・章OPで使ったHTMLメニューを本編へ持ち越さない
+  if (scene.type !== "title" && scene.type !== "chapter") {
+    if (el.choiceArea) el.choiceArea.innerHTML = "";
+  }
+
+  game.sceneId = sceneId;
+  game.currentSpotId = scene.spotId ?? null;
+  game.activeQuiz = null;
+  game.waitingForAdvance = false;
+  game.lineQueue = [];
+  game.lineIndex = -1;
+  clearCommandSubchoices();
+  clearEvidenceImage();
+  clearMessage();
+
+  el.game?.classList.remove("title-screen", "chapter-screen");
+
+  renderBackground(scene.background);
+  renderLocation(scene.location);
+
+  if (scene.type === "title") {
+    renderTitleScene(scene);
+    return;
+  }
+
+  if (scene.type === "chapter") {
+    renderChapterScene(scene);
+    return;
+  }
+
+  const variant = selectEnterVariant(scene);
+  if (variant) {
+    if (variant.onceFlag) game.flags[variant.onceFlag] = true;
+    applyEffects(variant);
+    const variantImage = getEffectImage(variant);
+    if (variantImage) showEvidenceImage(variantImage);
+    if (variant.lines?.length) {
+      if (sceneId === "H1" && !game.flags.tutorialShown) {
+        startLines(variant.lines, () => maybeShowTutorial(showLocationIdle));
+      } else {
+        startLines(variant.lines, showLocationIdle);
+      }
+      return;
+    }
+  }
+
+  if (sceneId === "H1" && !game.flags.tutorialShown) {
+    maybeShowTutorial(showLocationIdle);
+  } else {
+    showLocationIdle();
+  }
+}
+
+function showLocationIdle() {
+  game.waitingForAdvance = false;
+  game.activeQuiz = null;
+  setNextIndicator(false);
+  hideSpeaker();
+  clearEvidenceImage();
+
+  const scene = getCurrentScene();
+  if (!scene || scene.type !== "location") return;
+
+  if (el.message) {
+    if (game.flags.chapter1Clear && game.sceneId === "H6") {
+      el.message.textContent = "第1章　京都駅前、花嫁は消えた　― 終 ―";
+    } else {
+      el.message.textContent = scene.idleText ?? "";
+    }
+  }
+
+  clearCommandSubchoices();
+  updateCommandAvailability();
+}
+
+function renderBackground(path) {
+  if (!el.background) return;
+  el.background.style.backgroundImage = path ? `url("${path}")` : "";
+}
+
+function renderLocation(location) {
+  if (!el.locationBadge) return;
+  if (!location) {
+    el.locationBadge.hidden = true;
+    el.locationBadge.textContent = "";
+    return;
+  }
+  el.locationBadge.hidden = false;
+  el.locationBadge.textContent = location;
+}
+
+function showEvidenceImage(path) {
+  if (!el.evidenceImage) return;
+  el.evidenceImage.src = path;
+  el.evidenceImage.hidden = false;
+}
+
+function clearEvidenceImage() {
+  if (!el.evidenceImage) return;
+  el.evidenceImage.hidden = true;
+  el.evidenceImage.removeAttribute("src");
+}
+
+function renderTitleScene(scene) {
+  clearCommandAvailability();
+  clearCommandSubchoices();
+  el.game?.classList.add("title-screen");
+
+  if (el.commandPanel) el.commandPanel.style.display = "none";
+
+  const ui = document.createElement("div");
+  ui.className = "title-ui";
+  el.choiceArea.innerHTML = "";
+
+  const makeButton = (text, action) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "title-ui-button";
+    b.textContent = text;
+    b.addEventListener("click", event => {
+      event.stopPropagation();
+      ensureAudioContext();
+      action();
+    });
+    return b;
+  };
+
+  ui.append(
+    makeButton("はじめから", () => {
+      game = createFreshGameState();
+      try { localStorage.removeItem(SAVE_KEY); } catch {}
+      renderScene("OP01");
+    }),
+    makeButton("つづきから", loadGame),
+    makeButton("設定", openSettings),
+    makeButton("終了", () => showSimpleMessage("ゲームを終了する場合は、このタブまたはウィンドウを閉じてください。"))
+  );
+
+  el.choiceArea.appendChild(ui);
+}
+
+function renderChapterScene(scene) {
+  clearCommandAvailability();
+  el.game?.classList.add("chapter-screen");
+  if (el.commandPanel) el.commandPanel.style.display = "none";
+
+  const ui = document.createElement("div");
+  ui.className = "title-ui chapter-title-ui";
+  el.choiceArea.innerHTML = "";
+
+  const makeButton = (text, action) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "title-ui-button";
+    b.textContent = text;
+    b.addEventListener("click", event => {
+      event.stopPropagation();
+      ensureAudioContext();
+      action();
+    });
+    return b;
+  };
+
+  ui.append(
+    makeButton("第1章をはじめる", () => {
+      if (el.choiceArea) el.choiceArea.innerHTML = "";
+      if (el.commandPanel) el.commandPanel.style.display = "";
+      renderScene(scene.startScene);
+    }),
+    makeButton("つづきから", loadGame),
+    makeButton("設定", openSettings),
+    makeButton("終了", () => showSimpleMessage("ゲームを終了する場合は、このタブまたはウィンドウを閉じてください。"))
+  );
+
+  el.choiceArea.appendChild(ui);
+}
+
+function openEvidenceList() {
+  const owned = Object.entries(game.evidence)
+    .filter(([, value]) => value)
+    .map(([id]) => ({ id, ...evidenceMaster[id] }))
+    .filter(item => item.image);
+
+  const overlay = makeOverlay("証拠");
+
+  if (!owned.length) {
+    const p = document.createElement("p");
+    p.textContent = "まだ証拠はありません。";
+    overlay.body.appendChild(p);
+    return;
+  }
+
+  const list = document.createElement("div");
+  list.className = "evidence-list";
+
+  owned.forEach(item => {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "evidence-card";
+
+    const img = document.createElement("img");
+    img.src = item.image;
+    img.alt = item.name;
+
+    const body = document.createElement("div");
+    const title = document.createElement("strong");
+    title.textContent = item.name;
+    const desc = document.createElement("p");
+    desc.textContent = item.description ?? "";
+    body.append(title, desc);
+
+    card.append(img, body);
+    card.addEventListener("click", () => showEvidenceViewer(item));
+    list.appendChild(card);
+  });
+
+  overlay.body.appendChild(list);
+}
+
+function showEvidenceViewer(item) {
+  const overlay = makeOverlay(item.name);
+  const img = document.createElement("img");
+  img.src = item.image;
+  img.alt = item.name;
+  img.className = "evidence-viewer-image";
+  const p = document.createElement("p");
+  p.textContent = item.description ?? "";
+  overlay.body.append(img, p);
+}
+
+function makeOverlay(titleText) {
+  const overlay = document.createElement("div");
+  overlay.className = "game-overlay";
+
+  const panel = document.createElement("div");
+  panel.className = "overlay-panel";
+
+  const header = document.createElement("div");
+  header.className = "overlay-header";
+
+  const title = document.createElement("h2");
+  title.textContent = titleText;
+
+  const close = document.createElement("button");
+  close.type = "button";
+  close.className = "overlay-close";
+  close.textContent = "閉じる";
+
+  const body = document.createElement("div");
+  body.className = "overlay-body";
+
+  close.addEventListener("click", () => overlay.remove());
+
+  header.append(title, close);
+  panel.append(header, body);
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
+
+  return { overlay, panel, body };
+}
+
+function showSimpleMessage(text) {
+  const overlay = makeOverlay("お知らせ");
+  const p = document.createElement("p");
+  p.textContent = text;
+  overlay.body.appendChild(p);
+}
+
+function openHelp() {
+  const overlay = makeOverlay("ヘルプ");
+
+  const heading = document.createElement("h3");
+  heading.textContent = "セーブについて";
+
+  const list = document.createElement("ul");
+  list.className = "save-help-list";
+  [
+    "セーブデータは、このブラウザの保存領域（localStorage）に保存されます。",
+    "同じPC・同じブラウザでのみ利用できます。別のPCや別のブラウザには引き継がれません。",
+    "シークレットモードでは、終了時にセーブデータが消える場合があります。",
+    "ブラウザの閲覧データ・サイトデータを削除すると、セーブデータや章クリア情報も消える場合があります。",
+    "章をクリアした記録は、途中セーブとは別に保存されます。今後の章選択に利用できるようにしています。"
+  ].forEach(text => {
+    const li = document.createElement("li");
+    li.textContent = text;
+    list.appendChild(li);
+  });
+
+  overlay.body.append(heading, list);
+}
+
+function openSettings() {
+  const overlay = makeOverlay("設定");
+
+  const soundRow = document.createElement("div");
+  soundRow.className = "setting-row";
+  const soundLabel = document.createElement("span");
+  soundLabel.textContent = "文字音";
+  const soundButton = document.createElement("button");
+  soundButton.type = "button";
+  soundButton.textContent = settings.soundOn ? "ON" : "OFF";
+  soundButton.addEventListener("click", () => {
+    settings.soundOn = !settings.soundOn;
+    soundButton.textContent = settings.soundOn ? "ON" : "OFF";
+    if (settings.soundOn) ensureAudioContext();
+    saveSettings();
+  });
+  soundRow.append(soundLabel, soundButton);
+
+  const speedTitle = document.createElement("div");
+  speedTitle.className = "setting-label";
+  speedTitle.textContent = "文字送り速度";
+
+  const speedGroup = document.createElement("div");
+  speedGroup.className = "speed-group";
+  const labels = {
+    1: "1 とても遅い",
+    2: "2 遅い",
+    3: "3 ふつう",
+    4: "4 速い",
+    5: "5 とても速い"
+  };
+
+  for (let level = 1; level <= 5; level++) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "speed-button";
+    b.textContent = labels[level];
+    if (settings.speedLevel === level) b.classList.add("is-selected");
+    b.addEventListener("click", () => {
+      settings.speedLevel = level;
+      saveSettings();
+      speedGroup.querySelectorAll(".speed-button").forEach(node => node.classList.remove("is-selected"));
+      b.classList.add("is-selected");
+    });
+    speedGroup.appendChild(b);
+  }
+
+  overlay.body.append(soundRow, speedTitle, speedGroup);
+}
+
+function saveGame() {
+  try {
+    syncChapterProgressFromFlags();
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+      version: 1,
+      sceneId: game.sceneId,
+      currentSpotId: game.currentSpotId,
+      flags: game.flags,
+      evidence: game.evidence,
+      actionHistory: game.actionHistory
+    }));
+    return true;
+  } catch (error) {
+    console.warn(error);
+    showSimpleMessage("セーブできませんでした。");
+    return false;
+  }
+}
+
+function loadGame() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return showSimpleMessage("セーブデータがありません。");
+
+    const data = JSON.parse(raw);
+    game = createFreshGameState();
+    game.flags = { ...game.flags, ...(data.flags ?? {}) };
+    game.evidence = { ...game.evidence, ...(data.evidence ?? {}) };
+    game.actionHistory = data.actionHistory ?? {};
+    syncChapterProgressFromFlags();
+
+    if (el.commandPanel) el.commandPanel.style.display = "";
+    renderScene(data.sceneId ?? data.currentSpotId ?? "H1");
+  } catch (error) {
+    console.error(error);
+    showSimpleMessage("セーブデータを読み込めませんでした。");
+  }
+}
+
+function openSystemMenu() {
+  const overlay = makeOverlay("MENU");
+
+  const items = [
+    ["証拠を見る", openEvidenceList],
+    ["セーブ", () => {
+      if (!saveGame()) return;
+      if (!hasSeenSaveNotice()) {
+        markSaveNoticeSeen();
+        const notice = makeOverlay("セーブしました");
+        const p1 = document.createElement("p");
+        p1.textContent = "セーブデータは、このブラウザに保存されます。";
+        const p2 = document.createElement("p");
+        p2.textContent = "同じPC・同じブラウザでのみ利用できます。";
+        const p3 = document.createElement("p");
+        p3.textContent = "シークレットモードや、ブラウザの閲覧データ・サイトデータを削除した場合は、セーブデータや章クリア情報が消えることがあります。";
+        const p4 = document.createElement("p");
+        p4.className = "save-notice-small";
+        p4.textContent = "この案内は初回セーブ時のみ表示します。内容は MENU → ヘルプ からいつでも確認できます。";
+        notice.body.append(p1, p2, p3, p4);
+      } else {
+        showSimpleMessage("セーブしました。");
+      }
+    }],
+    ["ヘルプ", openHelp],
+    ["設定", openSettings],
+    ["タイトルへ戻る", () => renderScene("T00")]
+  ];
+
+  items.forEach(([label, action]) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-action-button";
+    b.textContent = label;
+    b.addEventListener("click", () => {
+      overlay.overlay.remove();
+      action();
+    });
+    overlay.body.appendChild(b);
+  });
+}
+
+function bindEvents() {
+  document.addEventListener("pointerdown", ensureAudioContext, { once: true });
+  el.game?.addEventListener("click", handleGameAdvance);
+  document.addEventListener("keydown", handleKeydown);
+
+  el.cmdTalk?.addEventListener("click", event => { event.stopPropagation(); handleCommand("talk"); });
+  el.cmdAsk?.addEventListener("click", event => { event.stopPropagation(); handleCommand("ask"); });
+  el.cmdLook?.addEventListener("click", event => { event.stopPropagation(); handleCommand("look"); });
+  el.cmdSearch?.addEventListener("click", event => { event.stopPropagation(); handleCommand("search"); });
+  el.cmdEvidence?.addEventListener("click", event => { event.stopPropagation(); handleCommand("evidence"); });
+  el.cmdMove?.addEventListener("click", event => { event.stopPropagation(); handleCommand("move"); });
+  el.menuButton?.addEventListener("click", event => { event.stopPropagation(); openSystemMenu(); });
+}
+
+function init() {
+  bindEvents();
+  renderScene("T00");
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}
+
+</script>
+</body>
+</html>
