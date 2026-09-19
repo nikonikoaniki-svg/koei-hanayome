@@ -3012,3 +3012,22 @@ textarea {
     max-height: calc(100dvh - 230px) !important;
   }
 }
+
+
+/* 2026-09-20 v3: スマホ横画面の話者表示と本文の重なりを解消 */
+@media (pointer: coarse) and (max-width: 1024px) and (orientation: landscape) and (max-height: 700px) {
+  .game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen) .message-window {
+    min-height: 154px !important;
+    max-height: 176px !important;
+  }
+
+  .game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen)
+    .message-window:has(.speaker-portrait-wrap:not([hidden])) .message-text {
+    padding-top: 68px !important;
+  }
+
+  .game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen)
+    .message-window:has(.speaker-portrait-wrap[hidden]) .message-text {
+    padding-top: 8px !important;
+  }
+}

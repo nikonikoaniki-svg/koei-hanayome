@@ -1123,6 +1123,9 @@ window.KOEI_GAME_DATA = {
               "narrator": "店の中には、桐生屋で働いている日野沙耶がいた。"
             },
             {
+              "narrator": "七条は沙耶が机の上の何かを隠そうとしたのを見逃さなかった。"
+            },
+            {
               "speaker": "saya",
               "text": "いらっしゃいませ"
             },
@@ -1166,12 +1169,32 @@ window.KOEI_GAME_DATA = {
         ],
         "ask": [
           {
+            "id": "ask_saya_putaway",
+            "label": "沙耶：さっき片付けたもの",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "先ほど、机の上から何か片付けましたね"
+              },
+              {
+                "speaker": "saya",
+                "text": "……何のことでしょう"
+              },
+              {
+                "narrator": "沙耶は七条と目を合わせないまま答えた。"
+              }
+            ]
+          },
+          {
             "id": "ask_saya_morning",
             "label": "沙耶：今朝の紗月",
             "lines": [
               {
                 "speaker": "saya",
-                "text": "会っていません。連絡もありません"
+                "text": "……会っていません。連絡も、ありません"
+              },
+              {
+                "narrator": "短い答えだったが、沙耶は一度言葉を選ぶように間を置いた。"
               }
             ]
           },
@@ -1181,7 +1204,10 @@ window.KOEI_GAME_DATA = {
             "lines": [
               {
                 "speaker": "saya",
-                "text": "楽しみにしていたと思います"
+                "text": "……楽しみにしていた、と思います。少なくとも、そう見えました"
+              },
+              {
+                "narrator": "言い切るのを避けるような答え方だった。"
               }
             ]
           },
@@ -1191,10 +1217,10 @@ window.KOEI_GAME_DATA = {
             "lines": [
               {
                 "speaker": "saya",
-                "text": "行ってません"
+                "text": "……行っていません。私は、ホテルには"
               },
               {
-                "narrator": "返事の前に、わずかな間があった。"
+                "narrator": "返事の前に、わずかな間があった。沙耶はそれ以上続けようとしなかった。"
               }
             ]
           },
