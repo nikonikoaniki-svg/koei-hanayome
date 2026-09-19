@@ -12,12 +12,12 @@
 ## ホテル
 | ID | 表示名 | 背景 | 主な接続 |
 |---|---|---|---|
-| H1 | ホテル・披露宴会場前 | bg_hotel_entrance.png | H2 / H4 / H6 |
-| H2 | 花嫁控室前 | bg_bridal_room_hallway.png | H1 / H3 / H4 |
-| H3 | 花嫁控室 | bg_bridal_room.png | H2 / H4 |
-| H4 | ホテル廊下 | bg_hotel_corridor.png | H1 / H2 / H5 / H6 |
-| H5 | ホテル・確認室 | bg_hotel_meetingroom.png | H4 / K1 / S1 |
-| H6 | ホテル・祝電置き場 | bg_hotel_gift_area.png | H1 / H4 |
+| H1 | ホテル・披露宴会場前 | bg_hotel_entrance.webp | H2 / H4 / H6 |
+| H2 | 花嫁控室前 | bg_bridal_room_hallway.webp | H1 / H3 / H4 |
+| H3 | 花嫁控室 | bg_bridal_room.webp | H2 / H4 |
+| H4 | ホテル廊下 | bg_hotel_corridor.webp | H1 / H2 / H5 / H6 |
+| H5 | ホテル・支配人室 | bg_hotel_meetingroom.webp | H4 / K1 / S1 |
+| H6 | ホテル・祝電置き場 | bg_hotel_gift_area.webp | H1 / H4 |
 
 ### 解放
 - H1〜H4：ホテル調査開始時から利用可能。
@@ -27,9 +27,9 @@
 ## 桐生屋
 | ID | 表示名 | 背景 | 主な接続 |
 |---|---|---|---|
-| K1 | 桐生屋前 | bg_kiryuya_outside.png | K2 / H5 |
-| K2 | 桐生屋店内 | bg_kiryuya_inside.png | K1 / K3 |
-| K3 | 桐生屋・応接スペース | bg_kiryuya_inside.png | K2 / H5 |
+| K1 | 桐生屋前 | bg_kiryuya_outside.webp | K2 / H5 |
+| K2 | 桐生屋店内 | bg_kiryuya_inside.webp | K1 / K3 |
+| K3 | 桐生屋・応接スペース | bg_kiryuya_inside.webp | K2 / H5 |
 
 ### 解放
 - H5で「最近の紗月の写真が必要」と判明するとK1〜K3を解放。
@@ -38,11 +38,11 @@
 ## 京都駅
 | ID | 表示名 | 背景 | 主な接続 |
 |---|---|---|---|
-| S1 | 京都駅構内 | bg_kyoto_station_concourse.png | S2 / S3 / S4 / S5 |
-| S2 | 京都駅・売店 | bg_kyoto_station_shop.png | S1 / S3 / S5 |
-| S3 | 京都駅・コインロッカー | bg_kyoto_station_locker.png | S1 / S2 / S4 |
-| S4 | 京都駅・多目的トイレ前 | bg_kyoto_station_multipurpose_toilet.png | S1 / S3 / S5 |
-| S5 | 京都駅・在来線改札前 | bg_kyoto_station_gate.png | S1 / S2 / S4 / H1 |
+| S1 | 京都駅構内 | bg_kyoto_station_concourse.webp | S2 / S3 / S4 / S5 |
+| S2 | 京都駅・売店 | bg_kyoto_station_shop.webp | S1 / S3 / S5 |
+| S3 | 京都駅・コインロッカー | bg_kyoto_station_locker.webp | S1 / S2 / S4 |
+| S4 | 京都駅・多目的トイレ前 | bg_kyoto_station_multipurpose_toilet.webp | S1 / S3 / S5 |
+| S5 | 京都駅・在来線改札付近 | bg_kyoto_station_gate.webp | S1 / S2 / S4 / H1 |
 
 ### 解放
 - 5人目＝紗月と確定するとS1・S2を解放。
@@ -59,5 +59,7 @@
 - S2へ初回移動 → 売店聞き込み
 - S3へ初回移動 → コインロッカー調査
 - S4へ初回移動 → 畳まれた箱の発見
-- S5へ初回移動 → 発車案内確認
-- H1へ京都駅推理後に戻る → ホテルでの最終報告
+- S5へ初回移動 → 近くの時刻表を確認
+- 京都駅の情報がそろう → ホテルへの帰還を促す
+- H1へ戻って宗一郎と会う → 謎解き開始
+- 謎解き終了 → H6の写真付き電報パート

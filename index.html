@@ -91,6 +91,20 @@ textarea {
     opacity 0.25s ease;
 }
 
+.background-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  user-select: none;
+  pointer-events: none;
+}
+
+.background-image[hidden] {
+  display: none !important;
+}
+
 .scene-shade {
   position: absolute;
   inset: 0;
@@ -866,6 +880,7 @@ textarea {
 }
 
 
+
 /* -----------------------------------------------------
    16. 横長Chromebook向け
    ----------------------------------------------------- */
@@ -1109,6 +1124,11 @@ textarea {
   background-position: center;
   background-repeat: no-repeat;
   background-color: #000;
+}
+
+.game-shell.title-screen .background-image,
+.game-shell.chapter-screen .background-image {
+  object-fit: contain;
 }
 
 .title-ui {
@@ -2104,6 +2124,771 @@ textarea {
 }
 
 /* =====================================================
+   京都駅・章末謎解き画面
+   ===================================================== */
+.game-shell.deduction-screen .message-window,
+.game-shell.deduction-screen .top-ui,
+.game-shell.deduction-screen .character-layer,
+.game-shell.deduction-screen .evidence-stage,
+.game-shell.deduction-screen .command-panel {
+  display: none !important;
+}
+
+.game-shell.deduction-screen .background-layer {
+  background-size: cover;
+  background-position: center;
+}
+
+.game-shell.deduction-screen .choice-area {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  max-width: none !important;
+  transform: none !important;
+  display: grid;
+  place-items: center;
+  padding: clamp(24px, 5vw, 80px);
+}
+
+.deduction-panel,
+.chapter-ending-panel {
+  width: min(900px, 88vw);
+  padding: clamp(26px, 4vw, 52px);
+  border: 1px solid rgba(212, 178, 111, 0.72);
+  border-radius: 12px;
+  color: #f8f1df;
+  background: rgba(5, 13, 23, 0.86);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.58);
+  backdrop-filter: blur(5px);
+}
+
+.deduction-panel h2 {
+  margin: 0 0 20px;
+  color: #dfc487;
+  font-size: clamp(22px, 3vw, 36px);
+  letter-spacing: 0.16em;
+  text-align: center;
+}
+
+.deduction-question,
+.deduction-feedback-text {
+  margin: 0 0 24px;
+  font-size: clamp(18px, 2.2vw, 28px);
+  line-height: 1.65;
+  text-align: center;
+}
+
+.deduction-choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.deduction-choice-button,
+.deduction-next-button {
+  min-height: 58px;
+  padding: 12px 18px;
+  border: 1px solid rgba(223, 196, 135, 0.68);
+  border-radius: 8px;
+  color: #fff;
+  background: rgba(18, 31, 46, 0.94);
+  font-size: clamp(15px, 1.5vw, 20px);
+  cursor: pointer;
+}
+
+.deduction-choice-button:hover,
+.deduction-choice-button:focus-visible,
+.deduction-next-button:hover,
+.deduction-next-button:focus-visible {
+  border-color: #f2d48a;
+  background: rgba(39, 58, 76, 0.98);
+}
+
+.deduction-next-button {
+  display: block;
+  min-width: 220px;
+  margin: 0 auto;
+}
+
+.chapter-ending-panel {
+  display: grid;
+  gap: 28px;
+  text-align: center;
+}
+
+.chapter-ending-panel p {
+  margin: 0;
+  font-size: clamp(21px, 3vw, 38px);
+  line-height: 1.7;
+  letter-spacing: 0.06em;
+}
+
+.chapter-ending-panel p:last-child {
+  color: #dfc487;
+  font-size: clamp(18px, 2.3vw, 30px);
+}
+
+@media (max-width: 700px) {
+  .deduction-choices {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* =====================================================
+   コマンド選択・謎解きレイアウト最終調整
+   ===================================================== */
+
+/* グラフィック領域を少し縮め、右コマンド欄を読みやすくする */
+:root {
+  --command-panel-width: 320px;
+}
+
+.command-panel {
+  padding: 20px 18px 18px;
+}
+
+.command-main-buttons {
+  gap: 11px !important;
+}
+
+.command-button {
+  grid-template-columns: 34px 1fr;
+  min-height: 50px;
+  padding: 10px 12px;
+  font-size: 20px;
+}
+
+.command-no {
+  font-size: 18px;
+}
+
+.command-subchoices {
+  gap: 9px;
+}
+
+.command-subchoice-button {
+  min-height: 48px;
+  padding: 12px 13px;
+  font-size: 17px;
+  line-height: 1.45;
+  font-weight: 700;
+}
+
+/* 謎解き中は通常画面の右欄幅・中央寄せ指定を完全に解除する */
+.game-shell.deduction-screen .choice-area {
+  position: fixed !important;
+  inset: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: clamp(24px, 4vw, 64px) !important;
+  box-sizing: border-box !important;
+  transform: none !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: auto !important;
+  pointer-events: auto !important;
+}
+
+.game-shell.deduction-screen .deduction-panel,
+.game-shell.deduction-screen .chapter-ending-panel {
+  width: min(860px, calc(100vw - 48px)) !important;
+  max-width: 860px !important;
+  margin: auto !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 900px) {
+  :root {
+    --command-panel-width: 245px;
+  }
+
+  .command-panel {
+    padding: 13px 11px;
+  }
+
+  .command-button {
+    grid-template-columns: 28px 1fr;
+    min-height: 43px;
+    font-size: 16px;
+  }
+
+  .command-no {
+    font-size: 15px;
+  }
+
+  .command-subchoice-button {
+    min-height: 42px;
+    padding: 9px 10px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --command-panel-width: 180px;
+  }
+
+  .command-button {
+    grid-template-columns: 23px 1fr;
+    min-height: 38px;
+    font-size: 13px;
+  }
+
+  .command-subchoice-button {
+    min-height: 38px;
+    padding: 8px;
+    font-size: 13px;
+  }
+
+  .game-shell.deduction-screen .deduction-panel,
+  .game-shell.deduction-screen .chapter-ending-panel {
+    width: calc(100vw - 24px) !important;
+  }
+}
+
+/* =====================================================
+   コマンド・行動選択肢エリア：画面幅の3分の1（最終指定）
+   ===================================================== */
+:root {
+  --command-panel-width: calc(100vw / 3);
+}
+
+.command-panel {
+  width: var(--command-panel-width) !important;
+  box-sizing: border-box;
+}
+
+.command-subchoices,
+.command-subchoice-button {
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+/* =====================================================
+   グラフィック内・切替式コマンドUI（PC／タブレット／スマホ共通）
+   ===================================================== */
+
+:root {
+  --command-panel-width: 0px;
+}
+
+.game-shell {
+  min-height: 0 !important;
+}
+
+/* 右側の専用領域を廃止し、グラフィックを画面全体へ戻す */
+.game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen) .background-layer,
+.game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen) .scene-shade,
+.game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen) .character-layer,
+.game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen) .evidence-stage {
+  inset-inline: 0 !important;
+  right: 0 !important;
+  width: auto !important;
+}
+
+.game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen) .message-window {
+  left: clamp(12px, 1.8vw, 28px) !important;
+  right: clamp(12px, 1.8vw, 28px) !important;
+  bottom: clamp(10px, 1.8vh, 22px) !important;
+  width: auto !important;
+  max-width: none !important;
+  min-height: clamp(126px, 17vh, 154px) !important;
+  transform: none !important;
+}
+
+.game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen) .location-badge {
+  left: clamp(10px, 1.5vw, 22px) !important;
+  right: auto !important;
+}
+
+/* コマンドはグラフィック上の半透明パネルとして表示 */
+.command-panel {
+  position: absolute !important;
+  top: auto !important;
+  right: clamp(14px, 2.4vw, 38px) !important;
+  bottom: clamp(178px, 22vh, 236px) !important;
+  left: auto !important;
+  width: min(560px, 42vw) !important;
+  max-height: calc(100dvh - clamp(202px, 27vh, 286px)) !important;
+  padding: 16px !important;
+  gap: 12px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255, 255, 255, 0.58) !important;
+  border-radius: 12px !important;
+  background:
+    linear-gradient(180deg, rgba(8, 17, 28, 0.92), rgba(4, 10, 18, 0.92)) !important;
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.55) !important;
+  backdrop-filter: blur(8px);
+}
+
+.game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen)
+  .command-panel:not(.is-hidden) {
+  display: flex !important;
+}
+
+.command-panel.is-hidden,
+.game-shell:not(.title-screen):not(.chapter-screen) .command-panel.is-hidden,
+.game-shell:not(.title-screen):not(.chapter-screen).deduction-screen .command-panel,
+.game-shell.title-screen .command-panel,
+.game-shell.chapter-screen .command-panel,
+.game-shell.deduction-screen .command-panel {
+  display: none !important;
+}
+
+.command-panel-title {
+  padding: 0 4px 8px !important;
+  font-size: 13px !important;
+  letter-spacing: 0.18em !important;
+}
+
+.command-main-buttons {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.command-button {
+  grid-template-columns: 32px 1fr !important;
+  min-height: 54px !important;
+  padding: 10px 13px !important;
+  border-color: rgba(255, 255, 255, 0.24) !important;
+  font-size: clamp(17px, 1.35vw, 21px) !important;
+  background: rgba(13, 24, 36, 0.86) !important;
+}
+
+.command-button.is-available {
+  border-color: rgba(255, 255, 255, 0.88) !important;
+}
+
+.command-panel.has-subchoices .command-main-buttons {
+  display: none !important;
+}
+
+.command-subchoices {
+  display: none !important;
+  flex-direction: column !important;
+  gap: 9px !important;
+  margin: 0 !important;
+  padding: 0 3px 3px 0 !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+}
+
+.command-panel.has-subchoices .command-subchoices {
+  display: flex !important;
+}
+
+.command-panel.has-subchoices .command-menu-button {
+  display: none !important;
+}
+
+.command-subchoice-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 0 10px;
+  background: rgba(7, 15, 25, 0.97);
+}
+
+.command-subchoice-title {
+  color: var(--accent);
+  font-size: clamp(17px, 1.3vw, 21px);
+  letter-spacing: 0.08em;
+}
+
+.command-back-button {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid rgba(242, 212, 138, 0.66);
+  border-radius: 7px;
+  color: #f7dfaa;
+  background: rgba(31, 28, 23, 0.96);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.command-subchoice-button {
+  min-height: 50px !important;
+  padding: 12px 15px !important;
+  font-size: clamp(16px, 1.2vw, 19px) !important;
+}
+
+.command-feedback {
+  margin: 0 !important;
+  padding: 14px 10px !important;
+  font-size: 16px !important;
+}
+
+.command-menu-button {
+  margin-top: 0 !important;
+  min-height: 44px !important;
+}
+
+/* スマホ縦画面：同じ2列×3段を横幅いっぱいに配置 */
+@media (max-width: 640px) and (orientation: portrait) {
+  .command-panel {
+    right: 10px !important;
+    bottom: 184px !important;
+    left: 10px !important;
+    width: auto !important;
+    max-height: calc(100dvh - 204px) !important;
+    padding: 11px !important;
+    gap: 8px !important;
+  }
+
+  .command-main-buttons {
+    gap: 8px !important;
+  }
+
+  .command-button {
+    grid-template-columns: 25px 1fr !important;
+    min-height: 48px !important;
+    padding: 8px 9px !important;
+    font-size: 16px !important;
+  }
+
+  .command-no {
+    font-size: 14px !important;
+  }
+
+  .command-subchoice-header {
+    gap: 8px;
+  }
+
+  .command-back-button {
+    min-height: 42px;
+    padding: 7px 10px;
+    font-size: 13px;
+  }
+
+  .command-subchoice-button {
+    min-height: 46px !important;
+    font-size: 16px !important;
+  }
+
+  .game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen) .message-window {
+    left: 10px !important;
+    right: 10px !important;
+    bottom: 9px !important;
+    min-height: 156px !important;
+    padding: 24px 18px 18px !important;
+  }
+
+  .message-text {
+    min-height: 70px !important;
+    font-size: 16px !important;
+    line-height: 1.65 !important;
+  }
+}
+
+/* スマホ横画面・高さの低い端末 */
+@media (max-height: 600px) and (orientation: landscape) {
+  .command-panel {
+    top: 8px !important;
+    right: 10px !important;
+    bottom: 108px !important;
+    left: auto !important;
+    width: min(430px, 47vw) !important;
+    max-height: none !important;
+    padding: 8px !important;
+    gap: 6px !important;
+  }
+
+  .command-panel-title {
+    padding: 0 3px 4px !important;
+    font-size: 10px !important;
+  }
+
+  .command-main-buttons {
+    gap: 5px !important;
+  }
+
+  .command-button {
+    grid-template-columns: 22px 1fr !important;
+    min-height: 38px !important;
+    padding: 5px 7px !important;
+    font-size: 14px !important;
+  }
+
+  .command-no {
+    font-size: 12px !important;
+  }
+
+  .command-menu-button {
+    min-height: 34px !important;
+    font-size: 13px !important;
+  }
+
+  .command-subchoice-header {
+    padding-bottom: 5px;
+  }
+
+  .command-subchoice-title {
+    font-size: 15px;
+  }
+
+  .command-back-button {
+    min-height: 34px;
+    padding: 5px 9px;
+    font-size: 12px;
+  }
+
+  .command-subchoice-button {
+    min-height: 38px !important;
+    padding: 7px 9px !important;
+    font-size: 14px !important;
+  }
+
+  .game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen) .message-window {
+    left: 8px !important;
+    right: 8px !important;
+    bottom: 7px !important;
+    min-height: 92px !important;
+    max-height: 96px !important;
+    padding: 17px 16px 10px !important;
+    overflow-y: auto;
+  }
+
+  .message-text {
+    min-height: 44px !important;
+    font-size: 14px !important;
+    line-height: 1.45 !important;
+  }
+
+  .speaker-portrait-wrap {
+    left: 12px !important;
+    top: -58px !important;
+    width: 58px !important;
+    height: 58px !important;
+  }
+
+  .speaker-name {
+    top: -18px !important;
+    left: 78px !important;
+    min-width: 110px !important;
+    padding: 5px 10px !important;
+    font-size: 12px !important;
+  }
+
+  .game-shell.title-screen .choice-area,
+  .game-shell.chapter-screen .choice-area {
+    overflow-y: auto !important;
+  }
+
+  .game-shell.title-screen .title-ui,
+  .game-shell.chapter-screen .chapter-title-ui {
+    top: 50% !important;
+    left: 5vw !important;
+    width: min(380px, 44vw) !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    gap: 6px !important;
+    transform: translateY(-50%) !important;
+  }
+
+  .game-shell.title-screen .title-ui-button,
+  .game-shell.chapter-screen .title-ui-button {
+    min-height: 38px !important;
+    padding: 6px 10px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* =====================================================
+   推理画面：通常UIを使わない全画面専用レイヤー
+   ===================================================== */
+
+/* 旧choice-areaの位置・幅・変形を推理画面から完全に切り離す */
+.game-shell.deduction-screen .choice-area,
+.game-shell.deduction-screen .message-window,
+.game-shell.deduction-screen .top-ui,
+.game-shell.deduction-screen .character-layer,
+.game-shell.deduction-screen .evidence-stage,
+.game-shell.deduction-screen .command-panel,
+.game-shell.deduction-screen .location-badge {
+  display: none !important;
+}
+
+.game-shell.deduction-screen {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.game-shell.deduction-screen .background-layer,
+.game-shell.deduction-screen .scene-shade {
+  position: absolute !important;
+  inset: 0 !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+.deduction-layer[hidden] {
+  display: none !important;
+}
+
+.deduction-layer:not([hidden]) {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 120 !important;
+  display: grid !important;
+  place-items: center !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: clamp(16px, 4vw, 56px) !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  pointer-events: auto !important;
+  transform: none !important;
+  touch-action: pan-y;
+}
+
+.deduction-layer > .deduction-panel,
+.deduction-layer > .chapter-ending-panel {
+  position: relative !important;
+  inset: auto !important;
+  display: block !important;
+  width: min(900px, calc(100% - 2px)) !important;
+  min-width: 0 !important;
+  max-width: 900px !important;
+  max-height: calc(100dvh - 32px) !important;
+  margin: auto !important;
+  padding: clamp(24px, 4vw, 52px) !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  transform: none !important;
+}
+
+.deduction-layer .deduction-panel h2 {
+  margin: 0 0 clamp(16px, 2.4vh, 24px) !important;
+  font-size: clamp(24px, 3vw, 36px) !important;
+  text-align: center !important;
+}
+
+.deduction-layer .deduction-question,
+.deduction-layer .deduction-feedback-text {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 0 clamp(18px, 2.8vh, 28px) !important;
+  font-size: clamp(18px, 2vw, 27px) !important;
+  line-height: 1.6 !important;
+  text-align: center !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+.deduction-layer .deduction-choices {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.deduction-layer .deduction-choice-button,
+.deduction-layer .deduction-next-button {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 58px !important;
+  margin: 0 !important;
+  padding: 12px 16px !important;
+  box-sizing: border-box !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+.deduction-layer .deduction-next-button {
+  width: min(360px, 100%) !important;
+  margin-inline: auto !important;
+}
+
+.deduction-layer > .chapter-ending-panel {
+  display: grid !important;
+  gap: clamp(18px, 3vh, 30px) !important;
+  text-align: center !important;
+}
+
+@media (max-width: 700px) {
+  .deduction-layer:not([hidden]) {
+    padding: 12px !important;
+  }
+
+  .deduction-layer > .deduction-panel,
+  .deduction-layer > .chapter-ending-panel {
+    width: 100% !important;
+    max-height: calc(100dvh - 24px) !important;
+    padding: 22px 16px !important;
+  }
+
+  .deduction-layer .deduction-choices {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .deduction-layer .deduction-choice-button,
+  .deduction-layer .deduction-next-button {
+    min-height: 48px !important;
+    font-size: 15px !important;
+  }
+}
+
+@media (max-height: 560px) and (orientation: landscape) {
+  .deduction-layer:not([hidden]) {
+    place-items: start center !important;
+    padding: 8px 12px !important;
+  }
+
+  .deduction-layer > .deduction-panel,
+  .deduction-layer > .chapter-ending-panel {
+    max-height: calc(100dvh - 16px) !important;
+    padding: 16px 20px !important;
+  }
+
+  .deduction-layer .deduction-panel h2 {
+    margin-bottom: 8px !important;
+    font-size: 22px !important;
+  }
+
+  .deduction-layer .deduction-question,
+  .deduction-layer .deduction-feedback-text {
+    margin-bottom: 10px !important;
+    font-size: 16px !important;
+    line-height: 1.4 !important;
+  }
+
+  .deduction-layer .deduction-choice-button,
+  .deduction-layer .deduction-next-button {
+    min-height: 42px !important;
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* =====================================================
    セーブ説明・ヘルプ
    ===================================================== */
 .save-help-list {
@@ -2120,10 +2905,17 @@ textarea {
   opacity: 0.8;
 }
 
-  </style>
+.settings-save-summary {
+  margin: 20px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 0.9em;
+  line-height: 1.65;
+  opacity: 0.82;
+}
+</style>
 </head>
 <body>
-
 
 
 
@@ -2147,15 +2939,17 @@ textarea {
   <main id="game" class="game-shell">
 
     <!-- 背景 -->
-    <section id="background" class="background-layer" aria-hidden="true"></section>
+    <section id="background" class="background-layer" aria-hidden="true">
+      <img id="background-image" class="background-image" alt="" hidden />
+    </section>
 
     <!-- 暗めの演出用オーバーレイ -->
     <div class="scene-shade" aria-hidden="true"></div>
 
-    <!-- コマンド欄：ゲーム画面とは別スペース -->
+    <!-- グラフィック内に重ねる切替式コマンドパネル -->
     <aside id="command-panel" class="command-panel" aria-label="コマンド">
       <div class="command-panel-title">COMMAND</div>
-      <div class="command-buttons">
+      <div id="command-main-buttons" class="command-buttons command-main-buttons">
         <button id="cmd-talk" class="command-button" type="button"><span class="command-no">1</span><span>はなす</span></button>
         <button id="cmd-ask" class="command-button" type="button"><span class="command-no">2</span><span>きく</span></button>
         <button id="cmd-look" class="command-button" type="button"><span class="command-no">3</span><span>みる</span></button>
@@ -2193,6 +2987,15 @@ textarea {
       id="choice-area"
       class="choice-area"
       aria-live="polite"
+    ></section>
+
+    <!-- 通常UIから完全に分離した推理専用レイヤー -->
+    <section
+      id="deduction-layer"
+      class="deduction-layer"
+      aria-label="謎解き"
+      aria-live="polite"
+      hidden
     ></section>
 
     <!-- メッセージウィンドウ -->
@@ -2250,7 +3053,6 @@ textarea {
 
 
 
-
 <script>
 window.addEventListener("error", function (event) {
   const box = document.getElementById("message-text");
@@ -2263,6 +3065,12 @@ window.addEventListener("error", function (event) {
 });
 </script>
 <script>
+// ======================================================
+// 湖影に消えた花嫁
+// 第1章 移動主導型 v4
+// 桐生宗一郎・宗次郎の双子情報を追加
+// ======================================================
+
 window.KOEI_GAME_DATA = {
   "initialFlags": {
     "tutorialShown": false,
@@ -2278,8 +3086,10 @@ window.KOEI_GAME_DATA = {
     "outerCameraKnown": false,
     "needRecentPhoto": false,
     "kiryuyaUnlocked": false,
+    "kiryuyaInsideUnlocked": false,
     "sojiroTalked": false,
     "sayaMet": false,
+    "paperPackageNoticed": false,
     "sayaSuspicious": false,
     "preWeddingPhotoKnown": false,
     "nailFound": false,
@@ -2343,6 +3153,10 @@ window.KOEI_GAME_DATA = {
     "shopClerk": {
       "name": "売店店員",
       "image": "images/characters/ch_shop_clerk.webp"
+    },
+    "cleaner": {
+      "name": "清掃員",
+      "image": "images/characters/ch_cleaner.webp"
     }
   },
   "evidenceMaster": {
@@ -2425,7 +3239,7 @@ window.KOEI_GAME_DATA = {
         ]
       },
       "H5": {
-        "label": "ホテル・確認室",
+        "label": "ホテル・支配人室",
         "background": "images/backgrounds/bg_hotel_meetingroom.webp",
         "sceneId": "H5",
         "links": [
@@ -2462,11 +3276,11 @@ window.KOEI_GAME_DATA = {
         ]
       },
       "K3": {
-        "label": "桐生屋店内",
+        "label": "桐生屋・応接スペース",
         "background": "images/backgrounds/bg_kiryuya_inside.webp",
         "sceneId": "K3",
         "links": [
-          "K1",
+          "K2",
           "H5"
         ]
       },
@@ -2512,7 +3326,7 @@ window.KOEI_GAME_DATA = {
         ]
       },
       "S5": {
-        "label": "京都駅・在来線改札前",
+        "label": "京都駅・在来線改札付近",
         "background": "images/backgrounds/bg_kyoto_station_gate.webp",
         "sceneId": "S5",
         "links": [
@@ -2950,7 +3764,7 @@ window.KOEI_GAME_DATA = {
               },
               {
                 "speaker": "hotelStaff",
-                "text": "確認室で映像を確認します。必要でしたら、そちらへどうぞ"
+                "text": "支配人室で映像を確認します。必要でしたら、そちらへどうぞ"
               }
             ],
             "setFlags": {
@@ -2979,7 +3793,7 @@ window.KOEI_GAME_DATA = {
     "H5": {
       "type": "location",
       "spotId": "H5",
-      "location": "ホテル・確認室",
+      "location": "ホテル・支配人室",
       "background": "images/backgrounds/bg_hotel_meetingroom.webp",
       "enterVariants": [
         {
@@ -3095,7 +3909,8 @@ window.KOEI_GAME_DATA = {
             },
             "requiresAll": [
               "exitCountKnown"
-            ]
+            ],
+            "image": "images/evidence/ev_hotel_outer_camera.webp"
           },
           {
             "id": "ask_recent_photo",
@@ -3157,7 +3972,7 @@ window.KOEI_GAME_DATA = {
             "requiresAll": [
               "fifthPersonInspected"
             ],
-            "image": "images/evidence/ev_fifth_staff.webp"
+            "image": "images/evidence/ev_nail_hotelside.webp"
           },
           {
             "id": "look_fifth_bag",
@@ -3171,6 +3986,23 @@ window.KOEI_GAME_DATA = {
               "fifthPersonInspected"
             ],
             "image": "images/evidence/ev_fifth_staff.webp"
+          },
+          {
+            "id": "look_outer_camera",
+            "label": "ホテル外側の映像",
+            "lines": [
+              {
+                "narrator": "大きな箱を抱えた作業着姿の人物が、一人で京都駅の方角へ歩いている。"
+              }
+            ],
+            "setFlags": {
+              "outerCameraKnown": true
+            },
+            "evidence": {
+              "hotelOuterCamera": true
+            },
+            "requiresAll": ["exitCountKnown"],
+            "image": "images/evidence/ev_hotel_outer_camera.webp"
           }
         ],
         "search": [],
@@ -3249,15 +4081,15 @@ window.KOEI_GAME_DATA = {
           "lines": [
             {
               "speaker": "sojiro",
-              "text": "七条さんですね。兄から話は聞いています"
+              "text": "七条さんですね。兄から伺っています"
             },
             {
               "speaker": "shichijo",
-              "text": "宗次郎さん。少しお話を"
+              "text": "宗次郎さん。紗月さんのことで、少しお話を伺えますか"
             },
             {
               "speaker": "sojiro",
-              "text": "紗月のことですね"
+              "text": "どうぞ。何でも聞いてください"
             }
           ],
           "setFlags": {
@@ -3265,7 +4097,7 @@ window.KOEI_GAME_DATA = {
           }
         }
       ],
-      "idleText": "桐生家の家業である桐生屋。その店先。",
+      "idleText": "桐生家が営む老舗の染織店、桐生屋。その店先。",
       "commands": {
         "talk": [
           {
@@ -3314,13 +4146,16 @@ window.KOEI_GAME_DATA = {
             "lines": [
               {
                 "speaker": "shichijo",
-                "text": "宗一郎さんに、顔がそっくりですね"
+                "text": "宗一郎さんとは、よく似ていらっしゃいますね"
               },
               {
                 "speaker": "sojiro",
                 "text": "ははは、双子ですから"
               }
-            ]
+            ],
+            "setFlags": {
+              "kiryuyaInsideUnlocked": true
+            }
           }
         ],
         "look": [
@@ -3352,16 +4187,19 @@ window.KOEI_GAME_DATA = {
           "onceFlag": "_seen_k2_intro",
           "lines": [
             {
+              "narrator": "店の中には、桐生屋で働いている日野沙耶がいた。"
+            },
+            {
               "speaker": "saya",
               "text": "いらっしゃいませ"
             },
             {
               "speaker": "shichijo",
-              "text": "紗月さんのことで、お聞きしたいことがあります"
+              "text": "紗月さんのことで、いくつか伺ってもよろしいですか"
             },
             {
               "speaker": "saya",
-              "text": "私に？"
+              "text": "私に、ですか？"
             }
           ],
           "setFlags": {
@@ -3369,7 +4207,7 @@ window.KOEI_GAME_DATA = {
           }
         }
       ],
-      "idleText": "染織関係の資料や道具が並ぶ桐生屋の店内。沙耶や宗次郎が応対している。",
+      "idleText": "染織の資料や道具が並ぶ桐生屋の店内。沙耶は作業台のそばに立っている。",
       "commands": {
         "talk": [
           {
@@ -3388,7 +4226,7 @@ window.KOEI_GAME_DATA = {
             "lines": [
               {
                 "speaker": "sojiro",
-                "text": "前撮り写真のことでしたら、こちらでご覧ください"
+                "text": "前撮り写真のことですね。こちらにあります"
               }
             ]
           }
@@ -3433,10 +4271,7 @@ window.KOEI_GAME_DATA = {
             "lines": [
               {
                 "speaker": "sojiro",
-                "text": "前撮りの写真ならあります。こちらでお見せします"
-              },
-              {
-                "narrator": "宗次郎は北野天満宮で撮られた前撮り写真を、七条の前に広げた。"
+                "text": "前撮りの写真なら、こちらにあります。北野天満宮で撮ったものです"
               }
             ],
             "setFlags": {
@@ -3471,12 +4306,10 @@ window.KOEI_GAME_DATA = {
             "label": "前撮り写真：顔",
             "lines": [
               {
-                "narrator": "紗月が穏やかに笑っている。"
+                "narrator": "北野天満宮で撮られた写真の中で、紗月が穏やかに笑っている。"
               }
             ],
-            "requiresAll": [
-              "preWeddingPhotoKnown"
-            ],
+            "requiresAll": ["preWeddingPhotoKnown"],
             "image": "images/evidence/ev_satsuki_photo.webp"
           },
           {
@@ -3484,20 +4317,18 @@ window.KOEI_GAME_DATA = {
             "label": "前撮り写真：着物",
             "lines": [
               {
-                "narrator": "華やかな意匠の着物だ。"
+                "narrator": "紗月が身に着けているのは、華やかな意匠の着物だ。"
               }
             ],
-            "requiresAll": [
-              "preWeddingPhotoKnown"
-            ],
+            "requiresAll": ["preWeddingPhotoKnown"],
             "image": "images/evidence/ev_satsuki_photo.webp"
           },
           {
             "id": "look_photo_hand",
-            "label": "前撮り写真：手",
+            "label": "前撮り写真：手元",
             "lines": [
               {
-                "narrator": "紗月の指先には、特徴的なネイルが施されている。"
+                "narrator": "写真に写る紗月の指先には、特徴的なネイルが施されている。"
               },
               {
                 "speaker": "shichijo",
@@ -3508,52 +4339,79 @@ window.KOEI_GAME_DATA = {
                 "text": "構いませんよ"
               }
             ],
-            "setFlags": {
-              "nailFound": true
-            },
-            "evidence": {
-              "satsukiNail": true
-            },
-            "requiresAll": [
-              "preWeddingPhotoKnown"
-            ],
+            "setFlags": {"nailFound": true},
+            "evidence": {"satsukiNail": true},
+            "requiresAll": ["preWeddingPhotoKnown"],
             "image": "images/evidence/ev_satsuki_nail.webp"
           }
         ],
         "search": [
           {
-            "id": "search_package",
-            "label": "紙包み",
+            "id": "search_desk",
+            "label": "机の上",
             "lines": [
               {
-                "narrator": "七条が作業台へ目を向けた、その瞬間だった。"
+                "narrator": "机の上には染織関係の資料が広げられ、その端に小さな紙の包みが置かれている。"
               },
               {
-                "narrator": "沙耶は、広げていた書類の一枚をさりげなく紙包みの下へ滑り込ませた。"
-              },
+                "narrator": "中に何が入っているのだろう。"
+              }
+            ],
+            "setFlags": {
+              "paperPackageNoticed": true
+            },
+            "notFlags": [
+              "paperPackageNoticed",
+              "sayaSuspicious"
+            ]
+          },
+          {
+            "id": "search_package",
+            "label": "紙の包み",
+            "lines": [
               {
-                "speaker": "shichijo",
-                "text": "その書類は？"
+                "narrator": "七条が紙の包みに手を伸ばした、その時だった。"
               },
               {
                 "speaker": "saya",
-                "text": "仕事のものです"
+                "text": "すみません。それは仕事のものですから"
+              },
+              {
+                "narrator": "沙耶は七条を遮るように紙の包みを取り上げ、棚の奥へ片付けた。"
               },
               {
                 "speaker": "shichijo",
-                "text": "少し見せていただけますか"
+                "text": "見られると、何か困ることでも？"
               },
               {
                 "speaker": "saya",
-                "text": "……それは困ります"
+                "text": "いいえ。ただ、勝手に触れられては困ります"
               },
               {
-                "narrator": "沙耶は紙包みに手を置いたまま、七条から視線を外した。"
+                "narrator": "沙耶はそう言って、七条から視線を外した。"
               }
             ],
             "setFlags": {
               "sayaSuspicious": true
-            }
+            },
+            "requiresAll": [
+              "paperPackageNoticed"
+            ],
+            "notFlags": [
+              "sayaSuspicious"
+            ]
+          },
+          {
+            "id": "search_desk_after_package",
+            "label": "机の上",
+            "lines": [
+              {
+                "narrator": "紙の包みはもうない。机の上には染織関係の資料だけが残っている。"
+              }
+            ],
+            "requiresAll": [
+              "sayaSuspicious"
+            ]
           }
         ],
         "evidence": []
@@ -3562,7 +4420,7 @@ window.KOEI_GAME_DATA = {
     "K3": {
       "type": "location",
       "spotId": "K3",
-      "location": "桐生屋店内",
+      "location": "桐生屋・応接スペース",
       "background": "images/backgrounds/bg_kiryuya_inside.webp",
       "enterVariants": [
         {
@@ -3585,7 +4443,7 @@ window.KOEI_GAME_DATA = {
           }
         }
       ],
-      "idleText": "桐生屋店内。前撮り写真もこの場で確認できる。",
+      "idleText": "前撮り写真を落ち着いて確認できる応接スペース。",
       "commands": {
         "talk": [
           {
@@ -3739,6 +4597,14 @@ window.KOEI_GAME_DATA = {
               {
                 "speaker": "shopClerk",
                 "text": "支払いのとき、小銭を何枚も床に落としてしまって。私も一緒に拾ったんです"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "何時ごろでしたか"
+              },
+              {
+                "speaker": "shopClerk",
+                "text": "レジの記録では、九時十九分です"
               }
             ],
             "setFlags": {
@@ -3839,7 +4705,7 @@ window.KOEI_GAME_DATA = {
                 "narrator": "周囲を調べても、紗月がここを使ったと確認できる材料は見つからない。"
               },
               {
-                "narrator": "そのとき、少し離れた多目的トイレの前で、駅員と清掃員が何か話しているのが見えた。"
+                "narrator": "そのとき、少し離れた多目的トイレの前に、清掃員が立っているのが見えた。"
               }
             ],
             "setFlags": {
@@ -3862,38 +4728,30 @@ window.KOEI_GAME_DATA = {
           "onceFlag": "_seen_s4_intro",
           "lines": [
             {
-              "narrator": "多目的トイレの前で、駅員と清掃員が話している。足元には、平たく畳まれた大きな段ボール箱があった。"
+              "narrator": "多目的トイレの前に清掃員が立っている。足元には、平たく畳まれた大きな段ボール箱があった。"
             }
           ]
         }
       ],
-      "idleText": "駅員と清掃員が、多目的トイレ前で話している。",
+      "idleText": "清掃員が、多目的トイレ前に立っている。",
       "commands": {
         "talk": [
           {
-            "id": "talk_station_staff",
-            "label": "駅員",
+            "id": "talk_cleaner",
+            "label": "清掃員",
             "lines": [
               {
                 "speaker": "shichijo",
                 "text": "失礼。何かあったのですか"
               },
               {
-                "narrator": "駅員が七条に向き直った。"
+                "speaker": "cleaner",
+                "text": "清掃に入ったら、トイレの中にこの箱が置かれていたんです"
               }
             ],
             "setFlags": {
               "stationStaffTalked": true
             }
-          },
-          {
-            "id": "talk_cleaner",
-            "label": "清掃員",
-            "lines": [
-              {
-                "narrator": "清掃員は、トイレ内に残されていた箱を指さした。"
-              }
-            ]
           }
         ],
         "ask": [
@@ -3902,7 +4760,8 @@ window.KOEI_GAME_DATA = {
             "label": "何があった？",
             "lines": [
               {
-                "narrator": "駅員は、多目的トイレの中に大きな箱が置かれていたと説明した。"
+                "speaker": "cleaner",
+                "text": "個室の隅にありました。最初は忘れ物かと思ったんですが、箱は平たく畳まれていました"
               }
             ],
             "requiresAny": [
@@ -3914,7 +4773,15 @@ window.KOEI_GAME_DATA = {
             "label": "いつ見つかった？",
             "lines": [
               {
-                "narrator": "清掃の際に見つかったという。ホテルから五人目が出た後の時間帯と大きく矛盾しない。"
+                "speaker": "shichijo",
+                "text": "見つけたのは何時ごろですか"
+              },
+              {
+                "speaker": "cleaner",
+                "text": "九時半ごろです。清掃に入ったときに見つけました"
+              },
+              {
+                "narrator": "ホテルから五人目が出た後の時間帯と大きく矛盾しない。"
               }
             ],
             "requiresAny": [
@@ -3962,22 +4829,26 @@ window.KOEI_GAME_DATA = {
     "S5": {
       "type": "location",
       "spotId": "S5",
-      "location": "京都駅・在来線改札前",
+      "location": "京都駅・在来線改札付近",
       "background": "images/backgrounds/bg_kyoto_station_gate.webp",
-      "idleText": "在来線改札前。発車案内が見える。",
+      "idleText": "在来線改札の近くに、各方面の時刻表が掲示されている。",
       "commands": {
         "talk": [],
         "ask": [],
         "look": [
           {
             "id": "look_departures",
-            "label": "発車案内",
+            "label": "近くの時刻表",
             "lines": [
               {
-                "narrator": "売店で紗月が目撃されたのは、10時前。"
+                "narrator": "売店のレジ記録は、九時十九分。七条は改札近くの時刻表を確認した。"
               },
               {
-                "narrator": "その時間帯の発車案内には、琵琶湖線方面の列車が表示されている。"
+                "narrator": "その後の列車は、九時二十八分の琵琶湖線、九時三十一分の嵯峨野線、九時三十四分の奈良線。"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "最初に乗れたのは、九時二十八分発の琵琶湖線方面ですね"
               }
             ],
             "setFlags": {
@@ -3999,6 +4870,7 @@ window.KOEI_GAME_DATA = {
               "stationMysterySolved"
             ],
             "quiz": {
+              "mode": "deduction",
               "question": "ホテルを出た後、紗月はどうしたと考えられるか？",
               "choices": [
                 {
@@ -4063,14 +4935,14 @@ window.KOEI_GAME_DATA = {
                     }
                   ],
                   "correctText": "琵琶湖線方面が有力です。ただし、実際に乗車したとは断定できません。",
-                  "wrongText": "売店を出た時刻と発車案内を確認してみましょう。",
+                  "wrongText": "売店を出た時刻と、改札近くの時刻表を確認してみましょう。",
                   "setFlags": {
                     "stationMysterySolved": true,
                     "hotelReturnUnlocked": true
                   },
                   "afterLines": [
                     {
-                      "narrator": "京都駅で得られた情報が一通りそろった。"
+                      "narrator": "京都駅で得た情報が一通りそろった。宗一郎に報告するため、ホテルへ戻ろう。"
                     }
                   ]
                 }
@@ -4154,9 +5026,9 @@ window.KOEI_GAME_DATA = {
               }
             ],
             "setFlags": {
-              "telegramAsked": true,
-              "chapter1Clear": true
+              "telegramAsked": true
             },
+            "chapterEnd": true,
             "requiresAll": [
               "telegramFound"
             ],
@@ -4205,7 +5077,4034 @@ window.KOEI_GAME_DATA = {
     }
   }
 };
+</script>
+<script>
+// ======================================================
+// 湖影に消えた花嫁
+// 第1章 移動主導型 v4
+// 桐生宗一郎・宗次郎の双子情報を追加
+// ======================================================
 
+window.KOEI_GAME_DATA = {
+  "initialFlags": {
+    "tutorialShown": false,
+    "requestAccepted": false,
+    "hotelStaffAsked": false,
+    "roomLooked": false,
+    "roomSearched": false,
+    "flowerStaffKnown": false,
+    "hotelConfirmUnlocked": false,
+    "entryCountKnown": false,
+    "exitCountKnown": false,
+    "fifthPersonInspected": false,
+    "outerCameraKnown": false,
+    "needRecentPhoto": false,
+    "kiryuyaUnlocked": false,
+    "kiryuyaInsideUnlocked": false,
+    "sojiroTalked": false,
+    "sayaMet": false,
+    "paperPackageNoticed": false,
+    "sayaSuspicious": false,
+    "preWeddingPhotoKnown": false,
+    "nailFound": false,
+    "nailMatched": false,
+    "fifthIsSatsuki": false,
+    "kyotoStationUnlocked": false,
+    "stationVisited": false,
+    "shopPhotoShown": false,
+    "shopClothesKnown": false,
+    "shopBagKnown": false,
+    "shopDirectionKnown": false,
+    "shopWitness": false,
+    "lockerChecked": false,
+    "toiletUnlocked": false,
+    "stationStaffTalked": false,
+    "foldedBoxFound": false,
+    "gateUnlocked": false,
+    "departureBoardChecked": false,
+    "stationMysterySolved": false,
+    "hotelReturnUnlocked": false,
+    "chapterMysterySolved": false,
+    "giftAreaUnlocked": false,
+    "telegramFound": false,
+    "telegramAsked": false,
+    "chapter1Clear": false
+  },
+  "initialEvidence": {
+    "fifthStaff": false,
+    "hotelOuterCamera": false,
+    "satsukiPhoto": false,
+    "satsukiNail": false,
+    "nailCompare": false,
+    "foldedBox": false,
+    "telegram": false
+  },
+  "characters": {
+    "shichijo": {
+      "name": "七条智門",
+      "image": "images/characters/ch_shichijo.webp"
+    },
+    "soichiro": {
+      "name": "桐生宗一郎",
+      "image": "images/characters/ch_soichiro.webp"
+    },
+    "sojiro": {
+      "name": "桐生宗次郎",
+      "image": "images/characters/ch_sojiro.webp"
+    },
+    "saya": {
+      "name": "日野沙耶",
+      "image": "images/characters/ch_saya.webp"
+    },
+    "hotelStaff": {
+      "name": "ホテル係員",
+      "image": "images/characters/ch_hotel_staff.webp"
+    },
+    "hotelManager": {
+      "name": "ホテル責任者",
+      "image": "images/characters/ch_hotel_manager.webp"
+    },
+    "shopClerk": {
+      "name": "売店店員",
+      "image": "images/characters/ch_shop_clerk.webp"
+    },
+    "cleaner": {
+      "name": "清掃員",
+      "image": "images/characters/ch_cleaner.webp"
+    }
+  },
+  "evidenceMaster": {
+    "fifthStaff": {
+      "name": "5人目の装花スタッフ",
+      "image": "images/evidence/ev_fifth_staff.webp",
+      "description": "装花スタッフの退館時に映っていた5人目。帽子とマスク、大きな箱で顔や体格を隠している。"
+    },
+    "hotelOuterCamera": {
+      "name": "ホテル外部カメラ",
+      "image": "images/evidence/ev_hotel_outer_camera.webp",
+      "description": "大きな箱を持った作業着姿の人物が、一人で京都駅方向へ歩いている。"
+    },
+    "satsukiPhoto": {
+      "name": "紗月の前撮り写真",
+      "image": "images/evidence/ev_satsuki_photo.webp",
+      "description": "北野天満宮で撮影された紗月の前撮り写真。"
+    },
+    "satsukiNail": {
+      "name": "紗月のネイル",
+      "image": "images/evidence/ev_satsuki_nail.webp",
+      "description": "前撮り写真から確認できる、紗月の特徴的なネイル。"
+    },
+    "foldedBox": {
+      "name": "畳まれた段ボール箱",
+      "image": "images/evidence/ev_folded_box.webp",
+      "description": "京都駅の多目的トイレ内で見つかった、装花資材用と思われる畳まれた箱。"
+    },
+    "telegram": {
+      "name": "写真電報",
+      "image": "images/evidence/ev_photo_telegram.webp",
+      "description": "湖上の灯浮標の写真と『あの日のことを、すべて話してください。』という文面。"
+    },
+    "nailCompare": {
+      "name": "ネイル比較写真",
+      "image": "images/evidence/ev_nail_compare.webp",
+      "description": "前撮り写真の手元と、5人目の装花スタッフの手元を並べた比較写真。"
+    }
+  },
+  "movementMap": {
+    "spots": {
+      "H1": {
+        "label": "ホテル・披露宴会場前",
+        "background": "images/backgrounds/bg_hotel_entrance.webp",
+        "sceneId": "H1",
+        "links": [
+          "H2",
+          "H4",
+          "H6"
+        ]
+      },
+      "H2": {
+        "label": "花嫁控室前",
+        "background": "images/backgrounds/bg_bridal_room_hallway.webp",
+        "sceneId": "H2",
+        "links": [
+          "H1",
+          "H3",
+          "H4"
+        ]
+      },
+      "H3": {
+        "label": "花嫁控室",
+        "background": "images/backgrounds/bg_bridal_room.webp",
+        "sceneId": "H3",
+        "links": [
+          "H2",
+          "H4"
+        ]
+      },
+      "H4": {
+        "label": "ホテル廊下",
+        "background": "images/backgrounds/bg_hotel_corridor.webp",
+        "sceneId": "H4",
+        "links": [
+          "H1",
+          "H2",
+          "H3",
+          "H5"
+        ]
+      },
+      "H5": {
+        "label": "ホテル・支配人室",
+        "background": "images/backgrounds/bg_hotel_meetingroom.webp",
+        "sceneId": "H5",
+        "links": [
+          "H4",
+          "K1",
+          "S1"
+        ]
+      },
+      "H6": {
+        "label": "ホテル・祝電置き場",
+        "background": "images/backgrounds/bg_hotel_gift_area.webp",
+        "sceneId": "H6",
+        "links": [
+          "H1",
+          "H4"
+        ]
+      },
+      "K1": {
+        "label": "桐生屋前",
+        "background": "images/backgrounds/bg_kiryuya_outside.webp",
+        "sceneId": "K1",
+        "links": [
+          "K2",
+          "H5"
+        ]
+      },
+      "K2": {
+        "label": "桐生屋店内",
+        "background": "images/backgrounds/bg_kiryuya_inside.webp",
+        "sceneId": "K2",
+        "links": [
+          "K1",
+          "H5"
+        ]
+      },
+      "K3": {
+        "label": "桐生屋・応接スペース",
+        "background": "images/backgrounds/bg_kiryuya_inside.webp",
+        "sceneId": "K3",
+        "links": [
+          "K2",
+          "H5"
+        ]
+      },
+      "S1": {
+        "label": "京都駅構内",
+        "background": "images/backgrounds/bg_kyoto_station_concourse.webp",
+        "sceneId": "S1",
+        "links": [
+          "S2",
+          "S3",
+          "S4",
+          "S5"
+        ]
+      },
+      "S2": {
+        "label": "京都駅・売店",
+        "background": "images/backgrounds/bg_kyoto_station_shop.webp",
+        "sceneId": "S2",
+        "links": [
+          "S1",
+          "S3",
+          "S5"
+        ]
+      },
+      "S3": {
+        "label": "京都駅・コインロッカー",
+        "background": "images/backgrounds/bg_kyoto_station_locker.webp",
+        "sceneId": "S3",
+        "links": [
+          "S1",
+          "S2",
+          "S4"
+        ]
+      },
+      "S4": {
+        "label": "京都駅・多目的トイレ前",
+        "background": "images/backgrounds/bg_kyoto_station_multipurpose_toilet.webp",
+        "sceneId": "S4",
+        "links": [
+          "S1",
+          "S3",
+          "S5"
+        ]
+      },
+      "S5": {
+        "label": "京都駅・在来線改札付近",
+        "background": "images/backgrounds/bg_kyoto_station_gate.webp",
+        "sceneId": "S5",
+        "links": [
+          "S1",
+          "S2",
+          "S4",
+          "H1"
+        ]
+      }
+    }
+  },
+  "scenes": {
+    "T00": {
+      "type": "title",
+      "background": "images/title/cover_title_main.webp"
+    },
+    "OP01": {
+      "type": "chapter",
+      "background": "images/title/op_chapter1.webp",
+      "startScene": "H1"
+    },
+    "H1": {
+      "type": "location",
+      "spotId": "H1",
+      "location": "ホテル・披露宴会場前",
+      "background": "images/backgrounds/bg_hotel_entrance.webp",
+      "enterVariants": [
+        {
+          "id": "h1_return",
+          "requiresAll": [
+            "stationMysterySolved"
+          ],
+          "notFlags": [
+            "chapterMysterySolved"
+          ],
+          "onceFlag": "_seen_h1_return",
+          "lines": [
+            {
+              "speaker": "soichiro",
+              "text": "七条さん！"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "まだ紗月さんを見つけたわけではありません。ですが、ホテルからどうやって姿を消したのかは分かりました"
+            }
+          ]
+        },
+        {
+          "id": "h1_intro",
+          "notFlags": [
+            "requestAccepted"
+          ],
+          "onceFlag": "_seen_h1_intro",
+          "lines": [
+            {
+              "narrator": "午前九時四十五分。京都駅近くのホテル。披露宴会場の前では、スタッフが慌ただしく行き交っていた。"
+            },
+            {
+              "speaker": "soichiro",
+              "text": "七条さん。少し、よろしいでしょうか"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "どうされました"
+            },
+            {
+              "speaker": "soichiro",
+              "text": "娘がいないんです。花嫁控室から、いなくなりました"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "警察には？"
+            },
+            {
+              "speaker": "soichiro",
+              "text": "まだです。まず、七条さんに探していただきたい"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "分かりました。ただし、私にできる範囲で調べます"
+            }
+          ],
+          "setFlags": {
+            "requestAccepted": true
+          }
+        }
+      ],
+      "idleText": "宗一郎が落ち着かない様子で、披露宴会場前に立っている。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_soichiro",
+            "label": "桐生宗一郎",
+            "lines": [
+              {
+                "speaker": "soichiro",
+                "text": "何か分かりましたか"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "まだ調べているところです"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_lastseen",
+            "label": "最後に紗月を見たのは？",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "最後に紗月さんを見たのは？"
+              },
+              {
+                "speaker": "soichiro",
+                "text": "私は今朝、まだ会っていません。最後に確認したのはホテルの方です"
+              }
+            ]
+          },
+          {
+            "id": "ask_morning",
+            "label": "今朝の様子",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "何か変わった様子があったとは？"
+              },
+              {
+                "speaker": "soichiro",
+                "text": "聞いていません"
+              }
+            ]
+          },
+          {
+            "id": "ask_police",
+            "label": "警察について",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "事件性が見えれば、警察への連絡も考えてください"
+              },
+              {
+                "speaker": "soichiro",
+                "text": "……ええ"
+              }
+            ]
+          },
+          {
+            "id": "ask_final_report",
+            "label": "紗月が消えた方法を説明する",
+            "lines": [
+              {
+                "speaker": "soichiro",
+                "text": "ホテルからどうやって出たんです？"
+              }
+            ],
+            "requiresAll": [
+              "stationMysterySolved"
+            ],
+            "notFlags": [
+              "chapterMysterySolved"
+            ],
+            "quiz": {
+              "question": "紗月はどのようにホテルから姿を消したのか？",
+              "choices": [
+                {
+                  "text": "何者かに連れ出された",
+                  "correct": false
+                },
+                {
+                  "text": "非常口から逃げた",
+                  "correct": false
+                },
+                {
+                  "text": "装花スタッフに変装してホテルを出た",
+                  "correct": true
+                },
+                {
+                  "text": "沙耶に手引きされた",
+                  "correct": false
+                }
+              ],
+              "correctText": "ホテルに入った装花スタッフは四人。出たのは五人。五人目が紗月さんでした。",
+              "wrongText": "そこまでの証拠はありません。もう一度考えましょう。",
+              "setFlags": {
+                "chapterMysterySolved": true,
+                "giftAreaUnlocked": true
+              },
+              "afterLines": [
+                {
+                  "speaker": "soichiro",
+                  "text": "どこへ行ったんです"
+                },
+                {
+                  "speaker": "shichijo",
+                  "text": "京都駅です。駅では私服姿で、女性用のバッグを持っていました"
+                },
+                {
+                  "speaker": "shichijo",
+                  "text": "コインロッカーは空振りでしたが、多目的トイレで畳まれた箱が見つかっています"
+                },
+                {
+                  "speaker": "shichijo",
+                  "text": "在来線改札方向へ向かい、その時間帯では琵琶湖線方面が有力です"
+                },
+                {
+                  "speaker": "soichiro",
+                  "text": "では、それに乗った？"
+                },
+                {
+                  "speaker": "shichijo",
+                  "text": "そこまでは言えません。有力な候補というだけです"
+                },
+                {
+                  "narrator": "そのとき、ホテル係員が祝電置き場の方から宗一郎を呼んだ。"
+                }
+              ]
+            }
+          }
+        ],
+        "look": [
+          {
+            "id": "look_hall",
+            "label": "披露宴会場前を見る",
+            "lines": [
+              {
+                "narrator": "式の準備は続いている。しかし、主役の花嫁だけがいない。"
+              }
+            ]
+          }
+        ],
+        "search": [],
+        "evidence": []
+      }
+    },
+    "H2": {
+      "type": "location",
+      "spotId": "H2",
+      "location": "花嫁控室前",
+      "background": "images/backgrounds/bg_bridal_room_hallway.webp",
+      "enterVariants": [
+        {
+          "id": "h2_intro",
+          "onceFlag": "_seen_h2_intro",
+          "lines": [
+            {
+              "speaker": "hotelStaff",
+              "text": "こちらです。九時三十五分ごろ、お迎えに来たところ、紗月様がおられませんでした"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "まず中を確認しましょう"
+            }
+          ]
+        }
+      ],
+      "idleText": "花嫁控室の扉が目の前にある。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_staff",
+            "label": "ホテル係員",
+            "lines": [
+              {
+                "speaker": "hotelStaff",
+                "text": "私が来たときには、もういらっしゃいませんでした"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_noise",
+            "label": "物音や叫び声",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "叫び声や大きな物音は？"
+              },
+              {
+                "speaker": "hotelStaff",
+                "text": "聞いていません"
+              }
+            ],
+            "setFlags": {
+              "hotelStaffAsked": true
+            }
+          }
+        ],
+        "look": [
+          {
+            "id": "look_door",
+            "label": "控室の扉",
+            "lines": [
+              {
+                "narrator": "外から見て、扉や鍵に不自然な傷はない。"
+              }
+            ]
+          }
+        ],
+        "search": [],
+        "evidence": []
+      }
+    },
+    "H3": {
+      "type": "location",
+      "spotId": "H3",
+      "location": "花嫁控室",
+      "background": "images/backgrounds/bg_bridal_room.webp",
+      "idleText": "紗月が支度をしていた控室。室内は大きく荒れていない。",
+      "commands": {
+        "talk": [],
+        "ask": [
+          {
+            "id": "ask_staff_inside",
+            "label": "ホテル係員に聞く",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "誰かが紗月さんを連れ出したところは？"
+              },
+              {
+                "speaker": "hotelStaff",
+                "text": "見ていません"
+              }
+            ]
+          }
+        ],
+        "look": [
+          {
+            "id": "look_room",
+            "label": "部屋全体",
+            "lines": [
+              {
+                "narrator": "室内に大きく荒れた跡はない。家具や衣装も乱れていない。"
+              }
+            ],
+            "setFlags": {
+              "roomLooked": true
+            }
+          }
+        ],
+        "search": [
+          {
+            "id": "search_mirror",
+            "label": "鏡台",
+            "lines": [
+              {
+                "narrator": "化粧道具が並んでいる。急に何かが起きたようには見えない。"
+              }
+            ]
+          },
+          {
+            "id": "search_costume",
+            "label": "衣装まわり",
+            "lines": [
+              {
+                "narrator": "衣装の周囲にも、乱れた様子はない。"
+              }
+            ]
+          },
+          {
+            "id": "search_belongings",
+            "label": "私物",
+            "lines": [
+              {
+                "narrator": "いくつかの私物が控室に残されている。"
+              }
+            ],
+            "setFlags": {
+              "roomSearched": true
+            }
+          }
+        ],
+        "evidence": []
+      }
+    },
+    "H4": {
+      "type": "location",
+      "spotId": "H4",
+      "location": "ホテル廊下",
+      "background": "images/backgrounds/bg_hotel_corridor.webp",
+      "idleText": "花嫁控室と披露宴会場をつなぐホテルの廊下。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_staff_corridor",
+            "label": "ホテル係員",
+            "lines": [
+              {
+                "speaker": "hotelStaff",
+                "text": "何か確認できることがあれば、お手伝いします"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_contractors",
+            "label": "今朝の外部業者",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "今朝、この付近に出入りした外部業者は？"
+              },
+              {
+                "speaker": "hotelStaff",
+                "text": "装花のスタッフさんが来ています"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "人数は？"
+              },
+              {
+                "speaker": "hotelStaff",
+                "text": "人数までは分かりません"
+              }
+            ],
+            "setFlags": {
+              "flowerStaffKnown": true
+            }
+          },
+          {
+            "id": "ask_camera",
+            "label": "出入口の記録",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "出入口の記録はありますか"
+              },
+              {
+                "speaker": "hotelStaff",
+                "text": "防犯カメラがあります。ホテル側で確認できます"
+              },
+              {
+                "speaker": "hotelStaff",
+                "text": "支配人室で映像を確認します。必要でしたら、そちらへどうぞ"
+              }
+            ],
+            "setFlags": {
+              "hotelConfirmUnlocked": true
+            },
+            "requiresAll": [
+              "flowerStaffKnown"
+            ]
+          }
+        ],
+        "look": [
+          {
+            "id": "look_corridor",
+            "label": "廊下を見る",
+            "lines": [
+              {
+                "narrator": "式場スタッフや業者が行き交う。花嫁が作業員に紛れても、目立たないかもしれない。"
+              }
+            ]
+          }
+        ],
+        "search": [],
+        "evidence": []
+      }
+    },
+    "H5": {
+      "type": "location",
+      "spotId": "H5",
+      "location": "ホテル・支配人室",
+      "background": "images/backgrounds/bg_hotel_meetingroom.webp",
+      "enterVariants": [
+        {
+          "id": "h5_first",
+          "requiresAll": [
+            "hotelConfirmUnlocked"
+          ],
+          "notFlags": [
+            "entryCountKnown"
+          ],
+          "onceFlag": "_seen_h5_first",
+          "lines": [
+            {
+              "speaker": "hotelManager",
+              "text": "事情は伺いました。当館で映像を確認します"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "装花スタッフの入館時と退館時を確認してください"
+            }
+          ]
+        },
+        {
+          "id": "h5_return_nail",
+          "requiresAll": [
+            "nailFound"
+          ],
+          "notFlags": [
+            "nailMatched"
+          ],
+          "onceFlag": "_seen_h5_return_nail",
+          "lines": [
+            {
+              "speaker": "shichijo",
+              "text": "先ほどの五人目の静止画を、もう一度お願いします"
+            }
+          ]
+        }
+      ],
+      "idleText": "ホテル側が確認した映像や静止画を整理できる。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_manager",
+            "label": "ホテル責任者",
+            "lines": [
+              {
+                "speaker": "hotelManager",
+                "text": "必要な範囲で、当館側で映像を確認します"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_entry_count",
+            "label": "装花スタッフの入館人数",
+            "lines": [
+              {
+                "speaker": "hotelManager",
+                "text": "午前八時十二分ごろ、装花スタッフが入館しています。四人です"
+              }
+            ],
+            "setFlags": {
+              "entryCountKnown": true
+            }
+          },
+          {
+            "id": "ask_exit_count",
+            "label": "装花スタッフの退館人数",
+            "lines": [
+              {
+                "speaker": "hotelManager",
+                "text": "退館時は……五人映っています"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "入館は四人、退館は五人。五人目を確認しましょう"
+              }
+            ],
+            "setFlags": {
+              "exitCountKnown": true,
+              "fifthPersonInspected": true
+            },
+            "evidence": {
+              "fifthStaff": true
+            },
+            "requiresAll": [
+              "entryCountKnown"
+            ]
+          },
+          {
+            "id": "ask_outer_camera",
+            "label": "ホテル外側の映像",
+            "lines": [
+              {
+                "speaker": "hotelManager",
+                "text": "建物の外側のカメラにも、それらしい人物が映っています"
+              },
+              {
+                "narrator": "大きな箱を持った作業着姿の人物が、一人でホテルを離れていく。"
+              },
+              {
+                "speaker": "hotelManager",
+                "text": "京都駅の方向へ歩いています"
+              }
+            ],
+            "setFlags": {
+              "outerCameraKnown": true
+            },
+            "evidence": {
+              "hotelOuterCamera": true
+            },
+            "requiresAll": [
+              "exitCountKnown"
+            ],
+            "image": "images/evidence/ev_hotel_outer_camera.webp"
+          },
+          {
+            "id": "ask_recent_photo",
+            "label": "紗月の最近の写真",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "この人物が紗月さんか確認したいですね。最近の写真はありますか。できれば手元が写っているものを"
+              },
+              {
+                "speaker": "soichiro",
+                "text": "前撮りの写真ならあります。桐生屋に。弟の宗次郎が預かっているはずです"
+              }
+            ],
+            "setFlags": {
+              "needRecentPhoto": true,
+              "kiryuyaUnlocked": true
+            },
+            "requiresAll": [
+              "outerCameraKnown"
+            ]
+          }
+        ],
+        "look": [
+          {
+            "id": "look_fifth_face",
+            "label": "5人目の顔",
+            "lines": [
+              {
+                "narrator": "帽子とマスクで顔は判別できない。"
+              }
+            ],
+            "requiresAll": [
+              "fifthPersonInspected"
+            ],
+            "image": "images/evidence/ev_fifth_staff.webp"
+          },
+          {
+            "id": "look_fifth_box",
+            "label": "5人目の箱",
+            "lines": [
+              {
+                "narrator": "大きな箱が体の前を隠している。"
+              }
+            ],
+            "requiresAll": [
+              "fifthPersonInspected"
+            ],
+            "image": "images/evidence/ev_fifth_staff.webp"
+          },
+          {
+            "id": "look_fifth_hand",
+            "label": "5人目の手元",
+            "lines": [
+              {
+                "narrator": "箱を支える指先だけが、映像に残っている。"
+              }
+            ],
+            "requiresAll": [
+              "fifthPersonInspected"
+            ],
+            "image": "images/evidence/ev_nail_hotelside.webp"
+          },
+          {
+            "id": "look_fifth_bag",
+            "label": "5人目の持ち物",
+            "lines": [
+              {
+                "narrator": "私物用のバッグらしいものは見当たらない。"
+              }
+            ],
+            "requiresAll": [
+              "fifthPersonInspected"
+            ],
+            "image": "images/evidence/ev_fifth_staff.webp"
+          },
+          {
+            "id": "look_outer_camera",
+            "label": "ホテル外側の映像",
+            "lines": [
+              {
+                "narrator": "大きな箱を抱えた作業着姿の人物が、一人で京都駅の方角へ歩いている。"
+              }
+            ],
+            "setFlags": {
+              "outerCameraKnown": true
+            },
+            "evidence": {
+              "hotelOuterCamera": true
+            },
+            "requiresAll": ["exitCountKnown"],
+            "image": "images/evidence/ev_hotel_outer_camera.webp"
+          }
+        ],
+        "search": [],
+        "evidence": [
+          {
+            "id": "compare_nails",
+            "label": "紗月のネイルと5人目の手元を比較する",
+            "lines": [
+              {
+                "narrator": "前撮り写真の手元と、5人目の装花スタッフの手元。色と飾りの位置が一致している。"
+              }
+            ],
+            "setFlags": {
+              "nailMatched": true
+            },
+            "evidence": {
+              "nailCompare": true
+            },
+            "requiresAll": [
+              "nailFound"
+            ],
+            "notFlags": [
+              "nailMatched"
+            ],
+            "image": "images/evidence/ev_nail_compare.webp",
+            "quiz": {
+              "question": "5人目の装花スタッフは誰か？",
+              "choices": [
+                {
+                  "text": "日野沙耶",
+                  "correct": false
+                },
+                {
+                  "text": "桐生紗月",
+                  "correct": true
+                },
+                {
+                  "text": "桐生宗次郎",
+                  "correct": false
+                },
+                {
+                  "text": "別の人物",
+                  "correct": false
+                }
+              ],
+              "correctText": "五人目は紗月さんです。装花スタッフに紛れてホテルを出ています。",
+              "wrongText": "証拠と合いませんね。もう一度考えましょう。",
+              "setFlags": {
+                "fifthIsSatsuki": true,
+                "kyotoStationUnlocked": true
+              },
+              "afterLines": [
+                {
+                  "speaker": "soichiro",
+                  "text": "では、本当にホテルを出た……"
+                },
+                {
+                  "speaker": "shichijo",
+                  "text": "ええ。次は京都駅で、その先の足取りを追えます"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "K1": {
+      "type": "location",
+      "spotId": "K1",
+      "location": "桐生屋前",
+      "background": "images/backgrounds/bg_kiryuya_outside.webp",
+      "enterVariants": [
+        {
+          "id": "k1_intro",
+          "onceFlag": "_seen_k1_intro",
+          "lines": [
+            {
+              "speaker": "sojiro",
+              "text": "七条さんですね。兄から伺っています"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "宗次郎さん。紗月さんのことで、少しお話を伺えますか"
+            },
+            {
+              "speaker": "sojiro",
+              "text": "どうぞ。何でも聞いてください"
+            }
+          ],
+          "setFlags": {
+            "sojiroTalked": true
+          }
+        }
+      ],
+      "idleText": "桐生家が営む老舗の染織店、桐生屋。その店先。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_sojiro",
+            "label": "桐生宗次郎",
+            "lines": [
+              {
+                "speaker": "sojiro",
+                "text": "分かることならお話しします"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_satsuki_personality",
+            "label": "紗月について",
+            "lines": [
+              {
+                "speaker": "sojiro",
+                "text": "真面目な子です。何も言わずに結婚式から逃げるような子には見えません"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "見えません、ですか"
+              },
+              {
+                "speaker": "sojiro",
+                "text": "人の胸の中までは分かりませんから"
+              }
+            ]
+          },
+          {
+            "id": "ask_recent",
+            "label": "最近の様子",
+            "lines": [
+              {
+                "speaker": "sojiro",
+                "text": "特に変わった話は聞いていません"
+              }
+            ]
+          },
+          {
+            "id": "ask_soichiro",
+            "label": "宗一郎について",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "宗一郎さんとは、よく似ていらっしゃいますね"
+              },
+              {
+                "speaker": "sojiro",
+                "text": "ははは、双子ですから"
+              }
+            ],
+            "setFlags": {
+              "kiryuyaInsideUnlocked": true
+            }
+          }
+        ],
+        "look": [
+          {
+            "id": "look_kiryuya_front",
+            "label": "店構え",
+            "lines": [
+              {
+                "narrator": "老舗らしい落ち着いた店構えだ。"
+              }
+            ]
+          }
+        ],
+        "search": [],
+        "evidence": []
+      }
+    },
+    "K2": {
+      "type": "location",
+      "spotId": "K2",
+      "location": "桐生屋店内",
+      "background": "images/backgrounds/bg_kiryuya_inside.webp",
+      "enterVariants": [
+        {
+          "id": "k2_intro",
+          "notFlags": [
+            "sayaMet"
+          ],
+          "onceFlag": "_seen_k2_intro",
+          "lines": [
+            {
+              "narrator": "店の中には、桐生屋で働いている日野沙耶がいた。"
+            },
+            {
+              "speaker": "saya",
+              "text": "いらっしゃいませ"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "紗月さんのことで、いくつか伺ってもよろしいですか"
+            },
+            {
+              "speaker": "saya",
+              "text": "私に、ですか？"
+            }
+          ],
+          "setFlags": {
+            "sayaMet": true
+          }
+        }
+      ],
+      "idleText": "染織の資料や道具が並ぶ桐生屋の店内。沙耶は作業台のそばに立っている。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_saya",
+            "label": "日野沙耶",
+            "lines": [
+              {
+                "speaker": "saya",
+                "text": "私に分かることなら……"
+              }
+            ]
+          },
+          {
+            "id": "talk_sojiro_inside",
+            "label": "桐生宗次郎",
+            "lines": [
+              {
+                "speaker": "sojiro",
+                "text": "前撮り写真のことですね。こちらにあります"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_saya_morning",
+            "label": "沙耶：今朝の紗月",
+            "lines": [
+              {
+                "speaker": "saya",
+                "text": "会っていません。連絡もありません"
+              }
+            ]
+          },
+          {
+            "id": "ask_saya_wedding",
+            "label": "沙耶：婚礼について",
+            "lines": [
+              {
+                "speaker": "saya",
+                "text": "楽しみにしていたと思います"
+              }
+            ]
+          },
+          {
+            "id": "ask_saya_hotel",
+            "label": "沙耶：ホテルへ行った？",
+            "lines": [
+              {
+                "speaker": "saya",
+                "text": "行ってません"
+              },
+              {
+                "narrator": "返事の前に、わずかな間があった。"
+              }
+            ]
+          },
+          {
+            "id": "ask_photo",
+            "label": "宗次郎：前撮り写真",
+            "lines": [
+              {
+                "speaker": "sojiro",
+                "text": "前撮りの写真なら、こちらにあります。北野天満宮で撮ったものです"
+              }
+            ],
+            "setFlags": {
+              "preWeddingPhotoKnown": true
+            },
+            "evidence": {
+              "satsukiPhoto": true
+            }
+          }
+        ],
+        "look": [
+          {
+            "id": "look_desk",
+            "label": "作業台",
+            "lines": [
+              {
+                "narrator": "染織関係の資料が広げられている。"
+              }
+            ]
+          },
+          {
+            "id": "look_shelf",
+            "label": "棚",
+            "lines": [
+              {
+                "narrator": "古い帳面や資料が並んでいる。"
+              }
+            ]
+          },
+          {
+            "id": "look_photo_face",
+            "label": "前撮り写真：顔",
+            "lines": [
+              {
+                "narrator": "北野天満宮で撮られた写真の中で、紗月が穏やかに笑っている。"
+              }
+            ],
+            "requiresAll": ["preWeddingPhotoKnown"],
+            "image": "images/evidence/ev_satsuki_photo.webp"
+          },
+          {
+            "id": "look_photo_kimono",
+            "label": "前撮り写真：着物",
+            "lines": [
+              {
+                "narrator": "紗月が身に着けているのは、華やかな意匠の着物だ。"
+              }
+            ],
+            "requiresAll": ["preWeddingPhotoKnown"],
+            "image": "images/evidence/ev_satsuki_photo.webp"
+          },
+          {
+            "id": "look_photo_hand",
+            "label": "前撮り写真：手元",
+            "lines": [
+              {
+                "narrator": "写真に写る紗月の指先には、特徴的なネイルが施されている。"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "この手元を記録させていただいても？"
+              },
+              {
+                "speaker": "sojiro",
+                "text": "構いませんよ"
+              }
+            ],
+            "setFlags": {"nailFound": true},
+            "evidence": {"satsukiNail": true},
+            "requiresAll": ["preWeddingPhotoKnown"],
+            "image": "images/evidence/ev_satsuki_nail.webp"
+          }
+        ],
+        "search": [
+          {
+            "id": "search_desk",
+            "label": "机の上",
+            "lines": [
+              {
+                "narrator": "机の上には染織関係の資料が広げられ、その端に小さな紙の包みが置かれている。"
+              },
+              {
+                "narrator": "中に何が入っているのだろう。"
+              }
+            ],
+            "setFlags": {
+              "paperPackageNoticed": true
+            },
+            "notFlags": [
+              "paperPackageNoticed",
+              "sayaSuspicious"
+            ]
+          },
+          {
+            "id": "search_package",
+            "label": "紙の包み",
+            "lines": [
+              {
+                "narrator": "七条が紙の包みに手を伸ばした、その時だった。"
+              },
+              {
+                "speaker": "saya",
+                "text": "すみません。それは仕事のものですから"
+              },
+              {
+                "narrator": "沙耶は七条を遮るように紙の包みを取り上げ、棚の奥へ片付けた。"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "見られると、何か困ることでも？"
+              },
+              {
+                "speaker": "saya",
+                "text": "いいえ。ただ、勝手に触れられては困ります"
+              },
+              {
+                "narrator": "沙耶はそう言って、七条から視線を外した。"
+              }
+            ],
+            "setFlags": {
+              "sayaSuspicious": true
+            },
+            "requiresAll": [
+              "paperPackageNoticed"
+            ],
+            "notFlags": [
+              "sayaSuspicious"
+            ]
+          },
+          {
+            "id": "search_desk_after_package",
+            "label": "机の上",
+            "lines": [
+              {
+                "narrator": "紙の包みはもうない。机の上には染織関係の資料だけが残っている。"
+              }
+            ],
+            "requiresAll": [
+              "sayaSuspicious"
+            ]
+          }
+        ],
+        "evidence": []
+      }
+    },
+    "K3": {
+      "type": "location",
+      "spotId": "K3",
+      "location": "桐生屋・応接スペース",
+      "background": "images/backgrounds/bg_kiryuya_inside.webp",
+      "enterVariants": [
+        {
+          "id": "k3_intro",
+          "requiresAll": [
+            "preWeddingPhotoKnown"
+          ],
+          "onceFlag": "_seen_k3_intro",
+          "lines": [
+            {
+              "speaker": "sojiro",
+              "text": "これが前撮りの写真です"
+            },
+            {
+              "narrator": "北野天満宮で撮られた紗月の写真が置かれた。"
+            }
+          ],
+          "evidence": {
+            "satsukiPhoto": true
+          }
+        }
+      ],
+      "idleText": "前撮り写真を落ち着いて確認できる応接スペース。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_sojiro_photo",
+            "label": "桐生宗次郎",
+            "lines": [
+              {
+                "speaker": "sojiro",
+                "text": "必要なら、写真をよく見てください"
+              }
+            ]
+          }
+        ],
+        "ask": [],
+        "look": [
+          {
+            "id": "look_photo_face",
+            "label": "前撮り写真：顔",
+            "lines": [
+              {
+                "narrator": "紗月が穏やかに笑っている。"
+              }
+            ],
+            "requiresAll": [
+              "preWeddingPhotoKnown"
+            ]
+          },
+          {
+            "id": "look_photo_kimono",
+            "label": "前撮り写真：着物",
+            "lines": [
+              {
+                "narrator": "華やかな意匠の着物だ。"
+              }
+            ],
+            "requiresAll": [
+              "preWeddingPhotoKnown"
+            ]
+          },
+          {
+            "id": "look_photo_hand",
+            "label": "前撮り写真：手",
+            "lines": [
+              {
+                "narrator": "紗月の指先には、特徴的なネイルが施されている。"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "この手元を記録させていただいても？"
+              },
+              {
+                "speaker": "sojiro",
+                "text": "構いませんよ"
+              }
+            ],
+            "setFlags": {
+              "nailFound": true
+            },
+            "evidence": {
+              "satsukiNail": true
+            },
+            "requiresAll": [
+              "preWeddingPhotoKnown"
+            ]
+          }
+        ],
+        "search": [],
+        "evidence": []
+      }
+    },
+    "S1": {
+      "type": "location",
+      "spotId": "S1",
+      "location": "京都駅構内",
+      "background": "images/backgrounds/bg_kyoto_station_concourse.webp",
+      "enterVariants": [
+        {
+          "id": "s1_intro",
+          "notFlags": [
+            "stationVisited"
+          ],
+          "onceFlag": "_seen_s1_intro",
+          "lines": [
+            {
+              "narrator": "七条は京都駅へ向かった。人の流れが絶えない。"
+            },
+            {
+              "narrator": "ホテルを出た5人目は、作業着姿で大きな箱を持っていた。"
+            }
+          ],
+          "setFlags": {
+            "stationVisited": true
+          }
+        }
+      ],
+      "idleText": "人の流れが絶えない京都駅構内。",
+      "commands": {
+        "talk": [],
+        "ask": [],
+        "look": [
+          {
+            "id": "look_station_flow",
+            "label": "駅構内を見る",
+            "lines": [
+              {
+                "narrator": "売店、コインロッカー、在来線改札へ人が流れている。"
+              }
+            ]
+          }
+        ],
+        "search": [],
+        "evidence": []
+      }
+    },
+    "S2": {
+      "type": "location",
+      "spotId": "S2",
+      "location": "京都駅・売店",
+      "background": "images/backgrounds/bg_kyoto_station_shop.webp",
+      "idleText": "駅構内の売店。店員がレジに立っている。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_clerk",
+            "label": "売店店員",
+            "lines": [
+              {
+                "speaker": "shopClerk",
+                "text": "何でしょうか"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_show_photo",
+            "label": "紗月の写真を見せる",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "この女性を見ませんでしたか"
+              },
+              {
+                "speaker": "shopClerk",
+                "text": "あ、この人なら覚えています。ここで飲み物を買われました"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "なぜ覚えていたのです？"
+              },
+              {
+                "speaker": "shopClerk",
+                "text": "支払いのとき、小銭を何枚も床に落としてしまって。私も一緒に拾ったんです"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "何時ごろでしたか"
+              },
+              {
+                "speaker": "shopClerk",
+                "text": "レジの記録では、九時十九分です"
+              }
+            ],
+            "setFlags": {
+              "shopPhotoShown": true
+            }
+          },
+          {
+            "id": "ask_clothes",
+            "label": "その時の服装",
+            "lines": [
+              {
+                "speaker": "shopClerk",
+                "text": "普通の服でしたよ"
+              }
+            ],
+            "setFlags": {
+              "shopClothesKnown": true
+            },
+            "requiresAll": [
+              "shopPhotoShown"
+            ]
+          },
+          {
+            "id": "ask_bag",
+            "label": "バッグを持っていた？",
+            "lines": [
+              {
+                "speaker": "shopClerk",
+                "text": "女性もののバッグを持っていました"
+              }
+            ],
+            "setFlags": {
+              "shopBagKnown": true
+            },
+            "requiresAll": [
+              "shopPhotoShown"
+            ]
+          },
+          {
+            "id": "ask_direction",
+            "label": "買い物の後、どちらへ？",
+            "lines": [
+              {
+                "speaker": "shopClerk",
+                "text": "在来線の改札の方へ行きました。一人でしたよ"
+              }
+            ],
+            "setFlags": {
+              "shopDirectionKnown": true,
+              "shopWitness": true
+            },
+            "requiresAll": [
+              "shopPhotoShown"
+            ]
+          }
+        ],
+        "look": [],
+        "search": [],
+        "evidence": []
+      }
+    },
+    "S3": {
+      "type": "location",
+      "spotId": "S3",
+      "location": "京都駅・コインロッカー",
+      "background": "images/backgrounds/bg_kyoto_station_locker.webp",
+      "idleText": "駅構内のコインロッカーが並んでいる。",
+      "commands": {
+        "talk": [],
+        "ask": [
+          {
+            "id": "ask_around_locker",
+            "label": "周辺で聞き込む",
+            "lines": [
+              {
+                "narrator": "周辺で聞き込むが、紗月を覚えている人物はいなかった。"
+              }
+            ]
+          }
+        ],
+        "look": [
+          {
+            "id": "look_lockers",
+            "label": "ロッカーを見る",
+            "lines": [
+              {
+                "narrator": "コインロッカーが並んでいる。どれを使ったかを示す手掛かりはない。"
+              }
+            ]
+          }
+        ],
+        "search": [
+          {
+            "id": "search_lockers",
+            "label": "コインロッカー周辺",
+            "lines": [
+              {
+                "narrator": "周囲を調べても、紗月がここを使ったと確認できる材料は見つからない。"
+              },
+              {
+                "narrator": "そのとき、少し離れた多目的トイレの前に、清掃員が立っているのが見えた。"
+              }
+            ],
+            "setFlags": {
+              "lockerChecked": true,
+              "toiletUnlocked": true
+            }
+          }
+        ],
+        "evidence": []
+      }
+    },
+    "S4": {
+      "type": "location",
+      "spotId": "S4",
+      "location": "京都駅・多目的トイレ前",
+      "background": "images/backgrounds/bg_kyoto_station_multipurpose_toilet.webp",
+      "enterVariants": [
+        {
+          "id": "s4_intro",
+          "onceFlag": "_seen_s4_intro",
+          "lines": [
+            {
+              "narrator": "多目的トイレの前に清掃員が立っている。足元には、平たく畳まれた大きな段ボール箱があった。"
+            }
+          ]
+        }
+      ],
+      "idleText": "清掃員が、多目的トイレ前に立っている。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_cleaner",
+            "label": "清掃員",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "失礼。何かあったのですか"
+              },
+              {
+                "speaker": "cleaner",
+                "text": "清掃に入ったら、トイレの中にこの箱が置かれていたんです"
+              }
+            ],
+            "setFlags": {
+              "stationStaffTalked": true
+            }
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_what_happened",
+            "label": "何があった？",
+            "lines": [
+              {
+                "speaker": "cleaner",
+                "text": "個室の隅にありました。最初は忘れ物かと思ったんですが、箱は平たく畳まれていました"
+              }
+            ],
+            "requiresAny": [
+              "stationStaffTalked"
+            ]
+          },
+          {
+            "id": "ask_when_found",
+            "label": "いつ見つかった？",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "見つけたのは何時ごろですか"
+              },
+              {
+                "speaker": "cleaner",
+                "text": "九時半ごろです。清掃に入ったときに見つけました"
+              },
+              {
+                "narrator": "ホテルから五人目が出た後の時間帯と大きく矛盾しない。"
+              }
+            ],
+            "requiresAny": [
+              "stationStaffTalked"
+            ]
+          }
+        ],
+        "look": [
+          {
+            "id": "look_folded_box",
+            "label": "畳まれた箱",
+            "lines": [
+              {
+                "narrator": "ホテルを出た5人目が持っていたものと同じくらいの大きさの箱だ。"
+              }
+            ],
+            "image": "images/evidence/ev_folded_box.webp"
+          }
+        ],
+        "search": [
+          {
+            "id": "search_folded_box",
+            "label": "畳まれた段ボール箱",
+            "lines": [
+              {
+                "narrator": "箱は平たく畳まれている。持ち主を特定できる表示はない。"
+              }
+            ],
+            "setFlags": {
+              "foldedBoxFound": true,
+              "gateUnlocked": true
+            },
+            "evidence": {
+              "foldedBox": true
+            },
+            "requiresAny": [
+              "stationStaffTalked"
+            ],
+            "image": "images/evidence/ev_folded_box.webp"
+          }
+        ],
+        "evidence": []
+      }
+    },
+    "S5": {
+      "type": "location",
+      "spotId": "S5",
+      "location": "京都駅・在来線改札付近",
+      "background": "images/backgrounds/bg_kyoto_station_gate.webp",
+      "idleText": "在来線改札の近くに、各方面の時刻表が掲示されている。",
+      "commands": {
+        "talk": [],
+        "ask": [],
+        "look": [
+          {
+            "id": "look_departures",
+            "label": "近くの時刻表",
+            "lines": [
+              {
+                "narrator": "売店のレジ記録は、九時十九分。七条は改札近くの時刻表を確認した。"
+              },
+              {
+                "narrator": "その後の列車は、九時二十八分の琵琶湖線、九時三十一分の嵯峨野線、九時三十四分の奈良線。"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "最初に乗れたのは、九時二十八分発の琵琶湖線方面ですね"
+              }
+            ],
+            "setFlags": {
+              "departureBoardChecked": true
+            }
+          }
+        ],
+        "search": [],
+        "evidence": [
+          {
+            "id": "organize_station",
+            "label": "京都駅で得た情報を整理する",
+            "requiresAll": [
+              "departureBoardChecked",
+              "foldedBoxFound",
+              "shopWitness"
+            ],
+            "notFlags": [
+              "stationMysterySolved"
+            ],
+            "quiz": {
+              "mode": "deduction",
+              "question": "ホテルを出た後、紗月はどうしたと考えられるか？",
+              "choices": [
+                {
+                  "text": "そのまま作業着で移動した",
+                  "correct": false
+                },
+                {
+                  "text": "どこかで私服に着替えた",
+                  "correct": true
+                },
+                {
+                  "text": "ホテルへ戻った",
+                  "correct": false
+                },
+                {
+                  "text": "沙耶と合流した",
+                  "correct": false
+                }
+              ],
+              "correctText": "売店では私服姿でした。ホテルを出た後、どこかで着替えたと考えられます。",
+              "wrongText": "売店での服装を思い出してみましょう。",
+              "nextQuiz": {
+                "question": "箱を処理した可能性が高い場所は？",
+                "choices": [
+                  {
+                    "text": "売店",
+                    "correct": false
+                  },
+                  {
+                    "text": "コインロッカー",
+                    "correct": false
+                  },
+                  {
+                    "text": "多目的トイレ",
+                    "correct": true
+                  },
+                  {
+                    "text": "ホテルの外",
+                    "correct": false
+                  }
+                ],
+                "correctText": "多目的トイレで畳まれた大きな箱が見つかっています。",
+                "wrongText": "畳まれた箱が見つかった場所を確認しましょう。",
+                "nextQuiz": {
+                  "question": "紗月が次に向かった可能性が最も高いのは？",
+                  "choices": [
+                    {
+                      "text": "新幹線方面",
+                      "correct": false
+                    },
+                    {
+                      "text": "近鉄線方面",
+                      "correct": false
+                    },
+                    {
+                      "text": "琵琶湖線方面",
+                      "correct": true
+                    },
+                    {
+                      "text": "京都駅の外",
+                      "correct": false
+                    }
+                  ],
+                  "correctText": "琵琶湖線方面が有力です。ただし、実際に乗車したとは断定できません。",
+                  "wrongText": "売店を出た時刻と、改札近くの時刻表を確認してみましょう。",
+                  "setFlags": {
+                    "stationMysterySolved": true,
+                    "hotelReturnUnlocked": true
+                  },
+                  "afterLines": [
+                    {
+                      "narrator": "京都駅で得た情報が一通りそろった。宗一郎に報告するため、ホテルへ戻ろう。"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "H6": {
+      "type": "location",
+      "spotId": "H6",
+      "location": "ホテル・祝電置き場",
+      "background": "images/backgrounds/bg_hotel_gift_area.webp",
+      "enterVariants": [
+        {
+          "id": "h6_intro",
+          "onceFlag": "_seen_h6_intro",
+          "lines": [
+            {
+              "narrator": "披露宴会場の一角には、届いた祝電がまとめられていた。"
+            },
+            {
+              "speaker": "hotelStaff",
+              "text": "桐生様、こちらの祝電ですが……"
+            },
+            {
+              "speaker": "soichiro",
+              "text": "今はそのままにしておいてください"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "宗一郎さん。これも祝電ですか"
+            }
+          ]
+        }
+      ],
+      "idleText": "祝電の束の中に、一通だけ雰囲気の違う写真電報がある。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_soichiro_telegram",
+            "label": "桐生宗一郎",
+            "lines": [
+              {
+                "speaker": "soichiro",
+                "text": "その電報が、どうかしましたか"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_sender",
+            "label": "差出人",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "差出人は？"
+              },
+              {
+                "speaker": "soichiro",
+                "text": "……分かりません"
+              }
+            ],
+            "requiresAll": [
+              "telegramFound"
+            ]
+          },
+          {
+            "id": "ask_clue",
+            "label": "『あの日』に心当たりは？",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "『あの日』という言葉に、心当たりは？"
+              },
+              {
+                "speaker": "soichiro",
+                "text": "ありません"
+              }
+            ],
+            "setFlags": {
+              "telegramAsked": true
+            },
+            "chapterEnd": true,
+            "requiresAll": [
+              "telegramFound"
+            ],
+            "notFlags": [
+              "chapter1Clear"
+            ]
+          }
+        ],
+        "look": [
+          {
+            "id": "look_telegram",
+            "label": "写真電報",
+            "lines": [
+              {
+                "narrator": "湖上に浮かぶ灯浮標。その下には一文だけが記されていた。"
+              },
+              {
+                "narrator": "『あの日のことを、すべて話してください。』"
+              }
+            ],
+            "setFlags": {
+              "telegramFound": true
+            },
+            "evidence": {
+              "telegram": true
+            },
+            "image": "images/evidence/ev_photo_telegram.webp"
+          }
+        ],
+        "search": [
+          {
+            "id": "search_telegram",
+            "label": "写真と文面",
+            "lines": [
+              {
+                "narrator": "写真には湖上の灯浮標が写っている。失踪事件との関係を示すものは、まだない。"
+              }
+            ],
+            "requiresAll": [
+              "telegramFound"
+            ]
+          }
+        ],
+        "evidence": []
+      }
+    }
+  }
+};
+</script>
+<script>
+// ======================================================
+// 湖影に消えた花嫁
+// 第1章 移動主導型 v4
+// 桐生宗一郎・宗次郎の双子情報を追加
+// ======================================================
+
+window.KOEI_GAME_DATA = {
+  "initialFlags": {
+    "tutorialShown": false,
+    "requestAccepted": false,
+    "hotelStaffAsked": false,
+    "roomLooked": false,
+    "roomSearched": false,
+    "flowerStaffKnown": false,
+    "hotelConfirmUnlocked": false,
+    "entryCountKnown": false,
+    "exitCountKnown": false,
+    "fifthPersonInspected": false,
+    "outerCameraKnown": false,
+    "needRecentPhoto": false,
+    "kiryuyaUnlocked": false,
+    "kiryuyaInsideUnlocked": false,
+    "sojiroTalked": false,
+    "sayaMet": false,
+    "paperPackageNoticed": false,
+    "sayaSuspicious": false,
+    "preWeddingPhotoKnown": false,
+    "nailFound": false,
+    "nailMatched": false,
+    "fifthIsSatsuki": false,
+    "kyotoStationUnlocked": false,
+    "stationVisited": false,
+    "shopPhotoShown": false,
+    "shopClothesKnown": false,
+    "shopBagKnown": false,
+    "shopDirectionKnown": false,
+    "shopWitness": false,
+    "lockerChecked": false,
+    "toiletUnlocked": false,
+    "stationStaffTalked": false,
+    "foldedBoxFound": false,
+    "gateUnlocked": false,
+    "departureBoardChecked": false,
+    "stationMysterySolved": false,
+    "hotelReturnUnlocked": false,
+    "chapterMysterySolved": false,
+    "giftAreaUnlocked": false,
+    "telegramFound": false,
+    "telegramAsked": false,
+    "chapter1Clear": false
+  },
+  "initialEvidence": {
+    "fifthStaff": false,
+    "hotelOuterCamera": false,
+    "satsukiPhoto": false,
+    "satsukiNail": false,
+    "nailCompare": false,
+    "foldedBox": false,
+    "telegram": false
+  },
+  "characters": {
+    "shichijo": {
+      "name": "七条智門",
+      "image": "images/characters/ch_shichijo.webp"
+    },
+    "soichiro": {
+      "name": "桐生宗一郎",
+      "image": "images/characters/ch_soichiro.webp"
+    },
+    "sojiro": {
+      "name": "桐生宗次郎",
+      "image": "images/characters/ch_sojiro.webp"
+    },
+    "saya": {
+      "name": "日野沙耶",
+      "image": "images/characters/ch_saya.webp"
+    },
+    "hotelStaff": {
+      "name": "ホテル係員",
+      "image": "images/characters/ch_hotel_staff.webp"
+    },
+    "hotelManager": {
+      "name": "ホテル責任者",
+      "image": "images/characters/ch_hotel_manager.webp"
+    },
+    "shopClerk": {
+      "name": "売店店員",
+      "image": "images/characters/ch_shop_clerk.webp"
+    },
+    "cleaner": {
+      "name": "清掃員",
+      "image": "images/characters/ch_cleaner.webp"
+    }
+  },
+  "evidenceMaster": {
+    "fifthStaff": {
+      "name": "5人目の装花スタッフ",
+      "image": "images/evidence/ev_fifth_staff.webp",
+      "description": "装花スタッフの退館時に映っていた5人目。帽子とマスク、大きな箱で顔や体格を隠している。"
+    },
+    "hotelOuterCamera": {
+      "name": "ホテル外部カメラ",
+      "image": "images/evidence/ev_hotel_outer_camera.webp",
+      "description": "大きな箱を持った作業着姿の人物が、一人で京都駅方向へ歩いている。"
+    },
+    "satsukiPhoto": {
+      "name": "紗月の前撮り写真",
+      "image": "images/evidence/ev_satsuki_photo.webp",
+      "description": "北野天満宮で撮影された紗月の前撮り写真。"
+    },
+    "satsukiNail": {
+      "name": "紗月のネイル",
+      "image": "images/evidence/ev_satsuki_nail.webp",
+      "description": "前撮り写真から確認できる、紗月の特徴的なネイル。"
+    },
+    "foldedBox": {
+      "name": "畳まれた段ボール箱",
+      "image": "images/evidence/ev_folded_box.webp",
+      "description": "京都駅の多目的トイレ内で見つかった、装花資材用と思われる畳まれた箱。"
+    },
+    "telegram": {
+      "name": "写真電報",
+      "image": "images/evidence/ev_photo_telegram.webp",
+      "description": "湖上の灯浮標の写真と『あの日のことを、すべて話してください。』という文面。"
+    },
+    "nailCompare": {
+      "name": "ネイル比較写真",
+      "image": "images/evidence/ev_nail_compare.webp",
+      "description": "前撮り写真の手元と、5人目の装花スタッフの手元を並べた比較写真。"
+    }
+  },
+  "movementMap": {
+    "spots": {
+      "H1": {
+        "label": "ホテル・披露宴会場前",
+        "background": "images/backgrounds/bg_hotel_entrance.webp",
+        "sceneId": "H1",
+        "links": [
+          "H2",
+          "H4",
+          "H6"
+        ]
+      },
+      "H2": {
+        "label": "花嫁控室前",
+        "background": "images/backgrounds/bg_bridal_room_hallway.webp",
+        "sceneId": "H2",
+        "links": [
+          "H1",
+          "H3",
+          "H4"
+        ]
+      },
+      "H3": {
+        "label": "花嫁控室",
+        "background": "images/backgrounds/bg_bridal_room.webp",
+        "sceneId": "H3",
+        "links": [
+          "H2",
+          "H4"
+        ]
+      },
+      "H4": {
+        "label": "ホテル廊下",
+        "background": "images/backgrounds/bg_hotel_corridor.webp",
+        "sceneId": "H4",
+        "links": [
+          "H1",
+          "H2",
+          "H3",
+          "H5"
+        ]
+      },
+      "H5": {
+        "label": "ホテル・支配人室",
+        "background": "images/backgrounds/bg_hotel_meetingroom.webp",
+        "sceneId": "H5",
+        "links": [
+          "H4",
+          "K1",
+          "S1"
+        ]
+      },
+      "H6": {
+        "label": "ホテル・祝電置き場",
+        "background": "images/backgrounds/bg_hotel_gift_area.webp",
+        "sceneId": "H6",
+        "links": [
+          "H1",
+          "H4"
+        ]
+      },
+      "K1": {
+        "label": "桐生屋前",
+        "background": "images/backgrounds/bg_kiryuya_outside.webp",
+        "sceneId": "K1",
+        "links": [
+          "K2",
+          "H5"
+        ]
+      },
+      "K2": {
+        "label": "桐生屋店内",
+        "background": "images/backgrounds/bg_kiryuya_inside.webp",
+        "sceneId": "K2",
+        "links": [
+          "K1",
+          "H5"
+        ]
+      },
+      "K3": {
+        "label": "桐生屋・応接スペース",
+        "background": "images/backgrounds/bg_kiryuya_inside.webp",
+        "sceneId": "K3",
+        "links": [
+          "K2",
+          "H5"
+        ]
+      },
+      "S1": {
+        "label": "京都駅構内",
+        "background": "images/backgrounds/bg_kyoto_station_concourse.webp",
+        "sceneId": "S1",
+        "links": [
+          "S2",
+          "S3",
+          "S4",
+          "S5"
+        ]
+      },
+      "S2": {
+        "label": "京都駅・売店",
+        "background": "images/backgrounds/bg_kyoto_station_shop.webp",
+        "sceneId": "S2",
+        "links": [
+          "S1",
+          "S3",
+          "S5"
+        ]
+      },
+      "S3": {
+        "label": "京都駅・コインロッカー",
+        "background": "images/backgrounds/bg_kyoto_station_locker.webp",
+        "sceneId": "S3",
+        "links": [
+          "S1",
+          "S2",
+          "S4"
+        ]
+      },
+      "S4": {
+        "label": "京都駅・多目的トイレ前",
+        "background": "images/backgrounds/bg_kyoto_station_multipurpose_toilet.webp",
+        "sceneId": "S4",
+        "links": [
+          "S1",
+          "S3",
+          "S5"
+        ]
+      },
+      "S5": {
+        "label": "京都駅・在来線改札付近",
+        "background": "images/backgrounds/bg_kyoto_station_gate.webp",
+        "sceneId": "S5",
+        "links": [
+          "S1",
+          "S2",
+          "S4",
+          "H1"
+        ]
+      }
+    }
+  },
+  "scenes": {
+    "T00": {
+      "type": "title",
+      "background": "images/title/cover_title_main.webp"
+    },
+    "OP01": {
+      "type": "chapter",
+      "background": "images/title/op_chapter1.webp",
+      "startScene": "H1"
+    },
+    "H1": {
+      "type": "location",
+      "spotId": "H1",
+      "location": "ホテル・披露宴会場前",
+      "background": "images/backgrounds/bg_hotel_entrance.webp",
+      "enterVariants": [
+        {
+          "id": "h1_return",
+          "requiresAll": [
+            "stationMysterySolved"
+          ],
+          "notFlags": [
+            "chapterMysterySolved"
+          ],
+          "onceFlag": "_seen_h1_return",
+          "lines": [
+            {
+              "speaker": "soichiro",
+              "text": "七条さん！"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "まだ紗月さんを見つけたわけではありません。ですが、ホテルからどうやって姿を消したのかは分かりました"
+            }
+          ]
+        },
+        {
+          "id": "h1_intro",
+          "notFlags": [
+            "requestAccepted"
+          ],
+          "onceFlag": "_seen_h1_intro",
+          "lines": [
+            {
+              "narrator": "午前九時四十五分。京都駅近くのホテル。披露宴会場の前では、スタッフが慌ただしく行き交っていた。"
+            },
+            {
+              "speaker": "soichiro",
+              "text": "七条さん。少し、よろしいでしょうか"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "どうされました"
+            },
+            {
+              "speaker": "soichiro",
+              "text": "娘がいないんです。花嫁控室から、いなくなりました"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "警察には？"
+            },
+            {
+              "speaker": "soichiro",
+              "text": "まだです。まず、七条さんに探していただきたい"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "分かりました。ただし、私にできる範囲で調べます"
+            }
+          ],
+          "setFlags": {
+            "requestAccepted": true
+          }
+        }
+      ],
+      "idleText": "宗一郎が落ち着かない様子で、披露宴会場前に立っている。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_soichiro",
+            "label": "桐生宗一郎",
+            "lines": [
+              {
+                "speaker": "soichiro",
+                "text": "何か分かりましたか"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "まだ調べているところです"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_lastseen",
+            "label": "最後に紗月を見たのは？",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "最後に紗月さんを見たのは？"
+              },
+              {
+                "speaker": "soichiro",
+                "text": "私は今朝、まだ会っていません。最後に確認したのはホテルの方です"
+              }
+            ]
+          },
+          {
+            "id": "ask_morning",
+            "label": "今朝の様子",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "何か変わった様子があったとは？"
+              },
+              {
+                "speaker": "soichiro",
+                "text": "聞いていません"
+              }
+            ]
+          },
+          {
+            "id": "ask_police",
+            "label": "警察について",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "事件性が見えれば、警察への連絡も考えてください"
+              },
+              {
+                "speaker": "soichiro",
+                "text": "……ええ"
+              }
+            ]
+          },
+          {
+            "id": "ask_final_report",
+            "label": "紗月が消えた方法を説明する",
+            "lines": [
+              {
+                "speaker": "soichiro",
+                "text": "ホテルからどうやって出たんです？"
+              }
+            ],
+            "requiresAll": [
+              "stationMysterySolved"
+            ],
+            "notFlags": [
+              "chapterMysterySolved"
+            ],
+            "quiz": {
+              "question": "紗月はどのようにホテルから姿を消したのか？",
+              "choices": [
+                {
+                  "text": "何者かに連れ出された",
+                  "correct": false
+                },
+                {
+                  "text": "非常口から逃げた",
+                  "correct": false
+                },
+                {
+                  "text": "装花スタッフに変装してホテルを出た",
+                  "correct": true
+                },
+                {
+                  "text": "沙耶に手引きされた",
+                  "correct": false
+                }
+              ],
+              "correctText": "ホテルに入った装花スタッフは四人。出たのは五人。五人目が紗月さんでした。",
+              "wrongText": "そこまでの証拠はありません。もう一度考えましょう。",
+              "setFlags": {
+                "chapterMysterySolved": true,
+                "giftAreaUnlocked": true
+              },
+              "afterLines": [
+                {
+                  "speaker": "soichiro",
+                  "text": "どこへ行ったんです"
+                },
+                {
+                  "speaker": "shichijo",
+                  "text": "京都駅です。駅では私服姿で、女性用のバッグを持っていました"
+                },
+                {
+                  "speaker": "shichijo",
+                  "text": "コインロッカーは空振りでしたが、多目的トイレで畳まれた箱が見つかっています"
+                },
+                {
+                  "speaker": "shichijo",
+                  "text": "在来線改札方向へ向かい、その時間帯では琵琶湖線方面が有力です"
+                },
+                {
+                  "speaker": "soichiro",
+                  "text": "では、それに乗った？"
+                },
+                {
+                  "speaker": "shichijo",
+                  "text": "そこまでは言えません。有力な候補というだけです"
+                },
+                {
+                  "narrator": "そのとき、ホテル係員が祝電置き場の方から宗一郎を呼んだ。"
+                }
+              ]
+            }
+          }
+        ],
+        "look": [
+          {
+            "id": "look_hall",
+            "label": "披露宴会場前を見る",
+            "lines": [
+              {
+                "narrator": "式の準備は続いている。しかし、主役の花嫁だけがいない。"
+              }
+            ]
+          }
+        ],
+        "search": [],
+        "evidence": []
+      }
+    },
+    "H2": {
+      "type": "location",
+      "spotId": "H2",
+      "location": "花嫁控室前",
+      "background": "images/backgrounds/bg_bridal_room_hallway.webp",
+      "enterVariants": [
+        {
+          "id": "h2_intro",
+          "onceFlag": "_seen_h2_intro",
+          "lines": [
+            {
+              "speaker": "hotelStaff",
+              "text": "こちらです。九時三十五分ごろ、お迎えに来たところ、紗月様がおられませんでした"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "まず中を確認しましょう"
+            }
+          ]
+        }
+      ],
+      "idleText": "花嫁控室の扉が目の前にある。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_staff",
+            "label": "ホテル係員",
+            "lines": [
+              {
+                "speaker": "hotelStaff",
+                "text": "私が来たときには、もういらっしゃいませんでした"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_noise",
+            "label": "物音や叫び声",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "叫び声や大きな物音は？"
+              },
+              {
+                "speaker": "hotelStaff",
+                "text": "聞いていません"
+              }
+            ],
+            "setFlags": {
+              "hotelStaffAsked": true
+            }
+          }
+        ],
+        "look": [
+          {
+            "id": "look_door",
+            "label": "控室の扉",
+            "lines": [
+              {
+                "narrator": "外から見て、扉や鍵に不自然な傷はない。"
+              }
+            ]
+          }
+        ],
+        "search": [],
+        "evidence": []
+      }
+    },
+    "H3": {
+      "type": "location",
+      "spotId": "H3",
+      "location": "花嫁控室",
+      "background": "images/backgrounds/bg_bridal_room.webp",
+      "idleText": "紗月が支度をしていた控室。室内は大きく荒れていない。",
+      "commands": {
+        "talk": [],
+        "ask": [
+          {
+            "id": "ask_staff_inside",
+            "label": "ホテル係員に聞く",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "誰かが紗月さんを連れ出したところは？"
+              },
+              {
+                "speaker": "hotelStaff",
+                "text": "見ていません"
+              }
+            ]
+          }
+        ],
+        "look": [
+          {
+            "id": "look_room",
+            "label": "部屋全体",
+            "lines": [
+              {
+                "narrator": "室内に大きく荒れた跡はない。家具や衣装も乱れていない。"
+              }
+            ],
+            "setFlags": {
+              "roomLooked": true
+            }
+          }
+        ],
+        "search": [
+          {
+            "id": "search_mirror",
+            "label": "鏡台",
+            "lines": [
+              {
+                "narrator": "化粧道具が並んでいる。急に何かが起きたようには見えない。"
+              }
+            ]
+          },
+          {
+            "id": "search_costume",
+            "label": "衣装まわり",
+            "lines": [
+              {
+                "narrator": "衣装の周囲にも、乱れた様子はない。"
+              }
+            ]
+          },
+          {
+            "id": "search_belongings",
+            "label": "私物",
+            "lines": [
+              {
+                "narrator": "いくつかの私物が控室に残されている。"
+              }
+            ],
+            "setFlags": {
+              "roomSearched": true
+            }
+          }
+        ],
+        "evidence": []
+      }
+    },
+    "H4": {
+      "type": "location",
+      "spotId": "H4",
+      "location": "ホテル廊下",
+      "background": "images/backgrounds/bg_hotel_corridor.webp",
+      "idleText": "花嫁控室と披露宴会場をつなぐホテルの廊下。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_staff_corridor",
+            "label": "ホテル係員",
+            "lines": [
+              {
+                "speaker": "hotelStaff",
+                "text": "何か確認できることがあれば、お手伝いします"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_contractors",
+            "label": "今朝の外部業者",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "今朝、この付近に出入りした外部業者は？"
+              },
+              {
+                "speaker": "hotelStaff",
+                "text": "装花のスタッフさんが来ています"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "人数は？"
+              },
+              {
+                "speaker": "hotelStaff",
+                "text": "人数までは分かりません"
+              }
+            ],
+            "setFlags": {
+              "flowerStaffKnown": true
+            }
+          },
+          {
+            "id": "ask_camera",
+            "label": "出入口の記録",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "出入口の記録はありますか"
+              },
+              {
+                "speaker": "hotelStaff",
+                "text": "防犯カメラがあります。ホテル側で確認できます"
+              },
+              {
+                "speaker": "hotelStaff",
+                "text": "支配人室で映像を確認します。必要でしたら、そちらへどうぞ"
+              }
+            ],
+            "setFlags": {
+              "hotelConfirmUnlocked": true
+            },
+            "requiresAll": [
+              "flowerStaffKnown"
+            ]
+          }
+        ],
+        "look": [
+          {
+            "id": "look_corridor",
+            "label": "廊下を見る",
+            "lines": [
+              {
+                "narrator": "式場スタッフや業者が行き交う。花嫁が作業員に紛れても、目立たないかもしれない。"
+              }
+            ]
+          }
+        ],
+        "search": [],
+        "evidence": []
+      }
+    },
+    "H5": {
+      "type": "location",
+      "spotId": "H5",
+      "location": "ホテル・支配人室",
+      "background": "images/backgrounds/bg_hotel_meetingroom.webp",
+      "enterVariants": [
+        {
+          "id": "h5_first",
+          "requiresAll": [
+            "hotelConfirmUnlocked"
+          ],
+          "notFlags": [
+            "entryCountKnown"
+          ],
+          "onceFlag": "_seen_h5_first",
+          "lines": [
+            {
+              "speaker": "hotelManager",
+              "text": "事情は伺いました。当館で映像を確認します"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "装花スタッフの入館時と退館時を確認してください"
+            }
+          ]
+        },
+        {
+          "id": "h5_return_nail",
+          "requiresAll": [
+            "nailFound"
+          ],
+          "notFlags": [
+            "nailMatched"
+          ],
+          "onceFlag": "_seen_h5_return_nail",
+          "lines": [
+            {
+              "speaker": "shichijo",
+              "text": "先ほどの五人目の静止画を、もう一度お願いします"
+            }
+          ]
+        }
+      ],
+      "idleText": "ホテル側が確認した映像や静止画を整理できる。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_manager",
+            "label": "ホテル責任者",
+            "lines": [
+              {
+                "speaker": "hotelManager",
+                "text": "必要な範囲で、当館側で映像を確認します"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_entry_count",
+            "label": "装花スタッフの入館人数",
+            "lines": [
+              {
+                "speaker": "hotelManager",
+                "text": "午前八時十二分ごろ、装花スタッフが入館しています。四人です"
+              }
+            ],
+            "setFlags": {
+              "entryCountKnown": true
+            }
+          },
+          {
+            "id": "ask_exit_count",
+            "label": "装花スタッフの退館人数",
+            "lines": [
+              {
+                "speaker": "hotelManager",
+                "text": "退館時は……五人映っています"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "入館は四人、退館は五人。五人目を確認しましょう"
+              }
+            ],
+            "setFlags": {
+              "exitCountKnown": true,
+              "fifthPersonInspected": true
+            },
+            "evidence": {
+              "fifthStaff": true
+            },
+            "requiresAll": [
+              "entryCountKnown"
+            ]
+          },
+          {
+            "id": "ask_outer_camera",
+            "label": "ホテル外側の映像",
+            "lines": [
+              {
+                "speaker": "hotelManager",
+                "text": "建物の外側のカメラにも、それらしい人物が映っています"
+              },
+              {
+                "narrator": "大きな箱を持った作業着姿の人物が、一人でホテルを離れていく。"
+              },
+              {
+                "speaker": "hotelManager",
+                "text": "京都駅の方向へ歩いています"
+              }
+            ],
+            "setFlags": {
+              "outerCameraKnown": true
+            },
+            "evidence": {
+              "hotelOuterCamera": true
+            },
+            "requiresAll": [
+              "exitCountKnown"
+            ],
+            "image": "images/evidence/ev_hotel_outer_camera.webp"
+          },
+          {
+            "id": "ask_recent_photo",
+            "label": "紗月の最近の写真",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "この人物が紗月さんか確認したいですね。最近の写真はありますか。できれば手元が写っているものを"
+              },
+              {
+                "speaker": "soichiro",
+                "text": "前撮りの写真ならあります。桐生屋に。弟の宗次郎が預かっているはずです"
+              }
+            ],
+            "setFlags": {
+              "needRecentPhoto": true,
+              "kiryuyaUnlocked": true
+            },
+            "requiresAll": [
+              "outerCameraKnown"
+            ]
+          }
+        ],
+        "look": [
+          {
+            "id": "look_fifth_face",
+            "label": "5人目の顔",
+            "lines": [
+              {
+                "narrator": "帽子とマスクで顔は判別できない。"
+              }
+            ],
+            "requiresAll": [
+              "fifthPersonInspected"
+            ],
+            "image": "images/evidence/ev_fifth_staff.webp"
+          },
+          {
+            "id": "look_fifth_box",
+            "label": "5人目の箱",
+            "lines": [
+              {
+                "narrator": "大きな箱が体の前を隠している。"
+              }
+            ],
+            "requiresAll": [
+              "fifthPersonInspected"
+            ],
+            "image": "images/evidence/ev_fifth_staff.webp"
+          },
+          {
+            "id": "look_fifth_hand",
+            "label": "5人目の手元",
+            "lines": [
+              {
+                "narrator": "箱を支える指先だけが、映像に残っている。"
+              }
+            ],
+            "requiresAll": [
+              "fifthPersonInspected"
+            ],
+            "image": "images/evidence/ev_nail_hotelside.webp"
+          },
+          {
+            "id": "look_fifth_bag",
+            "label": "5人目の持ち物",
+            "lines": [
+              {
+                "narrator": "私物用のバッグらしいものは見当たらない。"
+              }
+            ],
+            "requiresAll": [
+              "fifthPersonInspected"
+            ],
+            "image": "images/evidence/ev_fifth_staff.webp"
+          },
+          {
+            "id": "look_outer_camera",
+            "label": "ホテル外側の映像",
+            "lines": [
+              {
+                "narrator": "大きな箱を抱えた作業着姿の人物が、一人で京都駅の方角へ歩いている。"
+              }
+            ],
+            "setFlags": {
+              "outerCameraKnown": true
+            },
+            "evidence": {
+              "hotelOuterCamera": true
+            },
+            "requiresAll": ["exitCountKnown"],
+            "image": "images/evidence/ev_hotel_outer_camera.webp"
+          }
+        ],
+        "search": [],
+        "evidence": [
+          {
+            "id": "compare_nails",
+            "label": "紗月のネイルと5人目の手元を比較する",
+            "lines": [
+              {
+                "narrator": "前撮り写真の手元と、5人目の装花スタッフの手元。色と飾りの位置が一致している。"
+              }
+            ],
+            "setFlags": {
+              "nailMatched": true
+            },
+            "evidence": {
+              "nailCompare": true
+            },
+            "requiresAll": [
+              "nailFound"
+            ],
+            "notFlags": [
+              "nailMatched"
+            ],
+            "image": "images/evidence/ev_nail_compare.webp",
+            "quiz": {
+              "question": "5人目の装花スタッフは誰か？",
+              "choices": [
+                {
+                  "text": "日野沙耶",
+                  "correct": false
+                },
+                {
+                  "text": "桐生紗月",
+                  "correct": true
+                },
+                {
+                  "text": "桐生宗次郎",
+                  "correct": false
+                },
+                {
+                  "text": "別の人物",
+                  "correct": false
+                }
+              ],
+              "correctText": "五人目は紗月さんです。装花スタッフに紛れてホテルを出ています。",
+              "wrongText": "証拠と合いませんね。もう一度考えましょう。",
+              "setFlags": {
+                "fifthIsSatsuki": true,
+                "kyotoStationUnlocked": true
+              },
+              "afterLines": [
+                {
+                  "speaker": "soichiro",
+                  "text": "では、本当にホテルを出た……"
+                },
+                {
+                  "speaker": "shichijo",
+                  "text": "ええ。次は京都駅で、その先の足取りを追えます"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "K1": {
+      "type": "location",
+      "spotId": "K1",
+      "location": "桐生屋前",
+      "background": "images/backgrounds/bg_kiryuya_outside.webp",
+      "enterVariants": [
+        {
+          "id": "k1_intro",
+          "onceFlag": "_seen_k1_intro",
+          "lines": [
+            {
+              "speaker": "sojiro",
+              "text": "七条さんですね。兄から伺っています"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "宗次郎さん。紗月さんのことで、少しお話を伺えますか"
+            },
+            {
+              "speaker": "sojiro",
+              "text": "どうぞ。何でも聞いてください"
+            }
+          ],
+          "setFlags": {
+            "sojiroTalked": true
+          }
+        }
+      ],
+      "idleText": "桐生家が営む老舗の染織店、桐生屋。その店先。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_sojiro",
+            "label": "桐生宗次郎",
+            "lines": [
+              {
+                "speaker": "sojiro",
+                "text": "分かることならお話しします"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_satsuki_personality",
+            "label": "紗月について",
+            "lines": [
+              {
+                "speaker": "sojiro",
+                "text": "真面目な子です。何も言わずに結婚式から逃げるような子には見えません"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "見えません、ですか"
+              },
+              {
+                "speaker": "sojiro",
+                "text": "人の胸の中までは分かりませんから"
+              }
+            ]
+          },
+          {
+            "id": "ask_recent",
+            "label": "最近の様子",
+            "lines": [
+              {
+                "speaker": "sojiro",
+                "text": "特に変わった話は聞いていません"
+              }
+            ]
+          },
+          {
+            "id": "ask_soichiro",
+            "label": "宗一郎について",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "宗一郎さんとは、よく似ていらっしゃいますね"
+              },
+              {
+                "speaker": "sojiro",
+                "text": "ははは、双子ですから"
+              }
+            ],
+            "setFlags": {
+              "kiryuyaInsideUnlocked": true
+            }
+          }
+        ],
+        "look": [
+          {
+            "id": "look_kiryuya_front",
+            "label": "店構え",
+            "lines": [
+              {
+                "narrator": "老舗らしい落ち着いた店構えだ。"
+              }
+            ]
+          }
+        ],
+        "search": [],
+        "evidence": []
+      }
+    },
+    "K2": {
+      "type": "location",
+      "spotId": "K2",
+      "location": "桐生屋店内",
+      "background": "images/backgrounds/bg_kiryuya_inside.webp",
+      "enterVariants": [
+        {
+          "id": "k2_intro",
+          "notFlags": [
+            "sayaMet"
+          ],
+          "onceFlag": "_seen_k2_intro",
+          "lines": [
+            {
+              "narrator": "店の中には、桐生屋で働いている日野沙耶がいた。"
+            },
+            {
+              "speaker": "saya",
+              "text": "いらっしゃいませ"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "紗月さんのことで、いくつか伺ってもよろしいですか"
+            },
+            {
+              "speaker": "saya",
+              "text": "私に、ですか？"
+            }
+          ],
+          "setFlags": {
+            "sayaMet": true
+          }
+        }
+      ],
+      "idleText": "染織の資料や道具が並ぶ桐生屋の店内。沙耶は作業台のそばに立っている。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_saya",
+            "label": "日野沙耶",
+            "lines": [
+              {
+                "speaker": "saya",
+                "text": "私に分かることなら……"
+              }
+            ]
+          },
+          {
+            "id": "talk_sojiro_inside",
+            "label": "桐生宗次郎",
+            "lines": [
+              {
+                "speaker": "sojiro",
+                "text": "前撮り写真のことですね。こちらにあります"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_saya_morning",
+            "label": "沙耶：今朝の紗月",
+            "lines": [
+              {
+                "speaker": "saya",
+                "text": "会っていません。連絡もありません"
+              }
+            ]
+          },
+          {
+            "id": "ask_saya_wedding",
+            "label": "沙耶：婚礼について",
+            "lines": [
+              {
+                "speaker": "saya",
+                "text": "楽しみにしていたと思います"
+              }
+            ]
+          },
+          {
+            "id": "ask_saya_hotel",
+            "label": "沙耶：ホテルへ行った？",
+            "lines": [
+              {
+                "speaker": "saya",
+                "text": "行ってません"
+              },
+              {
+                "narrator": "返事の前に、わずかな間があった。"
+              }
+            ]
+          },
+          {
+            "id": "ask_photo",
+            "label": "宗次郎：前撮り写真",
+            "lines": [
+              {
+                "speaker": "sojiro",
+                "text": "前撮りの写真なら、こちらにあります。北野天満宮で撮ったものです"
+              }
+            ],
+            "setFlags": {
+              "preWeddingPhotoKnown": true
+            },
+            "evidence": {
+              "satsukiPhoto": true
+            }
+          }
+        ],
+        "look": [
+          {
+            "id": "look_desk",
+            "label": "作業台",
+            "lines": [
+              {
+                "narrator": "染織関係の資料が広げられている。"
+              }
+            ]
+          },
+          {
+            "id": "look_shelf",
+            "label": "棚",
+            "lines": [
+              {
+                "narrator": "古い帳面や資料が並んでいる。"
+              }
+            ]
+          },
+          {
+            "id": "look_photo_face",
+            "label": "前撮り写真：顔",
+            "lines": [
+              {
+                "narrator": "北野天満宮で撮られた写真の中で、紗月が穏やかに笑っている。"
+              }
+            ],
+            "requiresAll": ["preWeddingPhotoKnown"],
+            "image": "images/evidence/ev_satsuki_photo.webp"
+          },
+          {
+            "id": "look_photo_kimono",
+            "label": "前撮り写真：着物",
+            "lines": [
+              {
+                "narrator": "紗月が身に着けているのは、華やかな意匠の着物だ。"
+              }
+            ],
+            "requiresAll": ["preWeddingPhotoKnown"],
+            "image": "images/evidence/ev_satsuki_photo.webp"
+          },
+          {
+            "id": "look_photo_hand",
+            "label": "前撮り写真：手元",
+            "lines": [
+              {
+                "narrator": "写真に写る紗月の指先には、特徴的なネイルが施されている。"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "この手元を記録させていただいても？"
+              },
+              {
+                "speaker": "sojiro",
+                "text": "構いませんよ"
+              }
+            ],
+            "setFlags": {"nailFound": true},
+            "evidence": {"satsukiNail": true},
+            "requiresAll": ["preWeddingPhotoKnown"],
+            "image": "images/evidence/ev_satsuki_nail.webp"
+          }
+        ],
+        "search": [
+          {
+            "id": "search_desk",
+            "label": "机の上",
+            "lines": [
+              {
+                "narrator": "机の上には染織関係の資料が広げられ、その端に小さな紙の包みが置かれている。"
+              },
+              {
+                "narrator": "中に何が入っているのだろう。"
+              }
+            ],
+            "setFlags": {
+              "paperPackageNoticed": true
+            },
+            "notFlags": [
+              "paperPackageNoticed",
+              "sayaSuspicious"
+            ]
+          },
+          {
+            "id": "search_package",
+            "label": "紙の包み",
+            "lines": [
+              {
+                "narrator": "七条が紙の包みに手を伸ばした、その時だった。"
+              },
+              {
+                "speaker": "saya",
+                "text": "すみません。それは仕事のものですから"
+              },
+              {
+                "narrator": "沙耶は七条を遮るように紙の包みを取り上げ、棚の奥へ片付けた。"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "見られると、何か困ることでも？"
+              },
+              {
+                "speaker": "saya",
+                "text": "いいえ。ただ、勝手に触れられては困ります"
+              },
+              {
+                "narrator": "沙耶はそう言って、七条から視線を外した。"
+              }
+            ],
+            "setFlags": {
+              "sayaSuspicious": true
+            },
+            "requiresAll": [
+              "paperPackageNoticed"
+            ],
+            "notFlags": [
+              "sayaSuspicious"
+            ]
+          },
+          {
+            "id": "search_desk_after_package",
+            "label": "机の上",
+            "lines": [
+              {
+                "narrator": "紙の包みはもうない。机の上には染織関係の資料だけが残っている。"
+              }
+            ],
+            "requiresAll": [
+              "sayaSuspicious"
+            ]
+          }
+        ],
+        "evidence": []
+      }
+    },
+    "K3": {
+      "type": "location",
+      "spotId": "K3",
+      "location": "桐生屋・応接スペース",
+      "background": "images/backgrounds/bg_kiryuya_inside.webp",
+      "enterVariants": [
+        {
+          "id": "k3_intro",
+          "requiresAll": [
+            "preWeddingPhotoKnown"
+          ],
+          "onceFlag": "_seen_k3_intro",
+          "lines": [
+            {
+              "speaker": "sojiro",
+              "text": "これが前撮りの写真です"
+            },
+            {
+              "narrator": "北野天満宮で撮られた紗月の写真が置かれた。"
+            }
+          ],
+          "evidence": {
+            "satsukiPhoto": true
+          }
+        }
+      ],
+      "idleText": "前撮り写真を落ち着いて確認できる応接スペース。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_sojiro_photo",
+            "label": "桐生宗次郎",
+            "lines": [
+              {
+                "speaker": "sojiro",
+                "text": "必要なら、写真をよく見てください"
+              }
+            ]
+          }
+        ],
+        "ask": [],
+        "look": [
+          {
+            "id": "look_photo_face",
+            "label": "前撮り写真：顔",
+            "lines": [
+              {
+                "narrator": "紗月が穏やかに笑っている。"
+              }
+            ],
+            "requiresAll": [
+              "preWeddingPhotoKnown"
+            ]
+          },
+          {
+            "id": "look_photo_kimono",
+            "label": "前撮り写真：着物",
+            "lines": [
+              {
+                "narrator": "華やかな意匠の着物だ。"
+              }
+            ],
+            "requiresAll": [
+              "preWeddingPhotoKnown"
+            ]
+          },
+          {
+            "id": "look_photo_hand",
+            "label": "前撮り写真：手",
+            "lines": [
+              {
+                "narrator": "紗月の指先には、特徴的なネイルが施されている。"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "この手元を記録させていただいても？"
+              },
+              {
+                "speaker": "sojiro",
+                "text": "構いませんよ"
+              }
+            ],
+            "setFlags": {
+              "nailFound": true
+            },
+            "evidence": {
+              "satsukiNail": true
+            },
+            "requiresAll": [
+              "preWeddingPhotoKnown"
+            ]
+          }
+        ],
+        "search": [],
+        "evidence": []
+      }
+    },
+    "S1": {
+      "type": "location",
+      "spotId": "S1",
+      "location": "京都駅構内",
+      "background": "images/backgrounds/bg_kyoto_station_concourse.webp",
+      "enterVariants": [
+        {
+          "id": "s1_intro",
+          "notFlags": [
+            "stationVisited"
+          ],
+          "onceFlag": "_seen_s1_intro",
+          "lines": [
+            {
+              "narrator": "七条は京都駅へ向かった。人の流れが絶えない。"
+            },
+            {
+              "narrator": "ホテルを出た5人目は、作業着姿で大きな箱を持っていた。"
+            }
+          ],
+          "setFlags": {
+            "stationVisited": true
+          }
+        }
+      ],
+      "idleText": "人の流れが絶えない京都駅構内。",
+      "commands": {
+        "talk": [],
+        "ask": [],
+        "look": [
+          {
+            "id": "look_station_flow",
+            "label": "駅構内を見る",
+            "lines": [
+              {
+                "narrator": "売店、コインロッカー、在来線改札へ人が流れている。"
+              }
+            ]
+          }
+        ],
+        "search": [],
+        "evidence": []
+      }
+    },
+    "S2": {
+      "type": "location",
+      "spotId": "S2",
+      "location": "京都駅・売店",
+      "background": "images/backgrounds/bg_kyoto_station_shop.webp",
+      "idleText": "駅構内の売店。店員がレジに立っている。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_clerk",
+            "label": "売店店員",
+            "lines": [
+              {
+                "speaker": "shopClerk",
+                "text": "何でしょうか"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_show_photo",
+            "label": "紗月の写真を見せる",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "この女性を見ませんでしたか"
+              },
+              {
+                "speaker": "shopClerk",
+                "text": "あ、この人なら覚えています。ここで飲み物を買われました"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "なぜ覚えていたのです？"
+              },
+              {
+                "speaker": "shopClerk",
+                "text": "支払いのとき、小銭を何枚も床に落としてしまって。私も一緒に拾ったんです"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "何時ごろでしたか"
+              },
+              {
+                "speaker": "shopClerk",
+                "text": "レジの記録では、九時十九分です"
+              }
+            ],
+            "setFlags": {
+              "shopPhotoShown": true
+            }
+          },
+          {
+            "id": "ask_clothes",
+            "label": "その時の服装",
+            "lines": [
+              {
+                "speaker": "shopClerk",
+                "text": "普通の服でしたよ"
+              }
+            ],
+            "setFlags": {
+              "shopClothesKnown": true
+            },
+            "requiresAll": [
+              "shopPhotoShown"
+            ]
+          },
+          {
+            "id": "ask_bag",
+            "label": "バッグを持っていた？",
+            "lines": [
+              {
+                "speaker": "shopClerk",
+                "text": "女性もののバッグを持っていました"
+              }
+            ],
+            "setFlags": {
+              "shopBagKnown": true
+            },
+            "requiresAll": [
+              "shopPhotoShown"
+            ]
+          },
+          {
+            "id": "ask_direction",
+            "label": "買い物の後、どちらへ？",
+            "lines": [
+              {
+                "speaker": "shopClerk",
+                "text": "在来線の改札の方へ行きました。一人でしたよ"
+              }
+            ],
+            "setFlags": {
+              "shopDirectionKnown": true,
+              "shopWitness": true
+            },
+            "requiresAll": [
+              "shopPhotoShown"
+            ]
+          }
+        ],
+        "look": [],
+        "search": [],
+        "evidence": []
+      }
+    },
+    "S3": {
+      "type": "location",
+      "spotId": "S3",
+      "location": "京都駅・コインロッカー",
+      "background": "images/backgrounds/bg_kyoto_station_locker.webp",
+      "idleText": "駅構内のコインロッカーが並んでいる。",
+      "commands": {
+        "talk": [],
+        "ask": [
+          {
+            "id": "ask_around_locker",
+            "label": "周辺で聞き込む",
+            "lines": [
+              {
+                "narrator": "周辺で聞き込むが、紗月を覚えている人物はいなかった。"
+              }
+            ]
+          }
+        ],
+        "look": [
+          {
+            "id": "look_lockers",
+            "label": "ロッカーを見る",
+            "lines": [
+              {
+                "narrator": "コインロッカーが並んでいる。どれを使ったかを示す手掛かりはない。"
+              }
+            ]
+          }
+        ],
+        "search": [
+          {
+            "id": "search_lockers",
+            "label": "コインロッカー周辺",
+            "lines": [
+              {
+                "narrator": "周囲を調べても、紗月がここを使ったと確認できる材料は見つからない。"
+              },
+              {
+                "narrator": "そのとき、少し離れた多目的トイレの前に、清掃員が立っているのが見えた。"
+              }
+            ],
+            "setFlags": {
+              "lockerChecked": true,
+              "toiletUnlocked": true
+            }
+          }
+        ],
+        "evidence": []
+      }
+    },
+    "S4": {
+      "type": "location",
+      "spotId": "S4",
+      "location": "京都駅・多目的トイレ前",
+      "background": "images/backgrounds/bg_kyoto_station_multipurpose_toilet.webp",
+      "enterVariants": [
+        {
+          "id": "s4_intro",
+          "onceFlag": "_seen_s4_intro",
+          "lines": [
+            {
+              "narrator": "多目的トイレの前に清掃員が立っている。足元には、平たく畳まれた大きな段ボール箱があった。"
+            }
+          ]
+        }
+      ],
+      "idleText": "清掃員が、多目的トイレ前に立っている。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_cleaner",
+            "label": "清掃員",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "失礼。何かあったのですか"
+              },
+              {
+                "speaker": "cleaner",
+                "text": "清掃に入ったら、トイレの中にこの箱が置かれていたんです"
+              }
+            ],
+            "setFlags": {
+              "stationStaffTalked": true
+            }
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_what_happened",
+            "label": "何があった？",
+            "lines": [
+              {
+                "speaker": "cleaner",
+                "text": "個室の隅にありました。最初は忘れ物かと思ったんですが、箱は平たく畳まれていました"
+              }
+            ],
+            "requiresAny": [
+              "stationStaffTalked"
+            ]
+          },
+          {
+            "id": "ask_when_found",
+            "label": "いつ見つかった？",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "見つけたのは何時ごろですか"
+              },
+              {
+                "speaker": "cleaner",
+                "text": "九時半ごろです。清掃に入ったときに見つけました"
+              },
+              {
+                "narrator": "ホテルから五人目が出た後の時間帯と大きく矛盾しない。"
+              }
+            ],
+            "requiresAny": [
+              "stationStaffTalked"
+            ]
+          }
+        ],
+        "look": [
+          {
+            "id": "look_folded_box",
+            "label": "畳まれた箱",
+            "lines": [
+              {
+                "narrator": "ホテルを出た5人目が持っていたものと同じくらいの大きさの箱だ。"
+              }
+            ],
+            "image": "images/evidence/ev_folded_box.webp"
+          }
+        ],
+        "search": [
+          {
+            "id": "search_folded_box",
+            "label": "畳まれた段ボール箱",
+            "lines": [
+              {
+                "narrator": "箱は平たく畳まれている。持ち主を特定できる表示はない。"
+              }
+            ],
+            "setFlags": {
+              "foldedBoxFound": true,
+              "gateUnlocked": true
+            },
+            "evidence": {
+              "foldedBox": true
+            },
+            "requiresAny": [
+              "stationStaffTalked"
+            ],
+            "image": "images/evidence/ev_folded_box.webp"
+          }
+        ],
+        "evidence": []
+      }
+    },
+    "S5": {
+      "type": "location",
+      "spotId": "S5",
+      "location": "京都駅・在来線改札付近",
+      "background": "images/backgrounds/bg_kyoto_station_gate.webp",
+      "idleText": "在来線改札の近くに、各方面の時刻表が掲示されている。",
+      "commands": {
+        "talk": [],
+        "ask": [],
+        "look": [
+          {
+            "id": "look_departures",
+            "label": "近くの時刻表",
+            "lines": [
+              {
+                "narrator": "売店のレジ記録は、九時十九分。七条は改札近くの時刻表を確認した。"
+              },
+              {
+                "narrator": "その後の列車は、九時二十八分の琵琶湖線、九時三十一分の嵯峨野線、九時三十四分の奈良線。"
+              },
+              {
+                "speaker": "shichijo",
+                "text": "最初に乗れたのは、九時二十八分発の琵琶湖線方面ですね"
+              }
+            ],
+            "setFlags": {
+              "departureBoardChecked": true
+            }
+          }
+        ],
+        "search": [],
+        "evidence": [
+          {
+            "id": "organize_station",
+            "label": "京都駅で得た情報を整理する",
+            "requiresAll": [
+              "departureBoardChecked",
+              "foldedBoxFound",
+              "shopWitness"
+            ],
+            "notFlags": [
+              "stationMysterySolved"
+            ],
+            "quiz": {
+              "mode": "deduction",
+              "question": "ホテルを出た後、紗月はどうしたと考えられるか？",
+              "choices": [
+                {
+                  "text": "そのまま作業着で移動した",
+                  "correct": false
+                },
+                {
+                  "text": "どこかで私服に着替えた",
+                  "correct": true
+                },
+                {
+                  "text": "ホテルへ戻った",
+                  "correct": false
+                },
+                {
+                  "text": "沙耶と合流した",
+                  "correct": false
+                }
+              ],
+              "correctText": "売店では私服姿でした。ホテルを出た後、どこかで着替えたと考えられます。",
+              "wrongText": "売店での服装を思い出してみましょう。",
+              "nextQuiz": {
+                "question": "箱を処理した可能性が高い場所は？",
+                "choices": [
+                  {
+                    "text": "売店",
+                    "correct": false
+                  },
+                  {
+                    "text": "コインロッカー",
+                    "correct": false
+                  },
+                  {
+                    "text": "多目的トイレ",
+                    "correct": true
+                  },
+                  {
+                    "text": "ホテルの外",
+                    "correct": false
+                  }
+                ],
+                "correctText": "多目的トイレで畳まれた大きな箱が見つかっています。",
+                "wrongText": "畳まれた箱が見つかった場所を確認しましょう。",
+                "nextQuiz": {
+                  "question": "紗月が次に向かった可能性が最も高いのは？",
+                  "choices": [
+                    {
+                      "text": "新幹線方面",
+                      "correct": false
+                    },
+                    {
+                      "text": "近鉄線方面",
+                      "correct": false
+                    },
+                    {
+                      "text": "琵琶湖線方面",
+                      "correct": true
+                    },
+                    {
+                      "text": "京都駅の外",
+                      "correct": false
+                    }
+                  ],
+                  "correctText": "琵琶湖線方面が有力です。ただし、実際に乗車したとは断定できません。",
+                  "wrongText": "売店を出た時刻と、改札近くの時刻表を確認してみましょう。",
+                  "setFlags": {
+                    "stationMysterySolved": true,
+                    "hotelReturnUnlocked": true
+                  },
+                  "afterLines": [
+                    {
+                      "narrator": "京都駅で得た情報が一通りそろった。宗一郎に報告するため、ホテルへ戻ろう。"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "H6": {
+      "type": "location",
+      "spotId": "H6",
+      "location": "ホテル・祝電置き場",
+      "background": "images/backgrounds/bg_hotel_gift_area.webp",
+      "enterVariants": [
+        {
+          "id": "h6_intro",
+          "onceFlag": "_seen_h6_intro",
+          "lines": [
+            {
+              "narrator": "披露宴会場の一角には、届いた祝電がまとめられていた。"
+            },
+            {
+              "speaker": "hotelStaff",
+              "text": "桐生様、こちらの祝電ですが……"
+            },
+            {
+              "speaker": "soichiro",
+              "text": "今はそのままにしておいてください"
+            },
+            {
+              "speaker": "shichijo",
+              "text": "宗一郎さん。これも祝電ですか"
+            }
+          ]
+        }
+      ],
+      "idleText": "祝電の束の中に、一通だけ雰囲気の違う写真電報がある。",
+      "commands": {
+        "talk": [
+          {
+            "id": "talk_soichiro_telegram",
+            "label": "桐生宗一郎",
+            "lines": [
+              {
+                "speaker": "soichiro",
+                "text": "その電報が、どうかしましたか"
+              }
+            ]
+          }
+        ],
+        "ask": [
+          {
+            "id": "ask_sender",
+            "label": "差出人",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "差出人は？"
+              },
+              {
+                "speaker": "soichiro",
+                "text": "……分かりません"
+              }
+            ],
+            "requiresAll": [
+              "telegramFound"
+            ]
+          },
+          {
+            "id": "ask_clue",
+            "label": "『あの日』に心当たりは？",
+            "lines": [
+              {
+                "speaker": "shichijo",
+                "text": "『あの日』という言葉に、心当たりは？"
+              },
+              {
+                "speaker": "soichiro",
+                "text": "ありません"
+              }
+            ],
+            "setFlags": {
+              "telegramAsked": true
+            },
+            "chapterEnd": true,
+            "requiresAll": [
+              "telegramFound"
+            ],
+            "notFlags": [
+              "chapter1Clear"
+            ]
+          }
+        ],
+        "look": [
+          {
+            "id": "look_telegram",
+            "label": "写真電報",
+            "lines": [
+              {
+                "narrator": "湖上に浮かぶ灯浮標。その下には一文だけが記されていた。"
+              },
+              {
+                "narrator": "『あの日のことを、すべて話してください。』"
+              }
+            ],
+            "setFlags": {
+              "telegramFound": true
+            },
+            "evidence": {
+              "telegram": true
+            },
+            "image": "images/evidence/ev_photo_telegram.webp"
+          }
+        ],
+        "search": [
+          {
+            "id": "search_telegram",
+            "label": "写真と文面",
+            "lines": [
+              {
+                "narrator": "写真には湖上の灯浮標が写っている。失踪事件との関係を示すものは、まだない。"
+              }
+            ],
+            "requiresAll": [
+              "telegramFound"
+            ]
+          }
+        ],
+        "evidence": []
+      }
+    }
+  }
+};
 </script>
 <script>
 // ======================================================
@@ -4226,6 +9125,7 @@ const SAVE_KEY = "koeiBrideSave_moveDriven_v1";
 const SETTINGS_KEY = "koeiBrideSettings_v1";
 const PROGRESS_KEY = "koeiBrideProgress_v1";
 const SAVE_NOTICE_KEY = "koeiBrideSaveNoticeSeen_v1";
+const SAVE_SCHEMA_VERSION = 4;
 
 const DEFAULT_SETTINGS = { soundOn: true, speedLevel: 3 };
 const SPEED_TABLE = { 1: 90, 2: 65, 3: 45, 4: 25, 5: 10 };
@@ -4238,7 +9138,7 @@ const VOICE_TABLE = {
   hotelStaff:   { frequency: 310, type: "square" },
   hotelManager: { frequency: 180, type: "square" },
   shopClerk:    { frequency: 340, type: "square" },
-  stationStaff: { frequency: 205, type: "square" }
+  cleaner:      { frequency: 275, type: "triangle" }
 };
 
 const FACE_TABLE = {
@@ -4248,7 +9148,8 @@ const FACE_TABLE = {
   saya: "images/faces/face_saya.webp",
   hotelStaff: "images/faces/face_hotel_staff.webp",
   hotelManager: "images/faces/face_hotel_manager.webp",
-  shopClerk: "images/faces/face_shop_clerk.webp"
+  shopClerk: "images/faces/face_shop_clerk.webp",
+  cleaner: "images/faces/face_cleaner.webp"
 };
 
 let settings = loadSettings();
@@ -4257,6 +9158,7 @@ let game = createFreshGameState();
 const el = {
   game: document.querySelector("#game"),
   background: document.querySelector("#background"),
+  backgroundImage: document.querySelector("#background-image"),
   characterLayer: document.querySelector("#character-layer"),
   speaker: document.querySelector("#speaker-name"),
   portraitWrap: document.querySelector("#speaker-portrait-wrap"),
@@ -4264,10 +9166,13 @@ const el = {
   locationBadge: document.querySelector("#location-badge"),
   message: document.querySelector("#message-text"),
   choiceArea: document.querySelector("#choice-area"),
+  deductionLayer: document.querySelector("#deduction-layer"),
   evidenceImage: document.querySelector("#evidence-image"),
   nextIndicator: document.querySelector("#next-indicator"),
   menuButton: document.querySelector("#menu-button"),
   commandPanel: document.querySelector("#command-panel"),
+  commandPanelTitle: document.querySelector(".command-panel-title"),
+  commandMainButtons: document.querySelector("#command-main-buttons"),
   commandSubchoices: document.querySelector("#command-subchoices"),
   cmdTalk: document.querySelector("#cmd-talk"),
   cmdAsk: document.querySelector("#cmd-ask"),
@@ -4296,11 +9201,42 @@ function createFreshGameState() {
     currentFullText: "",
     isTyping: false,
     typingTimer: null,
-    autoAdvanceTimer: null,
     waitingForAdvance: false,
     lineFinishCallback: null,
+    autoFinishLastLine: false,
+    deductionMode: false,
     activeQuiz: null
   };
+}
+
+function migrateLegacySave(data) {
+  const migrated = { ...data };
+  migrated.flags = { ...(data.flags ?? {}) };
+  migrated.evidence = { ...(data.evidence ?? {}) };
+  migrated.actionHistory = { ...(data.actionHistory ?? {}) };
+
+  // 旧版のK3（応接スペース）は、統合後のK2（桐生屋店内）へ読み替える。
+  if (migrated.sceneId === "K3" || migrated.currentSpotId === "K3") {
+    migrated.sceneId = "K2";
+    migrated.currentSpotId = "K2";
+  }
+
+  // 店内解放フラグ追加前のセーブで、すでに店内へ進んでいた場合は閉じ戻さない。
+  const alreadyReachedKiryuyaInside =
+    migrated.sceneId === "K2" ||
+    migrated.currentSpotId === "K2" ||
+    migrated.flags.sayaMet ||
+    migrated.flags.preWeddingPhotoKnown ||
+    migrated.flags.nailFound;
+  if (alreadyReachedKiryuyaInside) migrated.flags.kiryuyaInsideUnlocked = true;
+
+  Object.entries(migrated.actionHistory).forEach(([key, value]) => {
+    if (!key.startsWith("K3:")) return;
+    const compatibleKey = key.replace(/^K3:/, "K2:");
+    if (!(compatibleKey in migrated.actionHistory)) migrated.actionHistory[compatibleKey] = value;
+  });
+
+  return migrated;
 }
 
 function loadSettings() {
@@ -4377,13 +9313,22 @@ function markSaveNoticeSeen() {
 
 function ensureAudioContext() {
   if (!settings.soundOn) return;
-  if (!audioContext) {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return;
-    audioContext = new AudioCtx();
+  try {
+    if (!audioContext) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      audioContext = new AudioCtx();
+    }
+    if (audioContext.state === "suspended") {
+      const resumeResult = audioContext.resume();
+      if (resumeResult?.catch) resumeResult.catch(() => {});
+    }
+    audioUnlocked = true;
+  } catch (error) {
+    // 音声が使えない環境でも、画面遷移とゲーム操作は止めない。
+    audioUnlocked = false;
+    console.warn("音声機能を開始できませんでした。", error);
   }
-  if (audioContext.state === "suspended") audioContext.resume().catch(() => {});
-  audioUnlocked = true;
 }
 
 function playTextSound(speakerId, charIndex, char) {
@@ -4408,25 +9353,7 @@ function playTextSound(speakerId, charIndex, char) {
 
 function clearTypingTimer() {
   if (game.typingTimer) clearTimeout(game.typingTimer);
-  if (game.autoAdvanceTimer) clearTimeout(game.autoAdvanceTimer);
   game.typingTimer = null;
-  game.autoAdvanceTimer = null;
-}
-
-function isCurrentLineLast() {
-  return game.lineIndex >= 0 && game.lineIndex >= game.lineQueue.length - 1;
-}
-
-function scheduleAutoReturnAfterLastLine() {
-  if (!isCurrentLineLast()) return false;
-  if (game.autoAdvanceTimer) clearTimeout(game.autoAdvanceTimer);
-  game.waitingForAdvance = false;
-  setNextIndicator(false);
-  game.autoAdvanceTimer = setTimeout(() => {
-    game.autoAdvanceTimer = null;
-    showNextLine();
-  }, 1100);
-  return true;
 }
 
 function setNextIndicator(show) {
@@ -4448,7 +9375,13 @@ function typeText(text, speakerId = null) {
     if (!game.isTyping) return;
     if (index >= game.currentFullText.length) {
       game.isTyping = false;
-      if (scheduleAutoReturnAfterLastLine()) return;
+      if (game.autoFinishLastLine && game.lineIndex === game.lineQueue.length - 1) {
+        game.waitingForAdvance = false;
+        setNextIndicator(false);
+        game.autoFinishLastLine = false;
+        queueMicrotask(showNextLine);
+        return;
+      }
       game.waitingForAdvance = true;
       setNextIndicator(true);
       return;
@@ -4469,7 +9402,13 @@ function skipTyping() {
   clearTypingTimer();
   if (el.message) el.message.textContent = game.currentFullText;
   game.isTyping = false;
-  if (scheduleAutoReturnAfterLastLine()) return true;
+  if (game.autoFinishLastLine && game.lineIndex === game.lineQueue.length - 1) {
+    game.waitingForAdvance = false;
+    setNextIndicator(false);
+    game.autoFinishLastLine = false;
+    queueMicrotask(showNextLine);
+    return true;
+  }
   game.waitingForAdvance = true;
   setNextIndicator(true);
   return true;
@@ -4515,11 +9454,13 @@ function clearMessage() {
   setNextIndicator(false);
 }
 
-function startLines(lines, callback = null) {
+function startLines(lines, callback = null, options = {}) {
   clearCommandAvailability();
+  hideCommandPanel();
   game.lineQueue = lines ?? [];
   game.lineIndex = -1;
   game.lineFinishCallback = callback;
+  game.autoFinishLastLine = !!options.autoFinishLastLine;
   showNextLine();
 }
 
@@ -4531,6 +9472,7 @@ function showNextLine() {
     setNextIndicator(false);
     const callback = game.lineFinishCallback;
     game.lineFinishCallback = null;
+    game.autoFinishLastLine = false;
     game.lineQueue = [];
     game.lineIndex = -1;
     if (callback) callback();
@@ -4577,6 +9519,65 @@ function handleKeydown(event) {
 function clearCommandSubchoices() {
   if (el.commandSubchoices) el.commandSubchoices.innerHTML = "";
   document.querySelectorAll(".command-button.is-active").forEach((node) => node.classList.remove("is-active"));
+}
+
+const COMMAND_LABELS = {
+  talk: "はなす",
+  ask: "きく",
+  look: "みる",
+  search: "しらべる",
+  evidence: "しょうこ",
+  move: "いどう"
+};
+
+function hideCommandPanel() {
+  if (!el.commandPanel) return;
+  el.commandPanel.classList.add("is-hidden");
+  el.commandPanel.setAttribute("aria-hidden", "true");
+}
+
+function showMainCommands() {
+  if (!el.commandPanel) return;
+  el.commandPanel.style.display = "";
+  el.commandPanel.classList.remove("is-hidden", "has-subchoices");
+  el.commandPanel.setAttribute("aria-hidden", "false");
+  if (el.commandPanelTitle) el.commandPanelTitle.textContent = "COMMAND";
+  clearCommandSubchoices();
+  updateCommandAvailability();
+}
+
+function showSubchoicePanel(command, options = {}) {
+  if (!el.commandPanel || !el.commandSubchoices) return;
+  const allowBack = options.allowBack !== false;
+  const label = options.label ?? COMMAND_LABELS[command] ?? "選択肢";
+
+  el.commandPanel.style.display = "";
+  el.commandPanel.classList.remove("is-hidden");
+  el.commandPanel.classList.add("has-subchoices");
+  el.commandPanel.setAttribute("aria-hidden", "false");
+  if (el.commandPanelTitle) el.commandPanelTitle.textContent = "ACTION";
+
+  const header = document.createElement("div");
+  header.className = "command-subchoice-header";
+
+  const title = document.createElement("strong");
+  title.className = "command-subchoice-title";
+  title.textContent = label;
+  header.appendChild(title);
+
+  if (allowBack) {
+    const backButton = document.createElement("button");
+    backButton.type = "button";
+    backButton.className = "command-back-button";
+    backButton.textContent = "コマンドに戻る";
+    backButton.addEventListener("click", event => {
+      event.stopPropagation();
+      showMainCommands();
+    });
+    header.appendChild(backButton);
+  }
+
+  el.commandSubchoices.appendChild(header);
 }
 
 function setActiveCommand(type) {
@@ -4647,7 +9648,7 @@ function maybeShowTutorial(callback = null) {
   box.className = "tutorial-box";
 
   const p1 = document.createElement("p");
-  p1.textContent = "右側の6つのコマンドから行動を選びます。";
+  p1.textContent = "画面内の6つのコマンドから行動を選びます。";
   const p2 = document.createElement("p");
   p2.textContent = "情報が増えると、使えそうなコマンドが少し明るくなり、行ける場所も増えます。";
   const p3 = document.createElement("p");
@@ -4666,7 +9667,13 @@ function maybeShowTutorial(callback = null) {
 
 function showCommandFeedback(text) {
   if (!el.commandSubchoices) return;
-  el.commandSubchoices.innerHTML = "";
+  if (!el.commandPanel?.classList.contains("has-subchoices")) {
+    clearCommandSubchoices();
+    showSubchoicePanel(null, { label: "お知らせ" });
+  }
+  [...el.commandSubchoices.children]
+    .filter(node => !node.classList.contains("command-subchoice-header"))
+    .forEach(node => node.remove());
   const p = document.createElement("p");
   p.className = "command-feedback";
   p.textContent = text;
@@ -4688,17 +9695,6 @@ function applyEffects(effect) {
   if (effect.setFlags) Object.assign(game.flags, effect.setFlags);
   if (effect.evidence) Object.assign(game.evidence, effect.evidence);
   syncChapterProgressFromFlags();
-}
-
-function getEffectImage(effect) {
-  if (!effect) return null;
-  if (effect.image) return effect.image;
-  const evidence = effect.evidence ?? null;
-  if (!evidence) return null;
-  for (const [id, enabled] of Object.entries(evidence)) {
-    if (enabled && evidenceMaster[id]?.image) return evidenceMaster[id].image;
-  }
-  return null;
 }
 
 function getCurrentScene() {
@@ -4723,6 +9719,7 @@ function renderActionChoices(command) {
 
   clearCommandSubchoices();
   setActiveCommand(command);
+  showSubchoicePanel(command);
 
   const actions = (scene.commands?.[command] ?? []).filter(action => isActionAvailable(action, command));
 
@@ -4776,26 +9773,114 @@ function executeAction(command, action) {
   if (!checkCondition(action)) return;
 
   clearCommandSubchoices();
+  hideCommandPanel();
   if (action.once) game.actionHistory[getActionKey(command, action)] = true;
 
   applyEffects(action);
 
-  const previewImage = getEffectImage(action);
-  if (previewImage) showEvidenceImage(previewImage);
+  if (action.image) showEvidenceImage(action.image);
 
   const afterLines = () => {
     if (action.quiz) startQuiz(action.quiz);
-    else showLocationIdle();
+    else if (action.chapterEnd) showChapterEndPrompt();
+    else if (!maybeAdvanceInvestigation()) returnToCommandsAfterAction();
   };
 
-  if (action.lines?.length) startLines(action.lines, afterLines);
+  if (action.lines?.length) startLines(action.lines, afterLines, { autoFinishLastLine: true });
   else afterLines();
 }
 
+function returnToCommandsAfterAction() {
+  game.waitingForAdvance = false;
+  game.activeQuiz = null;
+  setNextIndicator(false);
+  showMainCommands();
+}
+
+function showStoryProgressPrompt(label, buttonText, callback) {
+  game.waitingForAdvance = false;
+  game.activeQuiz = null;
+  setNextIndicator(false);
+  clearCommandSubchoices();
+  showSubchoicePanel(null, { allowBack: false, label });
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "command-subchoice-button story-progress-button";
+  button.textContent = buttonText;
+  button.addEventListener("click", event => {
+    event.stopPropagation();
+    ensureAudioContext();
+    hideCommandPanel();
+    callback();
+  });
+  el.commandSubchoices?.appendChild(button);
+}
+
+function showChapterEndPrompt() {
+  showStoryProgressPrompt("第1章", "第1章を終える", showChapterOneEnding);
+}
+
+function isStationInvestigationComplete() {
+  return ["S1", "S2", "S3", "S4", "S5"].includes(game.sceneId) &&
+    !!game.flags.nailMatched &&
+    !!game.flags.shopWitness &&
+    !!game.flags.foldedBoxFound &&
+    !!game.flags.departureBoardChecked &&
+    !game.flags.stationMysterySolved &&
+    !game.activeQuiz;
+}
+
+function isHotelDeductionReady() {
+  return game.sceneId === "H1" &&
+    !!game.flags.stationMysterySolved &&
+    !game.flags.chapterMysterySolved &&
+    !game.activeQuiz;
+}
+
+function getStationDeductionQuiz() {
+  const action = scenes.S5?.commands?.evidence
+    ?.find(item => item.id === "organize_station");
+  return action?.quiz ?? null;
+}
+
+function maybeAdvanceInvestigation() {
+  if (isStationInvestigationComplete()) {
+    showStoryProgressPrompt(
+      "次の行動",
+      "宗一郎に報告するためホテルへ戻る",
+      () => {
+        game.flags.stationMysterySolved = true;
+        game.flags.hotelReturnUnlocked = true;
+        saveGame();
+        renderScene("H1");
+      }
+    );
+    return true;
+  }
+
+  if (!isHotelDeductionReady()) return false;
+  const quiz = getStationDeductionQuiz();
+  if (!quiz) return false;
+
+  startLines(
+    [{ speaker: "shichijo", text: "では、ここまでに分かったことを整理しましょう" }],
+    () => startQuiz({ ...quiz, mode: "deduction" }),
+    { autoFinishLastLine: true }
+  );
+  return true;
+}
+
 function startQuiz(quiz) {
+  if (quiz.mode === "deduction" || game.deductionMode) {
+    startDeductionQuiz(quiz);
+    return;
+  }
+
   clearCommandAvailability();
   game.activeQuiz = quiz;
   clearCommandSubchoices();
+  showSubchoicePanel("evidence", { allowBack: false, label: "答えを選ぶ" });
   clearMessage();
   if (el.message) el.message.textContent = quiz.question ?? "";
   setActiveCommand("evidence");
@@ -4832,8 +9917,121 @@ function startQuiz(quiz) {
   });
 }
 
+function enterDeductionScreen() {
+  game.deductionMode = true;
+  el.game?.classList.add("deduction-screen");
+  if (el.deductionLayer) {
+    el.deductionLayer.hidden = false;
+    el.deductionLayer.innerHTML = "";
+  }
+  hideCommandPanel();
+  clearCommandAvailability();
+  clearCommandSubchoices();
+  clearEvidenceImage();
+  hideSpeaker();
+  setNextIndicator(false);
+  renderBackground("images/backgrounds/bg_ui_deduction.webp");
+}
+
+function clearDeductionScreen() {
+  if (!el.deductionLayer) return;
+  el.deductionLayer.innerHTML = "";
+  el.deductionLayer.hidden = true;
+}
+
+function startDeductionQuiz(quiz) {
+  enterDeductionScreen();
+  game.activeQuiz = quiz;
+  if (!el.deductionLayer) return;
+
+  const panel = document.createElement("section");
+  panel.className = "deduction-panel";
+  const heading = document.createElement("h2");
+  heading.textContent = "謎解き";
+  const question = document.createElement("p");
+  question.className = "deduction-question";
+  question.textContent = quiz.question ?? "";
+  const choices = document.createElement("div");
+  choices.className = "deduction-choices";
+
+  quiz.choices.forEach(choice => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "deduction-choice-button";
+    button.textContent = choice.text;
+    button.addEventListener("click", event => {
+      event.stopPropagation();
+      ensureAudioContext();
+      if (!choice.correct) {
+        showDeductionFeedback(quiz.wrongText ?? "もう一度考えましょう。", "選び直す", () => startDeductionQuiz(quiz));
+        return;
+      }
+
+      applyEffects(choice);
+      applyEffects(quiz);
+      if (quiz.nextQuiz) {
+        showDeductionFeedback(quiz.correctText ?? "正解です。", "次の謎へ", () => {
+          startDeductionQuiz({ ...quiz.nextQuiz, mode: "deduction" });
+        });
+      } else {
+        game.flags.stationMysterySolved = true;
+        game.flags.chapterMysterySolved = true;
+        game.flags.giftAreaUnlocked = true;
+        saveGame();
+        showDeductionFeedback(
+          quiz.correctText ?? "正解です。",
+          "宗一郎との話を続ける",
+          () => renderScene("H6")
+        );
+      }
+    });
+    choices.appendChild(button);
+  });
+
+  panel.append(heading, question, choices);
+  el.deductionLayer.appendChild(panel);
+}
+
+function showDeductionFeedback(text, buttonText, callback) {
+  if (!el.deductionLayer) return;
+  el.deductionLayer.innerHTML = "";
+  const panel = document.createElement("section");
+  panel.className = "deduction-panel deduction-feedback-panel";
+  const message = document.createElement("p");
+  message.className = "deduction-feedback-text";
+  message.textContent = text;
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "deduction-next-button";
+  button.textContent = buttonText;
+  button.addEventListener("click", event => {
+    event.stopPropagation();
+    callback();
+  });
+  panel.append(message, button);
+  el.deductionLayer.appendChild(panel);
+}
+
+function showChapterOneEnding() {
+  game.flags.chapter1Clear = true;
+  syncChapterProgressFromFlags();
+  enterDeductionScreen();
+  game.activeQuiz = null;
+  if (!el.deductionLayer) return;
+  const panel = document.createElement("section");
+  panel.className = "chapter-ending-panel";
+  const chapterOne = document.createElement("p");
+  chapterOne.textContent = "第1章　京都駅前、花嫁は消えた　（終）";
+  const chapterTwo = document.createElement("p");
+  chapterTwo.textContent = "第2章『十八年前の警告』に続く";
+  panel.append(chapterOne, chapterTwo);
+  el.deductionLayer.appendChild(panel);
+  saveGame();
+}
+
 function showQuizFeedback(text, callback) {
   clearCommandSubchoices();
+  hideCommandPanel();
   hideSpeaker();
   if (el.message) el.message.textContent = text;
   game.waitingForAdvance = true;
@@ -4864,7 +10062,10 @@ function isSpotUnlocked(spotId) {
   if (spotId === "H5") return !!game.flags.hotelConfirmUnlocked;
   if (spotId === "H6") return !!game.flags.giftAreaUnlocked;
 
-  if (["K1", "K2", "K3"].includes(spotId)) return !!game.flags.kiryuyaUnlocked;
+  if (spotId === "K1") return !!game.flags.kiryuyaUnlocked;
+  if (spotId === "K2") {
+    return !!game.flags.kiryuyaUnlocked && !!game.flags.kiryuyaInsideUnlocked;
+  }
 
   if (spotId === "S1" || spotId === "S2") return !!game.flags.kyotoStationUnlocked;
   if (spotId === "S3") return !!game.flags.shopWitness;
@@ -4883,6 +10084,7 @@ function openMoveChoices() {
 
   clearCommandSubchoices();
   setActiveCommand("move");
+  showSubchoicePanel("move");
 
   // 現在地との隣接関係には制限しない。
   // 一度解放された場所なら、どこからでも直接移動できる。
@@ -4924,7 +10126,6 @@ function openMoveChoices() {
 }
 
 function travelToSpot(spotId) {
-  if (spotId === "K3") spotId = "K2";
   if (!isSpotUnlocked(spotId)) return;
   const spot = movementMap.spots[spotId];
   if (!spot) return;
@@ -4942,11 +10143,12 @@ function selectEnterVariant(scene) {
 }
 
 function renderScene(sceneId) {
-  if (sceneId === "K3") sceneId = "K2";
   const scene = scenes[sceneId];
   if (!scene) return console.error(`Scene not found: ${sceneId}`);
 
   clearTypingTimer();
+  hideCommandPanel();
+  clearDeductionScreen();
 
   // 表紙・章OPで使ったHTMLメニューを本編へ持ち越さない
   if (scene.type !== "title" && scene.type !== "chapter") {
@@ -4956,14 +10158,16 @@ function renderScene(sceneId) {
   game.sceneId = sceneId;
   game.currentSpotId = scene.spotId ?? null;
   game.activeQuiz = null;
+  game.deductionMode = false;
   game.waitingForAdvance = false;
+  game.autoFinishLastLine = false;
   game.lineQueue = [];
   game.lineIndex = -1;
   clearCommandSubchoices();
   clearEvidenceImage();
   clearMessage();
 
-  el.game?.classList.remove("title-screen", "chapter-screen");
+  el.game?.classList.remove("title-screen", "chapter-screen", "deduction-screen");
 
   renderBackground(scene.background);
   renderLocation(scene.location);
@@ -4982,8 +10186,6 @@ function renderScene(sceneId) {
   if (variant) {
     if (variant.onceFlag) game.flags[variant.onceFlag] = true;
     applyEffects(variant);
-    const variantImage = getEffectImage(variant);
-    if (variantImage) showEvidenceImage(variantImage);
     if (variant.lines?.length) {
       if (sceneId === "H1" && !game.flags.tutorialShown) {
         startLines(variant.lines, () => maybeShowTutorial(showLocationIdle));
@@ -5011,20 +10213,28 @@ function showLocationIdle() {
   const scene = getCurrentScene();
   if (!scene || scene.type !== "location") return;
 
-  if (el.message) {
-    if (game.flags.chapter1Clear && game.sceneId === "H6") {
-      el.message.textContent = "第1章　京都駅前、花嫁は消えた　― 終 ―";
-    } else {
-      el.message.textContent = scene.idleText ?? "";
-    }
-  }
+  if (maybeAdvanceInvestigation()) return;
 
-  clearCommandSubchoices();
-  updateCommandAvailability();
+  if (el.message) el.message.textContent = scene.idleText ?? "";
+
+  showMainCommands();
 }
 
 function renderBackground(path) {
   if (!el.background) return;
+  // CSS背景よりも読み込み状態を確認しやすい通常の画像要素を優先する。
+  // 旧HTMLを利用する場合だけ、従来のCSS背景へフォールバックする。
+  if (el.backgroundImage) {
+    el.background.style.backgroundImage = "";
+    if (path) {
+      el.backgroundImage.src = path;
+      el.backgroundImage.hidden = false;
+    } else {
+      el.backgroundImage.hidden = true;
+      el.backgroundImage.removeAttribute("src");
+    }
+    return;
+  }
   el.background.style.backgroundImage = path ? `url("${path}")` : "";
 }
 
@@ -5056,7 +10266,7 @@ function renderTitleScene(scene) {
   clearCommandSubchoices();
   el.game?.classList.add("title-screen");
 
-  if (el.commandPanel) el.commandPanel.style.display = "none";
+  hideCommandPanel();
 
   const ui = document.createElement("div");
   ui.className = "title-ui";
@@ -5092,7 +10302,7 @@ function renderTitleScene(scene) {
 function renderChapterScene(scene) {
   clearCommandAvailability();
   el.game?.classList.add("chapter-screen");
-  if (el.commandPanel) el.commandPanel.style.display = "none";
+  hideCommandPanel();
 
   const ui = document.createElement("div");
   ui.className = "title-ui chapter-title-ui";
@@ -5286,14 +10496,18 @@ function openSettings() {
     speedGroup.appendChild(b);
   }
 
-  overlay.body.append(soundRow, speedTitle, speedGroup);
+  const saveSummary = document.createElement("p");
+  saveSummary.className = "settings-save-summary";
+  saveSummary.textContent = "セーブと章クリア記録は、このブラウザに保存されます。章クリア記録は途中セーブとは別に保持されます。詳しくは MENU → ヘルプをご覧ください。";
+
+  overlay.body.append(soundRow, speedTitle, speedGroup, saveSummary);
 }
 
 function saveGame() {
   try {
     syncChapterProgressFromFlags();
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      version: 1,
+      schemaVersion: SAVE_SCHEMA_VERSION,
       sceneId: game.sceneId,
       currentSpotId: game.currentSpotId,
       flags: game.flags,
@@ -5313,7 +10527,7 @@ function loadGame() {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return showSimpleMessage("セーブデータがありません。");
 
-    const data = JSON.parse(raw);
+    const data = migrateLegacySave(JSON.parse(raw));
     game = createFreshGameState();
     game.flags = { ...game.flags, ...(data.flags ?? {}) };
     game.evidence = { ...game.evidence, ...(data.evidence ?? {}) };
@@ -5322,6 +10536,7 @@ function loadGame() {
 
     if (el.commandPanel) el.commandPanel.style.display = "";
     renderScene(data.sceneId ?? data.currentSpotId ?? "H1");
+    if (game.flags.chapter1Clear) showChapterOneEnding();
   } catch (error) {
     console.error(error);
     showSimpleMessage("セーブデータを読み込めませんでした。");
@@ -5394,7 +10609,6 @@ if (document.readyState === "loading") {
 } else {
   init();
 }
-
 </script>
 </body>
 </html>

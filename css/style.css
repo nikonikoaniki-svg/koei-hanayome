@@ -83,6 +83,20 @@ textarea {
     opacity 0.25s ease;
 }
 
+.background-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  user-select: none;
+  pointer-events: none;
+}
+
+.background-image[hidden] {
+  display: none !important;
+}
+
 .scene-shade {
   position: absolute;
   inset: 0;
@@ -858,6 +872,7 @@ textarea {
 }
 
 
+
 /* -----------------------------------------------------
    16. 横長Chromebook向け
    ----------------------------------------------------- */
@@ -1101,6 +1116,11 @@ textarea {
   background-position: center;
   background-repeat: no-repeat;
   background-color: #000;
+}
+
+.game-shell.title-screen .background-image,
+.game-shell.chapter-screen .background-image {
+  object-fit: contain;
 }
 
 .title-ui {
@@ -2096,6 +2116,771 @@ textarea {
 }
 
 /* =====================================================
+   京都駅・章末謎解き画面
+   ===================================================== */
+.game-shell.deduction-screen .message-window,
+.game-shell.deduction-screen .top-ui,
+.game-shell.deduction-screen .character-layer,
+.game-shell.deduction-screen .evidence-stage,
+.game-shell.deduction-screen .command-panel {
+  display: none !important;
+}
+
+.game-shell.deduction-screen .background-layer {
+  background-size: cover;
+  background-position: center;
+}
+
+.game-shell.deduction-screen .choice-area {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  max-width: none !important;
+  transform: none !important;
+  display: grid;
+  place-items: center;
+  padding: clamp(24px, 5vw, 80px);
+}
+
+.deduction-panel,
+.chapter-ending-panel {
+  width: min(900px, 88vw);
+  padding: clamp(26px, 4vw, 52px);
+  border: 1px solid rgba(212, 178, 111, 0.72);
+  border-radius: 12px;
+  color: #f8f1df;
+  background: rgba(5, 13, 23, 0.86);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.58);
+  backdrop-filter: blur(5px);
+}
+
+.deduction-panel h2 {
+  margin: 0 0 20px;
+  color: #dfc487;
+  font-size: clamp(22px, 3vw, 36px);
+  letter-spacing: 0.16em;
+  text-align: center;
+}
+
+.deduction-question,
+.deduction-feedback-text {
+  margin: 0 0 24px;
+  font-size: clamp(18px, 2.2vw, 28px);
+  line-height: 1.65;
+  text-align: center;
+}
+
+.deduction-choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.deduction-choice-button,
+.deduction-next-button {
+  min-height: 58px;
+  padding: 12px 18px;
+  border: 1px solid rgba(223, 196, 135, 0.68);
+  border-radius: 8px;
+  color: #fff;
+  background: rgba(18, 31, 46, 0.94);
+  font-size: clamp(15px, 1.5vw, 20px);
+  cursor: pointer;
+}
+
+.deduction-choice-button:hover,
+.deduction-choice-button:focus-visible,
+.deduction-next-button:hover,
+.deduction-next-button:focus-visible {
+  border-color: #f2d48a;
+  background: rgba(39, 58, 76, 0.98);
+}
+
+.deduction-next-button {
+  display: block;
+  min-width: 220px;
+  margin: 0 auto;
+}
+
+.chapter-ending-panel {
+  display: grid;
+  gap: 28px;
+  text-align: center;
+}
+
+.chapter-ending-panel p {
+  margin: 0;
+  font-size: clamp(21px, 3vw, 38px);
+  line-height: 1.7;
+  letter-spacing: 0.06em;
+}
+
+.chapter-ending-panel p:last-child {
+  color: #dfc487;
+  font-size: clamp(18px, 2.3vw, 30px);
+}
+
+@media (max-width: 700px) {
+  .deduction-choices {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* =====================================================
+   コマンド選択・謎解きレイアウト最終調整
+   ===================================================== */
+
+/* グラフィック領域を少し縮め、右コマンド欄を読みやすくする */
+:root {
+  --command-panel-width: 320px;
+}
+
+.command-panel {
+  padding: 20px 18px 18px;
+}
+
+.command-main-buttons {
+  gap: 11px !important;
+}
+
+.command-button {
+  grid-template-columns: 34px 1fr;
+  min-height: 50px;
+  padding: 10px 12px;
+  font-size: 20px;
+}
+
+.command-no {
+  font-size: 18px;
+}
+
+.command-subchoices {
+  gap: 9px;
+}
+
+.command-subchoice-button {
+  min-height: 48px;
+  padding: 12px 13px;
+  font-size: 17px;
+  line-height: 1.45;
+  font-weight: 700;
+}
+
+/* 謎解き中は通常画面の右欄幅・中央寄せ指定を完全に解除する */
+.game-shell.deduction-screen .choice-area {
+  position: fixed !important;
+  inset: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: clamp(24px, 4vw, 64px) !important;
+  box-sizing: border-box !important;
+  transform: none !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: auto !important;
+  pointer-events: auto !important;
+}
+
+.game-shell.deduction-screen .deduction-panel,
+.game-shell.deduction-screen .chapter-ending-panel {
+  width: min(860px, calc(100vw - 48px)) !important;
+  max-width: 860px !important;
+  margin: auto !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 900px) {
+  :root {
+    --command-panel-width: 245px;
+  }
+
+  .command-panel {
+    padding: 13px 11px;
+  }
+
+  .command-button {
+    grid-template-columns: 28px 1fr;
+    min-height: 43px;
+    font-size: 16px;
+  }
+
+  .command-no {
+    font-size: 15px;
+  }
+
+  .command-subchoice-button {
+    min-height: 42px;
+    padding: 9px 10px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --command-panel-width: 180px;
+  }
+
+  .command-button {
+    grid-template-columns: 23px 1fr;
+    min-height: 38px;
+    font-size: 13px;
+  }
+
+  .command-subchoice-button {
+    min-height: 38px;
+    padding: 8px;
+    font-size: 13px;
+  }
+
+  .game-shell.deduction-screen .deduction-panel,
+  .game-shell.deduction-screen .chapter-ending-panel {
+    width: calc(100vw - 24px) !important;
+  }
+}
+
+/* =====================================================
+   コマンド・行動選択肢エリア：画面幅の3分の1（最終指定）
+   ===================================================== */
+:root {
+  --command-panel-width: calc(100vw / 3);
+}
+
+.command-panel {
+  width: var(--command-panel-width) !important;
+  box-sizing: border-box;
+}
+
+.command-subchoices,
+.command-subchoice-button {
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+/* =====================================================
+   グラフィック内・切替式コマンドUI（PC／タブレット／スマホ共通）
+   ===================================================== */
+
+:root {
+  --command-panel-width: 0px;
+}
+
+.game-shell {
+  min-height: 0 !important;
+}
+
+/* 右側の専用領域を廃止し、グラフィックを画面全体へ戻す */
+.game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen) .background-layer,
+.game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen) .scene-shade,
+.game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen) .character-layer,
+.game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen) .evidence-stage {
+  inset-inline: 0 !important;
+  right: 0 !important;
+  width: auto !important;
+}
+
+.game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen) .message-window {
+  left: clamp(12px, 1.8vw, 28px) !important;
+  right: clamp(12px, 1.8vw, 28px) !important;
+  bottom: clamp(10px, 1.8vh, 22px) !important;
+  width: auto !important;
+  max-width: none !important;
+  min-height: clamp(126px, 17vh, 154px) !important;
+  transform: none !important;
+}
+
+.game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen) .location-badge {
+  left: clamp(10px, 1.5vw, 22px) !important;
+  right: auto !important;
+}
+
+/* コマンドはグラフィック上の半透明パネルとして表示 */
+.command-panel {
+  position: absolute !important;
+  top: auto !important;
+  right: clamp(14px, 2.4vw, 38px) !important;
+  bottom: clamp(178px, 22vh, 236px) !important;
+  left: auto !important;
+  width: min(560px, 42vw) !important;
+  max-height: calc(100dvh - clamp(202px, 27vh, 286px)) !important;
+  padding: 16px !important;
+  gap: 12px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255, 255, 255, 0.58) !important;
+  border-radius: 12px !important;
+  background:
+    linear-gradient(180deg, rgba(8, 17, 28, 0.92), rgba(4, 10, 18, 0.92)) !important;
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.55) !important;
+  backdrop-filter: blur(8px);
+}
+
+.game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen)
+  .command-panel:not(.is-hidden) {
+  display: flex !important;
+}
+
+.command-panel.is-hidden,
+.game-shell:not(.title-screen):not(.chapter-screen) .command-panel.is-hidden,
+.game-shell:not(.title-screen):not(.chapter-screen).deduction-screen .command-panel,
+.game-shell.title-screen .command-panel,
+.game-shell.chapter-screen .command-panel,
+.game-shell.deduction-screen .command-panel {
+  display: none !important;
+}
+
+.command-panel-title {
+  padding: 0 4px 8px !important;
+  font-size: 13px !important;
+  letter-spacing: 0.18em !important;
+}
+
+.command-main-buttons {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.command-button {
+  grid-template-columns: 32px 1fr !important;
+  min-height: 54px !important;
+  padding: 10px 13px !important;
+  border-color: rgba(255, 255, 255, 0.24) !important;
+  font-size: clamp(17px, 1.35vw, 21px) !important;
+  background: rgba(13, 24, 36, 0.86) !important;
+}
+
+.command-button.is-available {
+  border-color: rgba(255, 255, 255, 0.88) !important;
+}
+
+.command-panel.has-subchoices .command-main-buttons {
+  display: none !important;
+}
+
+.command-subchoices {
+  display: none !important;
+  flex-direction: column !important;
+  gap: 9px !important;
+  margin: 0 !important;
+  padding: 0 3px 3px 0 !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+}
+
+.command-panel.has-subchoices .command-subchoices {
+  display: flex !important;
+}
+
+.command-panel.has-subchoices .command-menu-button {
+  display: none !important;
+}
+
+.command-subchoice-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 0 10px;
+  background: rgba(7, 15, 25, 0.97);
+}
+
+.command-subchoice-title {
+  color: var(--accent);
+  font-size: clamp(17px, 1.3vw, 21px);
+  letter-spacing: 0.08em;
+}
+
+.command-back-button {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid rgba(242, 212, 138, 0.66);
+  border-radius: 7px;
+  color: #f7dfaa;
+  background: rgba(31, 28, 23, 0.96);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.command-subchoice-button {
+  min-height: 50px !important;
+  padding: 12px 15px !important;
+  font-size: clamp(16px, 1.2vw, 19px) !important;
+}
+
+.command-feedback {
+  margin: 0 !important;
+  padding: 14px 10px !important;
+  font-size: 16px !important;
+}
+
+.command-menu-button {
+  margin-top: 0 !important;
+  min-height: 44px !important;
+}
+
+/* スマホ縦画面：同じ2列×3段を横幅いっぱいに配置 */
+@media (max-width: 640px) and (orientation: portrait) {
+  .command-panel {
+    right: 10px !important;
+    bottom: 184px !important;
+    left: 10px !important;
+    width: auto !important;
+    max-height: calc(100dvh - 204px) !important;
+    padding: 11px !important;
+    gap: 8px !important;
+  }
+
+  .command-main-buttons {
+    gap: 8px !important;
+  }
+
+  .command-button {
+    grid-template-columns: 25px 1fr !important;
+    min-height: 48px !important;
+    padding: 8px 9px !important;
+    font-size: 16px !important;
+  }
+
+  .command-no {
+    font-size: 14px !important;
+  }
+
+  .command-subchoice-header {
+    gap: 8px;
+  }
+
+  .command-back-button {
+    min-height: 42px;
+    padding: 7px 10px;
+    font-size: 13px;
+  }
+
+  .command-subchoice-button {
+    min-height: 46px !important;
+    font-size: 16px !important;
+  }
+
+  .game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen) .message-window {
+    left: 10px !important;
+    right: 10px !important;
+    bottom: 9px !important;
+    min-height: 156px !important;
+    padding: 24px 18px 18px !important;
+  }
+
+  .message-text {
+    min-height: 70px !important;
+    font-size: 16px !important;
+    line-height: 1.65 !important;
+  }
+}
+
+/* スマホ横画面・高さの低い端末 */
+@media (max-height: 600px) and (orientation: landscape) {
+  .command-panel {
+    top: 8px !important;
+    right: 10px !important;
+    bottom: 108px !important;
+    left: auto !important;
+    width: min(430px, 47vw) !important;
+    max-height: none !important;
+    padding: 8px !important;
+    gap: 6px !important;
+  }
+
+  .command-panel-title {
+    padding: 0 3px 4px !important;
+    font-size: 10px !important;
+  }
+
+  .command-main-buttons {
+    gap: 5px !important;
+  }
+
+  .command-button {
+    grid-template-columns: 22px 1fr !important;
+    min-height: 38px !important;
+    padding: 5px 7px !important;
+    font-size: 14px !important;
+  }
+
+  .command-no {
+    font-size: 12px !important;
+  }
+
+  .command-menu-button {
+    min-height: 34px !important;
+    font-size: 13px !important;
+  }
+
+  .command-subchoice-header {
+    padding-bottom: 5px;
+  }
+
+  .command-subchoice-title {
+    font-size: 15px;
+  }
+
+  .command-back-button {
+    min-height: 34px;
+    padding: 5px 9px;
+    font-size: 12px;
+  }
+
+  .command-subchoice-button {
+    min-height: 38px !important;
+    padding: 7px 9px !important;
+    font-size: 14px !important;
+  }
+
+  .game-shell:not(.title-screen):not(.chapter-screen):not(.deduction-screen) .message-window {
+    left: 8px !important;
+    right: 8px !important;
+    bottom: 7px !important;
+    min-height: 92px !important;
+    max-height: 96px !important;
+    padding: 17px 16px 10px !important;
+    overflow-y: auto;
+  }
+
+  .message-text {
+    min-height: 44px !important;
+    font-size: 14px !important;
+    line-height: 1.45 !important;
+  }
+
+  .speaker-portrait-wrap {
+    left: 12px !important;
+    top: -58px !important;
+    width: 58px !important;
+    height: 58px !important;
+  }
+
+  .speaker-name {
+    top: -18px !important;
+    left: 78px !important;
+    min-width: 110px !important;
+    padding: 5px 10px !important;
+    font-size: 12px !important;
+  }
+
+  .game-shell.title-screen .choice-area,
+  .game-shell.chapter-screen .choice-area {
+    overflow-y: auto !important;
+  }
+
+  .game-shell.title-screen .title-ui,
+  .game-shell.chapter-screen .chapter-title-ui {
+    top: 50% !important;
+    left: 5vw !important;
+    width: min(380px, 44vw) !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    gap: 6px !important;
+    transform: translateY(-50%) !important;
+  }
+
+  .game-shell.title-screen .title-ui-button,
+  .game-shell.chapter-screen .title-ui-button {
+    min-height: 38px !important;
+    padding: 6px 10px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* =====================================================
+   推理画面：通常UIを使わない全画面専用レイヤー
+   ===================================================== */
+
+/* 旧choice-areaの位置・幅・変形を推理画面から完全に切り離す */
+.game-shell.deduction-screen .choice-area,
+.game-shell.deduction-screen .message-window,
+.game-shell.deduction-screen .top-ui,
+.game-shell.deduction-screen .character-layer,
+.game-shell.deduction-screen .evidence-stage,
+.game-shell.deduction-screen .command-panel,
+.game-shell.deduction-screen .location-badge {
+  display: none !important;
+}
+
+.game-shell.deduction-screen {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.game-shell.deduction-screen .background-layer,
+.game-shell.deduction-screen .scene-shade {
+  position: absolute !important;
+  inset: 0 !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+.deduction-layer[hidden] {
+  display: none !important;
+}
+
+.deduction-layer:not([hidden]) {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 120 !important;
+  display: grid !important;
+  place-items: center !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: clamp(16px, 4vw, 56px) !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  pointer-events: auto !important;
+  transform: none !important;
+  touch-action: pan-y;
+}
+
+.deduction-layer > .deduction-panel,
+.deduction-layer > .chapter-ending-panel {
+  position: relative !important;
+  inset: auto !important;
+  display: block !important;
+  width: min(900px, calc(100% - 2px)) !important;
+  min-width: 0 !important;
+  max-width: 900px !important;
+  max-height: calc(100dvh - 32px) !important;
+  margin: auto !important;
+  padding: clamp(24px, 4vw, 52px) !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  transform: none !important;
+}
+
+.deduction-layer .deduction-panel h2 {
+  margin: 0 0 clamp(16px, 2.4vh, 24px) !important;
+  font-size: clamp(24px, 3vw, 36px) !important;
+  text-align: center !important;
+}
+
+.deduction-layer .deduction-question,
+.deduction-layer .deduction-feedback-text {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 0 clamp(18px, 2.8vh, 28px) !important;
+  font-size: clamp(18px, 2vw, 27px) !important;
+  line-height: 1.6 !important;
+  text-align: center !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+.deduction-layer .deduction-choices {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.deduction-layer .deduction-choice-button,
+.deduction-layer .deduction-next-button {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 58px !important;
+  margin: 0 !important;
+  padding: 12px 16px !important;
+  box-sizing: border-box !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+.deduction-layer .deduction-next-button {
+  width: min(360px, 100%) !important;
+  margin-inline: auto !important;
+}
+
+.deduction-layer > .chapter-ending-panel {
+  display: grid !important;
+  gap: clamp(18px, 3vh, 30px) !important;
+  text-align: center !important;
+}
+
+@media (max-width: 700px) {
+  .deduction-layer:not([hidden]) {
+    padding: 12px !important;
+  }
+
+  .deduction-layer > .deduction-panel,
+  .deduction-layer > .chapter-ending-panel {
+    width: 100% !important;
+    max-height: calc(100dvh - 24px) !important;
+    padding: 22px 16px !important;
+  }
+
+  .deduction-layer .deduction-choices {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .deduction-layer .deduction-choice-button,
+  .deduction-layer .deduction-next-button {
+    min-height: 48px !important;
+    font-size: 15px !important;
+  }
+}
+
+@media (max-height: 560px) and (orientation: landscape) {
+  .deduction-layer:not([hidden]) {
+    place-items: start center !important;
+    padding: 8px 12px !important;
+  }
+
+  .deduction-layer > .deduction-panel,
+  .deduction-layer > .chapter-ending-panel {
+    max-height: calc(100dvh - 16px) !important;
+    padding: 16px 20px !important;
+  }
+
+  .deduction-layer .deduction-panel h2 {
+    margin-bottom: 8px !important;
+    font-size: 22px !important;
+  }
+
+  .deduction-layer .deduction-question,
+  .deduction-layer .deduction-feedback-text {
+    margin-bottom: 10px !important;
+    font-size: 16px !important;
+    line-height: 1.4 !important;
+  }
+
+  .deduction-layer .deduction-choice-button,
+  .deduction-layer .deduction-next-button {
+    min-height: 42px !important;
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* =====================================================
    セーブ説明・ヘルプ
    ===================================================== */
 .save-help-list {
@@ -2110,4 +2895,13 @@ textarea {
   margin-top: 16px;
   font-size: 0.9em;
   opacity: 0.8;
+}
+
+.settings-save-summary {
+  margin: 20px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 0.9em;
+  line-height: 1.65;
+  opacity: 0.82;
 }

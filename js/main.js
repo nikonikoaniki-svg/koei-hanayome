@@ -16,6 +16,7 @@ const SAVE_KEY = "koeiBrideSave_moveDriven_v1";
 const SETTINGS_KEY = "koeiBrideSettings_v1";
 const PROGRESS_KEY = "koeiBrideProgress_v1";
 const SAVE_NOTICE_KEY = "koeiBrideSaveNoticeSeen_v1";
+const SAVE_SCHEMA_VERSION = 4;
 
 const DEFAULT_SETTINGS = { soundOn: true, speedLevel: 3 };
 const SPEED_TABLE = { 1: 90, 2: 65, 3: 45, 4: 25, 5: 10 };
@@ -28,7 +29,7 @@ const VOICE_TABLE = {
   hotelStaff:   { frequency: 310, type: "square" },
   hotelManager: { frequency: 180, type: "square" },
   shopClerk:    { frequency: 340, type: "square" },
-  stationStaff: { frequency: 205, type: "square" }
+  cleaner:      { frequency: 275, type: "triangle" }
 };
 
 const FACE_TABLE = {
@@ -38,7 +39,8 @@ const FACE_TABLE = {
   saya: "images/faces/face_saya.webp",
   hotelStaff: "images/faces/face_hotel_staff.webp",
   hotelManager: "images/faces/face_hotel_manager.webp",
-  shopClerk: "images/faces/face_shop_clerk.webp"
+  shopClerk: "images/faces/face_shop_clerk.webp",
+  cleaner: "images/faces/face_cleaner.webp"
 };
 
 let settings = loadSettings();
@@ -47,6 +49,7 @@ let game = createFreshGameState();
 const el = {
   game: document.querySelector("#game"),
   background: document.querySelector("#background"),
+  backgroundImage: document.querySelector("#background-image"),
   characterLayer: document.querySelector("#character-layer"),
   speaker: document.querySelector("#speaker-name"),
   portraitWrap: document.querySelector("#speaker-portrait-wrap"),
@@ -54,10 +57,13 @@ const el = {
   locationBadge: document.querySelector("#location-badge"),
   message: document.querySelector("#message-text"),
   choiceArea: document.querySelector("#choice-area"),
+  deductionLayer: document.querySelector("#deduction-layer"),
   evidenceImage: document.querySelector("#evidence-image"),
   nextIndicator: document.querySelector("#next-indicator"),
   menuButton: document.querySelector("#menu-button"),
   commandPanel: document.querySelector("#command-panel"),
+  commandPanelTitle: document.querySelector(".command-panel-title"),
+  commandMainButtons: document.querySelector("#command-main-buttons"),
   commandSubchoices: document.querySelector("#command-subchoices"),
   cmdTalk: document.querySelector("#cmd-talk"),
   cmdAsk: document.querySelector("#cmd-ask"),
@@ -86,11 +92,42 @@ function createFreshGameState() {
     currentFullText: "",
     isTyping: false,
     typingTimer: null,
-    autoAdvanceTimer: null,
     waitingForAdvance: false,
     lineFinishCallback: null,
+    autoFinishLastLine: false,
+    deductionMode: false,
     activeQuiz: null
   };
+}
+
+function migrateLegacySave(data) {
+  const migrated = { ...data };
+  migrated.flags = { ...(data.flags ?? {}) };
+  migrated.evidence = { ...(data.evidence ?? {}) };
+  migrated.actionHistory = { ...(data.actionHistory ?? {}) };
+
+  // 旧版のK3（応接スペース）は、統合後のK2（桐生屋店内）へ読み替える。
+  if (migrated.sceneId === "K3" || migrated.currentSpotId === "K3") {
+    migrated.sceneId = "K2";
+    migrated.currentSpotId = "K2";
+  }
+
+  // 店内解放フラグ追加前のセーブで、すでに店内へ進んでいた場合は閉じ戻さない。
+  const alreadyReachedKiryuyaInside =
+    migrated.sceneId === "K2" ||
+    migrated.currentSpotId === "K2" ||
+    migrated.flags.sayaMet ||
+    migrated.flags.preWeddingPhotoKnown ||
+    migrated.flags.nailFound;
+  if (alreadyReachedKiryuyaInside) migrated.flags.kiryuyaInsideUnlocked = true;
+
+  Object.entries(migrated.actionHistory).forEach(([key, value]) => {
+    if (!key.startsWith("K3:")) return;
+    const compatibleKey = key.replace(/^K3:/, "K2:");
+    if (!(compatibleKey in migrated.actionHistory)) migrated.actionHistory[compatibleKey] = value;
+  });
+
+  return migrated;
 }
 
 function loadSettings() {
@@ -167,13 +204,22 @@ function markSaveNoticeSeen() {
 
 function ensureAudioContext() {
   if (!settings.soundOn) return;
-  if (!audioContext) {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return;
-    audioContext = new AudioCtx();
+  try {
+    if (!audioContext) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      audioContext = new AudioCtx();
+    }
+    if (audioContext.state === "suspended") {
+      const resumeResult = audioContext.resume();
+      if (resumeResult?.catch) resumeResult.catch(() => {});
+    }
+    audioUnlocked = true;
+  } catch (error) {
+    // 音声が使えない環境でも、画面遷移とゲーム操作は止めない。
+    audioUnlocked = false;
+    console.warn("音声機能を開始できませんでした。", error);
   }
-  if (audioContext.state === "suspended") audioContext.resume().catch(() => {});
-  audioUnlocked = true;
 }
 
 function playTextSound(speakerId, charIndex, char) {
@@ -198,25 +244,7 @@ function playTextSound(speakerId, charIndex, char) {
 
 function clearTypingTimer() {
   if (game.typingTimer) clearTimeout(game.typingTimer);
-  if (game.autoAdvanceTimer) clearTimeout(game.autoAdvanceTimer);
   game.typingTimer = null;
-  game.autoAdvanceTimer = null;
-}
-
-function isCurrentLineLast() {
-  return game.lineIndex >= 0 && game.lineIndex >= game.lineQueue.length - 1;
-}
-
-function scheduleAutoReturnAfterLastLine() {
-  if (!isCurrentLineLast()) return false;
-  if (game.autoAdvanceTimer) clearTimeout(game.autoAdvanceTimer);
-  game.waitingForAdvance = false;
-  setNextIndicator(false);
-  game.autoAdvanceTimer = setTimeout(() => {
-    game.autoAdvanceTimer = null;
-    showNextLine();
-  }, 1100);
-  return true;
 }
 
 function setNextIndicator(show) {
@@ -238,7 +266,13 @@ function typeText(text, speakerId = null) {
     if (!game.isTyping) return;
     if (index >= game.currentFullText.length) {
       game.isTyping = false;
-      if (scheduleAutoReturnAfterLastLine()) return;
+      if (game.autoFinishLastLine && game.lineIndex === game.lineQueue.length - 1) {
+        game.waitingForAdvance = false;
+        setNextIndicator(false);
+        game.autoFinishLastLine = false;
+        queueMicrotask(showNextLine);
+        return;
+      }
       game.waitingForAdvance = true;
       setNextIndicator(true);
       return;
@@ -259,7 +293,13 @@ function skipTyping() {
   clearTypingTimer();
   if (el.message) el.message.textContent = game.currentFullText;
   game.isTyping = false;
-  if (scheduleAutoReturnAfterLastLine()) return true;
+  if (game.autoFinishLastLine && game.lineIndex === game.lineQueue.length - 1) {
+    game.waitingForAdvance = false;
+    setNextIndicator(false);
+    game.autoFinishLastLine = false;
+    queueMicrotask(showNextLine);
+    return true;
+  }
   game.waitingForAdvance = true;
   setNextIndicator(true);
   return true;
@@ -305,11 +345,13 @@ function clearMessage() {
   setNextIndicator(false);
 }
 
-function startLines(lines, callback = null) {
+function startLines(lines, callback = null, options = {}) {
   clearCommandAvailability();
+  hideCommandPanel();
   game.lineQueue = lines ?? [];
   game.lineIndex = -1;
   game.lineFinishCallback = callback;
+  game.autoFinishLastLine = !!options.autoFinishLastLine;
   showNextLine();
 }
 
@@ -321,6 +363,7 @@ function showNextLine() {
     setNextIndicator(false);
     const callback = game.lineFinishCallback;
     game.lineFinishCallback = null;
+    game.autoFinishLastLine = false;
     game.lineQueue = [];
     game.lineIndex = -1;
     if (callback) callback();
@@ -367,6 +410,65 @@ function handleKeydown(event) {
 function clearCommandSubchoices() {
   if (el.commandSubchoices) el.commandSubchoices.innerHTML = "";
   document.querySelectorAll(".command-button.is-active").forEach((node) => node.classList.remove("is-active"));
+}
+
+const COMMAND_LABELS = {
+  talk: "はなす",
+  ask: "きく",
+  look: "みる",
+  search: "しらべる",
+  evidence: "しょうこ",
+  move: "いどう"
+};
+
+function hideCommandPanel() {
+  if (!el.commandPanel) return;
+  el.commandPanel.classList.add("is-hidden");
+  el.commandPanel.setAttribute("aria-hidden", "true");
+}
+
+function showMainCommands() {
+  if (!el.commandPanel) return;
+  el.commandPanel.style.display = "";
+  el.commandPanel.classList.remove("is-hidden", "has-subchoices");
+  el.commandPanel.setAttribute("aria-hidden", "false");
+  if (el.commandPanelTitle) el.commandPanelTitle.textContent = "COMMAND";
+  clearCommandSubchoices();
+  updateCommandAvailability();
+}
+
+function showSubchoicePanel(command, options = {}) {
+  if (!el.commandPanel || !el.commandSubchoices) return;
+  const allowBack = options.allowBack !== false;
+  const label = options.label ?? COMMAND_LABELS[command] ?? "選択肢";
+
+  el.commandPanel.style.display = "";
+  el.commandPanel.classList.remove("is-hidden");
+  el.commandPanel.classList.add("has-subchoices");
+  el.commandPanel.setAttribute("aria-hidden", "false");
+  if (el.commandPanelTitle) el.commandPanelTitle.textContent = "ACTION";
+
+  const header = document.createElement("div");
+  header.className = "command-subchoice-header";
+
+  const title = document.createElement("strong");
+  title.className = "command-subchoice-title";
+  title.textContent = label;
+  header.appendChild(title);
+
+  if (allowBack) {
+    const backButton = document.createElement("button");
+    backButton.type = "button";
+    backButton.className = "command-back-button";
+    backButton.textContent = "コマンドに戻る";
+    backButton.addEventListener("click", event => {
+      event.stopPropagation();
+      showMainCommands();
+    });
+    header.appendChild(backButton);
+  }
+
+  el.commandSubchoices.appendChild(header);
 }
 
 function setActiveCommand(type) {
@@ -437,7 +539,7 @@ function maybeShowTutorial(callback = null) {
   box.className = "tutorial-box";
 
   const p1 = document.createElement("p");
-  p1.textContent = "右側の6つのコマンドから行動を選びます。";
+  p1.textContent = "画面内の6つのコマンドから行動を選びます。";
   const p2 = document.createElement("p");
   p2.textContent = "情報が増えると、使えそうなコマンドが少し明るくなり、行ける場所も増えます。";
   const p3 = document.createElement("p");
@@ -456,7 +558,13 @@ function maybeShowTutorial(callback = null) {
 
 function showCommandFeedback(text) {
   if (!el.commandSubchoices) return;
-  el.commandSubchoices.innerHTML = "";
+  if (!el.commandPanel?.classList.contains("has-subchoices")) {
+    clearCommandSubchoices();
+    showSubchoicePanel(null, { label: "お知らせ" });
+  }
+  [...el.commandSubchoices.children]
+    .filter(node => !node.classList.contains("command-subchoice-header"))
+    .forEach(node => node.remove());
   const p = document.createElement("p");
   p.className = "command-feedback";
   p.textContent = text;
@@ -478,17 +586,6 @@ function applyEffects(effect) {
   if (effect.setFlags) Object.assign(game.flags, effect.setFlags);
   if (effect.evidence) Object.assign(game.evidence, effect.evidence);
   syncChapterProgressFromFlags();
-}
-
-function getEffectImage(effect) {
-  if (!effect) return null;
-  if (effect.image) return effect.image;
-  const evidence = effect.evidence ?? null;
-  if (!evidence) return null;
-  for (const [id, enabled] of Object.entries(evidence)) {
-    if (enabled && evidenceMaster[id]?.image) return evidenceMaster[id].image;
-  }
-  return null;
 }
 
 function getCurrentScene() {
@@ -513,6 +610,7 @@ function renderActionChoices(command) {
 
   clearCommandSubchoices();
   setActiveCommand(command);
+  showSubchoicePanel(command);
 
   const actions = (scene.commands?.[command] ?? []).filter(action => isActionAvailable(action, command));
 
@@ -566,26 +664,114 @@ function executeAction(command, action) {
   if (!checkCondition(action)) return;
 
   clearCommandSubchoices();
+  hideCommandPanel();
   if (action.once) game.actionHistory[getActionKey(command, action)] = true;
 
   applyEffects(action);
 
-  const previewImage = getEffectImage(action);
-  if (previewImage) showEvidenceImage(previewImage);
+  if (action.image) showEvidenceImage(action.image);
 
   const afterLines = () => {
     if (action.quiz) startQuiz(action.quiz);
-    else showLocationIdle();
+    else if (action.chapterEnd) showChapterEndPrompt();
+    else if (!maybeAdvanceInvestigation()) returnToCommandsAfterAction();
   };
 
-  if (action.lines?.length) startLines(action.lines, afterLines);
+  if (action.lines?.length) startLines(action.lines, afterLines, { autoFinishLastLine: true });
   else afterLines();
 }
 
+function returnToCommandsAfterAction() {
+  game.waitingForAdvance = false;
+  game.activeQuiz = null;
+  setNextIndicator(false);
+  showMainCommands();
+}
+
+function showStoryProgressPrompt(label, buttonText, callback) {
+  game.waitingForAdvance = false;
+  game.activeQuiz = null;
+  setNextIndicator(false);
+  clearCommandSubchoices();
+  showSubchoicePanel(null, { allowBack: false, label });
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "command-subchoice-button story-progress-button";
+  button.textContent = buttonText;
+  button.addEventListener("click", event => {
+    event.stopPropagation();
+    ensureAudioContext();
+    hideCommandPanel();
+    callback();
+  });
+  el.commandSubchoices?.appendChild(button);
+}
+
+function showChapterEndPrompt() {
+  showStoryProgressPrompt("第1章", "第1章を終える", showChapterOneEnding);
+}
+
+function isStationInvestigationComplete() {
+  return ["S1", "S2", "S3", "S4", "S5"].includes(game.sceneId) &&
+    !!game.flags.nailMatched &&
+    !!game.flags.shopWitness &&
+    !!game.flags.foldedBoxFound &&
+    !!game.flags.departureBoardChecked &&
+    !game.flags.stationMysterySolved &&
+    !game.activeQuiz;
+}
+
+function isHotelDeductionReady() {
+  return game.sceneId === "H1" &&
+    !!game.flags.stationMysterySolved &&
+    !game.flags.chapterMysterySolved &&
+    !game.activeQuiz;
+}
+
+function getStationDeductionQuiz() {
+  const action = scenes.S5?.commands?.evidence
+    ?.find(item => item.id === "organize_station");
+  return action?.quiz ?? null;
+}
+
+function maybeAdvanceInvestigation() {
+  if (isStationInvestigationComplete()) {
+    showStoryProgressPrompt(
+      "次の行動",
+      "宗一郎に報告するためホテルへ戻る",
+      () => {
+        game.flags.stationMysterySolved = true;
+        game.flags.hotelReturnUnlocked = true;
+        saveGame();
+        renderScene("H1");
+      }
+    );
+    return true;
+  }
+
+  if (!isHotelDeductionReady()) return false;
+  const quiz = getStationDeductionQuiz();
+  if (!quiz) return false;
+
+  startLines(
+    [{ speaker: "shichijo", text: "では、ここまでに分かったことを整理しましょう" }],
+    () => startQuiz({ ...quiz, mode: "deduction" }),
+    { autoFinishLastLine: true }
+  );
+  return true;
+}
+
 function startQuiz(quiz) {
+  if (quiz.mode === "deduction" || game.deductionMode) {
+    startDeductionQuiz(quiz);
+    return;
+  }
+
   clearCommandAvailability();
   game.activeQuiz = quiz;
   clearCommandSubchoices();
+  showSubchoicePanel("evidence", { allowBack: false, label: "答えを選ぶ" });
   clearMessage();
   if (el.message) el.message.textContent = quiz.question ?? "";
   setActiveCommand("evidence");
@@ -622,8 +808,121 @@ function startQuiz(quiz) {
   });
 }
 
+function enterDeductionScreen() {
+  game.deductionMode = true;
+  el.game?.classList.add("deduction-screen");
+  if (el.deductionLayer) {
+    el.deductionLayer.hidden = false;
+    el.deductionLayer.innerHTML = "";
+  }
+  hideCommandPanel();
+  clearCommandAvailability();
+  clearCommandSubchoices();
+  clearEvidenceImage();
+  hideSpeaker();
+  setNextIndicator(false);
+  renderBackground("images/backgrounds/bg_ui_deduction.webp");
+}
+
+function clearDeductionScreen() {
+  if (!el.deductionLayer) return;
+  el.deductionLayer.innerHTML = "";
+  el.deductionLayer.hidden = true;
+}
+
+function startDeductionQuiz(quiz) {
+  enterDeductionScreen();
+  game.activeQuiz = quiz;
+  if (!el.deductionLayer) return;
+
+  const panel = document.createElement("section");
+  panel.className = "deduction-panel";
+  const heading = document.createElement("h2");
+  heading.textContent = "謎解き";
+  const question = document.createElement("p");
+  question.className = "deduction-question";
+  question.textContent = quiz.question ?? "";
+  const choices = document.createElement("div");
+  choices.className = "deduction-choices";
+
+  quiz.choices.forEach(choice => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "deduction-choice-button";
+    button.textContent = choice.text;
+    button.addEventListener("click", event => {
+      event.stopPropagation();
+      ensureAudioContext();
+      if (!choice.correct) {
+        showDeductionFeedback(quiz.wrongText ?? "もう一度考えましょう。", "選び直す", () => startDeductionQuiz(quiz));
+        return;
+      }
+
+      applyEffects(choice);
+      applyEffects(quiz);
+      if (quiz.nextQuiz) {
+        showDeductionFeedback(quiz.correctText ?? "正解です。", "次の謎へ", () => {
+          startDeductionQuiz({ ...quiz.nextQuiz, mode: "deduction" });
+        });
+      } else {
+        game.flags.stationMysterySolved = true;
+        game.flags.chapterMysterySolved = true;
+        game.flags.giftAreaUnlocked = true;
+        saveGame();
+        showDeductionFeedback(
+          quiz.correctText ?? "正解です。",
+          "宗一郎との話を続ける",
+          () => renderScene("H6")
+        );
+      }
+    });
+    choices.appendChild(button);
+  });
+
+  panel.append(heading, question, choices);
+  el.deductionLayer.appendChild(panel);
+}
+
+function showDeductionFeedback(text, buttonText, callback) {
+  if (!el.deductionLayer) return;
+  el.deductionLayer.innerHTML = "";
+  const panel = document.createElement("section");
+  panel.className = "deduction-panel deduction-feedback-panel";
+  const message = document.createElement("p");
+  message.className = "deduction-feedback-text";
+  message.textContent = text;
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "deduction-next-button";
+  button.textContent = buttonText;
+  button.addEventListener("click", event => {
+    event.stopPropagation();
+    callback();
+  });
+  panel.append(message, button);
+  el.deductionLayer.appendChild(panel);
+}
+
+function showChapterOneEnding() {
+  game.flags.chapter1Clear = true;
+  syncChapterProgressFromFlags();
+  enterDeductionScreen();
+  game.activeQuiz = null;
+  if (!el.deductionLayer) return;
+  const panel = document.createElement("section");
+  panel.className = "chapter-ending-panel";
+  const chapterOne = document.createElement("p");
+  chapterOne.textContent = "第1章　京都駅前、花嫁は消えた　（終）";
+  const chapterTwo = document.createElement("p");
+  chapterTwo.textContent = "第2章『十八年前の警告』に続く";
+  panel.append(chapterOne, chapterTwo);
+  el.deductionLayer.appendChild(panel);
+  saveGame();
+}
+
 function showQuizFeedback(text, callback) {
   clearCommandSubchoices();
+  hideCommandPanel();
   hideSpeaker();
   if (el.message) el.message.textContent = text;
   game.waitingForAdvance = true;
@@ -654,7 +953,10 @@ function isSpotUnlocked(spotId) {
   if (spotId === "H5") return !!game.flags.hotelConfirmUnlocked;
   if (spotId === "H6") return !!game.flags.giftAreaUnlocked;
 
-  if (["K1", "K2", "K3"].includes(spotId)) return !!game.flags.kiryuyaUnlocked;
+  if (spotId === "K1") return !!game.flags.kiryuyaUnlocked;
+  if (spotId === "K2") {
+    return !!game.flags.kiryuyaUnlocked && !!game.flags.kiryuyaInsideUnlocked;
+  }
 
   if (spotId === "S1" || spotId === "S2") return !!game.flags.kyotoStationUnlocked;
   if (spotId === "S3") return !!game.flags.shopWitness;
@@ -673,6 +975,7 @@ function openMoveChoices() {
 
   clearCommandSubchoices();
   setActiveCommand("move");
+  showSubchoicePanel("move");
 
   // 現在地との隣接関係には制限しない。
   // 一度解放された場所なら、どこからでも直接移動できる。
@@ -714,7 +1017,6 @@ function openMoveChoices() {
 }
 
 function travelToSpot(spotId) {
-  if (spotId === "K3") spotId = "K2";
   if (!isSpotUnlocked(spotId)) return;
   const spot = movementMap.spots[spotId];
   if (!spot) return;
@@ -732,11 +1034,12 @@ function selectEnterVariant(scene) {
 }
 
 function renderScene(sceneId) {
-  if (sceneId === "K3") sceneId = "K2";
   const scene = scenes[sceneId];
   if (!scene) return console.error(`Scene not found: ${sceneId}`);
 
   clearTypingTimer();
+  hideCommandPanel();
+  clearDeductionScreen();
 
   // 表紙・章OPで使ったHTMLメニューを本編へ持ち越さない
   if (scene.type !== "title" && scene.type !== "chapter") {
@@ -746,14 +1049,16 @@ function renderScene(sceneId) {
   game.sceneId = sceneId;
   game.currentSpotId = scene.spotId ?? null;
   game.activeQuiz = null;
+  game.deductionMode = false;
   game.waitingForAdvance = false;
+  game.autoFinishLastLine = false;
   game.lineQueue = [];
   game.lineIndex = -1;
   clearCommandSubchoices();
   clearEvidenceImage();
   clearMessage();
 
-  el.game?.classList.remove("title-screen", "chapter-screen");
+  el.game?.classList.remove("title-screen", "chapter-screen", "deduction-screen");
 
   renderBackground(scene.background);
   renderLocation(scene.location);
@@ -772,8 +1077,6 @@ function renderScene(sceneId) {
   if (variant) {
     if (variant.onceFlag) game.flags[variant.onceFlag] = true;
     applyEffects(variant);
-    const variantImage = getEffectImage(variant);
-    if (variantImage) showEvidenceImage(variantImage);
     if (variant.lines?.length) {
       if (sceneId === "H1" && !game.flags.tutorialShown) {
         startLines(variant.lines, () => maybeShowTutorial(showLocationIdle));
@@ -801,20 +1104,28 @@ function showLocationIdle() {
   const scene = getCurrentScene();
   if (!scene || scene.type !== "location") return;
 
-  if (el.message) {
-    if (game.flags.chapter1Clear && game.sceneId === "H6") {
-      el.message.textContent = "第1章　京都駅前、花嫁は消えた　― 終 ―";
-    } else {
-      el.message.textContent = scene.idleText ?? "";
-    }
-  }
+  if (maybeAdvanceInvestigation()) return;
 
-  clearCommandSubchoices();
-  updateCommandAvailability();
+  if (el.message) el.message.textContent = scene.idleText ?? "";
+
+  showMainCommands();
 }
 
 function renderBackground(path) {
   if (!el.background) return;
+  // CSS背景よりも読み込み状態を確認しやすい通常の画像要素を優先する。
+  // 旧HTMLを利用する場合だけ、従来のCSS背景へフォールバックする。
+  if (el.backgroundImage) {
+    el.background.style.backgroundImage = "";
+    if (path) {
+      el.backgroundImage.src = path;
+      el.backgroundImage.hidden = false;
+    } else {
+      el.backgroundImage.hidden = true;
+      el.backgroundImage.removeAttribute("src");
+    }
+    return;
+  }
   el.background.style.backgroundImage = path ? `url("${path}")` : "";
 }
 
@@ -846,7 +1157,7 @@ function renderTitleScene(scene) {
   clearCommandSubchoices();
   el.game?.classList.add("title-screen");
 
-  if (el.commandPanel) el.commandPanel.style.display = "none";
+  hideCommandPanel();
 
   const ui = document.createElement("div");
   ui.className = "title-ui";
@@ -882,7 +1193,7 @@ function renderTitleScene(scene) {
 function renderChapterScene(scene) {
   clearCommandAvailability();
   el.game?.classList.add("chapter-screen");
-  if (el.commandPanel) el.commandPanel.style.display = "none";
+  hideCommandPanel();
 
   const ui = document.createElement("div");
   ui.className = "title-ui chapter-title-ui";
@@ -1076,14 +1387,18 @@ function openSettings() {
     speedGroup.appendChild(b);
   }
 
-  overlay.body.append(soundRow, speedTitle, speedGroup);
+  const saveSummary = document.createElement("p");
+  saveSummary.className = "settings-save-summary";
+  saveSummary.textContent = "セーブと章クリア記録は、このブラウザに保存されます。章クリア記録は途中セーブとは別に保持されます。詳しくは MENU → ヘルプをご覧ください。";
+
+  overlay.body.append(soundRow, speedTitle, speedGroup, saveSummary);
 }
 
 function saveGame() {
   try {
     syncChapterProgressFromFlags();
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      version: 1,
+      schemaVersion: SAVE_SCHEMA_VERSION,
       sceneId: game.sceneId,
       currentSpotId: game.currentSpotId,
       flags: game.flags,
@@ -1103,7 +1418,7 @@ function loadGame() {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return showSimpleMessage("セーブデータがありません。");
 
-    const data = JSON.parse(raw);
+    const data = migrateLegacySave(JSON.parse(raw));
     game = createFreshGameState();
     game.flags = { ...game.flags, ...(data.flags ?? {}) };
     game.evidence = { ...game.evidence, ...(data.evidence ?? {}) };
@@ -1112,6 +1427,7 @@ function loadGame() {
 
     if (el.commandPanel) el.commandPanel.style.display = "";
     renderScene(data.sceneId ?? data.currentSpotId ?? "H1");
+    if (game.flags.chapter1Clear) showChapterOneEnding();
   } catch (error) {
     console.error(error);
     showSimpleMessage("セーブデータを読み込めませんでした。");
