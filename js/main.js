@@ -107,6 +107,15 @@ function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+function ensureTelegramEvidence() {
+  const evidencePresent = game.evidence.telegram === true;
+  const flagPresent = game.flags.telegramFound === true;
+  if (evidencePresent && flagPresent) return false;
+  game.evidence.telegram = true;
+  game.flags.telegramFound = true;
+  return true;
+}
+
 function createFreshGameState() {
   return {
     sceneId: "T00",
@@ -1089,6 +1098,8 @@ function showDeductionFeedback(text, buttonText, callback) {
 }
 
 function showChapterOneEnding() {
+  // 会話だけで第1章を終えた場合も、同じ写真電報を証拠として引き継ぐ。
+  ensureTelegramEvidence();
   game.flags.chapter1Clear = true;
   syncChapterProgressFromFlags();
   enterDeductionScreen();
@@ -1112,6 +1123,8 @@ function showChapterOneEnding() {
 }
 
 function startChapterTwo() {
+  // 第1章クリア・第2章直接開始のどちらでも、既存の写真電報だけを補完する。
+  ensureTelegramEvidence();
   game.flags.chapter2Started = true;
   game.flags.chapter1Clear = true;
   game.flags.c2_hotelEntered = true;
@@ -1915,11 +1928,13 @@ function loadGame() {
     game.flags = { ...game.flags, ...(data.flags ?? {}) };
     game.evidence = { ...game.evidence, ...(data.evidence ?? {}) };
     game.actionHistory = data.actionHistory ?? {};
+    const telegramRestored = game.flags.chapter2Started && ensureTelegramEvidence();
     refreshC2LocationUnlocks();
     syncChapterProgressFromFlags();
 
     if (el.commandPanel) el.commandPanel.style.display = "";
     renderScene(data.sceneId ?? data.currentSpotId ?? "H1");
+    if (telegramRestored) saveGame();
     if (game.flags.chapter2Clear) showChapterTwoEnding();
     else if (game.flags.chapter2Started && game.flags.c2_reported) showChapterEndPrompt();
     else if (game.flags.chapter1Clear && !game.flags.chapter2Started) showChapterOneEnding();
