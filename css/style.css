@@ -3031,3 +3031,85 @@ textarea {
     padding-top: 8px !important;
   }
 }
+
+/* 第2章の追加コマンド。第1章では「みせる」を隠して従来UIを保つ。 */
+#cmd-show { display: none; }
+.chapter-two-active #cmd-show { display: grid; }
+.chapter-two-active .command-main-buttons { max-height: min(46vh, 390px); overflow-y: auto; }
+.chapter-two-active .command-button { min-height: 48px !important; }
+
+
+.chapter-select-heading { color:#f5e5be; font-size:clamp(18px,1.4vw,24px); font-weight:700; letter-spacing:.12em; text-shadow:0 2px 8px rgba(0,0,0,.8); padding:2px 4px; }
+.title-ui-button:disabled { opacity:.58 !important; cursor:not-allowed !important; filter:grayscale(.5); transform:none !important; }
+
+
+/* 2026-10-23 タイトル・章開始メニューを全画面高に収める */
+.game-shell.title-screen .choice-area,
+.game-shell.chapter-screen .choice-area {
+  overflow: visible !important;
+}
+.game-shell.title-screen .title-ui,
+.game-shell.chapter-screen .chapter-title-ui {
+  position: fixed !important;
+  inset-block-start: clamp(230px, 44vh, 430px) !important;
+  inset-inline-start: clamp(16px, 5.2vw, 100px) !important;
+  inset-inline-end: auto !important;
+  width: min(620px, 48vw) !important;
+  min-width: 0 !important;
+  max-width: calc(100vw - 32px) !important;
+  max-height: calc(100dvh - clamp(230px, 44vh, 430px) - 16px) !important;
+  box-sizing: border-box !important;
+  gap: clamp(5px, 1vh, 10px) !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  padding: 2px 3px 8px !important;
+}
+.game-shell.chapter-screen .chapter-title-ui {
+  inset-block-start: clamp(250px, 46vh, 450px) !important;
+  max-height: calc(100dvh - clamp(250px, 46vh, 450px) - 16px) !important;
+}
+.game-shell.title-screen .title-ui-button,
+.game-shell.chapter-screen .title-ui-button {
+  flex: 0 0 auto !important;
+  min-height: clamp(38px, 6vh, 54px) !important;
+  padding: clamp(6px, 1vh, 10px) clamp(10px, 1.5vw, 22px) !important;
+  font-size: clamp(14px, 1.45vw, 20px) !important;
+  line-height: 1.2 !important;
+}
+@media (max-width: 700px) {
+  .game-shell.title-screen .title-ui,
+  .game-shell.chapter-screen .chapter-title-ui {
+    inset-inline-start: 16px !important;
+    width: calc(100vw - 32px) !important;
+    max-width: 460px !important;
+    inset-block-start: clamp(190px, 38vh, 350px) !important;
+    max-height: calc(100dvh - clamp(190px, 38vh, 350px) - 12px) !important;
+  }
+  .game-shell.chapter-screen .chapter-title-ui {
+    inset-block-start: clamp(200px, 40vh, 370px) !important;
+    max-height: calc(100dvh - clamp(200px, 40vh, 370px) - 12px) !important;
+  }
+  .game-shell.title-screen .title-ui-button,
+  .game-shell.chapter-screen .title-ui-button {
+    min-height: clamp(36px, 5.5vh, 48px) !important;
+    font-size: clamp(13px, 4vw, 17px) !important;
+    padding: 6px 10px !important;
+  }
+}
+@media (max-height: 560px) {
+  .game-shell.title-screen .title-ui,
+  .game-shell.chapter-screen .chapter-title-ui {
+    inset-block-start: 30vh !important;
+    max-height: calc(70vh - 12px) !important;
+    gap: 4px !important;
+  }
+  .game-shell.chapter-screen .chapter-title-ui {
+    inset-block-start: 32vh !important;
+    max-height: calc(68vh - 12px) !important;
+  }
+  .game-shell.title-screen .title-ui-button,
+  .game-shell.chapter-screen .title-ui-button {
+    min-height: 34px !important;
+    padding: 5px 10px !important;
+  }
+}

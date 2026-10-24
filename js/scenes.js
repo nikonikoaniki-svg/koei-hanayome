@@ -121,7 +121,7 @@ window.KOEI_GAME_DATA = {
     "telegram": {
       "name": "写真電報",
       "image": "images/evidence/ev_photo_telegram.webp",
-      "description": "湖上の灯浮標の写真と『あの日のことを、すべて話してください。』という文面。"
+      "description": "湖の上に、標識のようなものが浮かぶ写真と『あの日のことを、すべて話してください。』という文面。"
     },
     "nailCompare": {
       "name": "ネイル比較写真",
@@ -1897,7 +1897,8 @@ window.KOEI_GAME_DATA = {
                   "wrongText": "売店を出た時刻と、改札近くの時刻表を確認してみましょう。",
                   "setFlags": {
                     "stationMysterySolved": true,
-                    "hotelReturnUnlocked": true
+                    "hotelReturnUnlocked": true,
+                    "biwakoLineDirectionKnown": true
                   },
                   "afterLines": [
                     {
@@ -2002,7 +2003,7 @@ window.KOEI_GAME_DATA = {
             "label": "写真電報",
             "lines": [
               {
-                "narrator": "湖上に浮かぶ灯浮標。その下には一文だけが記されていた。"
+                "narrator": "湖上に、標識のようなものが浮かんでいる。その下には一文だけが記されていた。"
               },
               {
                 "narrator": "『あの日のことを、すべて話してください。』"
@@ -2023,7 +2024,7 @@ window.KOEI_GAME_DATA = {
             "label": "写真と文面",
             "lines": [
               {
-                "narrator": "写真には湖上の灯浮標が写っている。失踪事件との関係を示すものは、まだない。"
+                "narrator": "写真には、湖の上に標識のようなものが写っている。失踪事件との関係を示すものは、まだない。"
               }
             ],
             "requiresAll": [
