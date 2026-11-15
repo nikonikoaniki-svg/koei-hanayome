@@ -316,9 +316,11 @@ function markChapterCleared(chapterNumber) {
 }
 
 function syncChapterProgressFromFlags() {
-  if (game?.flags?.chapter1Clear) markChapterCleared(1);
-  if (game?.flags?.chapter2Clear) markChapterCleared(2);
-  if (game?.flags?.chapter3Clear) markChapterCleared(3);
+  const directlyStartedAt = Number(game?.flags?.directChapterStart) || 0;
+  // 単独開始のために立てた前章フラグは、クリア記録へ反映しない。
+  if (game?.flags?.chapter1Clear && (!directlyStartedAt || directlyStartedAt <= 1)) markChapterCleared(1);
+  if (game?.flags?.chapter2Clear && (!directlyStartedAt || directlyStartedAt <= 2)) markChapterCleared(2);
+  if (game?.flags?.chapter3Clear && (!directlyStartedAt || directlyStartedAt <= 3)) markChapterCleared(3);
 }
 
 function hasSeenSaveNotice() {
@@ -1277,6 +1279,7 @@ function startChapterThree() {
 
 function startChapterThreeFromSelection() {
   game = createFreshGameState();
+  game.flags.directChapterStart = 3;
   game.flags.chapter1Clear = true;
   game.flags.chapter2Clear = true;
   game.flags.chapter3Started = true;
@@ -1937,6 +1940,7 @@ function isChapterUnlocked(chapterNumber) {
 
 function startChapterTwoFromSelection() {
   game = createFreshGameState();
+  game.flags.directChapterStart = 2;
   game.flags.chapter1Clear = true;
   game.flags.telegramFound = true;
   game.flags.biwakoLineDirectionKnown = true;
@@ -2009,24 +2013,13 @@ function renderTitleScene(scene) {
     heading.className = "chapter-select-heading";
     heading.textContent = "章を選ぶ";
     ui.appendChild(heading);
+    const note = document.createElement("p");
+    note.className = "chapter-select-note";
+    note.textContent = "クリア記録がなくても、各章の冒頭から遊べます。";
+    ui.appendChild(note);
     ui.appendChild(makeButton("第1章　京都駅前、花嫁は消えた", beginChapterOne));
-
-    const unlocked = isChapterUnlocked(2);
-    const chapterTwo = makeButton(
-      unlocked ? "第2章　十八年前の警告" : "第2章　十八年前の警告　（第1章クリア後）",
-      () => renderScene("OP02")
-    );
-    chapterTwo.disabled = !unlocked;
-    chapterTwo.setAttribute("aria-disabled", String(!unlocked));
-    ui.appendChild(chapterTwo);
-    const chapterThreeUnlocked = isChapterUnlocked(3);
-    const chapterThree = makeButton(
-      chapterThreeUnlocked ? "第3章　港に残された影" : "第3章　港に残された影　（第2章クリア後）",
-      () => renderScene("OP03")
-    );
-    chapterThree.disabled = !chapterThreeUnlocked;
-    chapterThree.setAttribute("aria-disabled", String(!chapterThreeUnlocked));
-    ui.appendChild(chapterThree);
+    ui.appendChild(makeButton("第2章　十八年前の警告", () => renderScene("OP02")));
+    ui.appendChild(makeButton("第3章　港に残された影", () => renderScene("OP03")));
     ui.appendChild(makeButton("タイトルへ戻る", renderMenu));
   }
 
