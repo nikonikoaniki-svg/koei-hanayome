@@ -13,10 +13,14 @@ const {
 } = window.KOEI_GAME_DATA;
 
 const SAVE_KEY = "koeiBrideSave_moveDriven_v1";
+const AUTOSAVE_KEY = "koeiBrideAutosave_v1";
+const SAVE_BACKUP_SUFFIX = "_backup";
+const SAVE_PENDING_SUFFIX = "_pending";
 const SETTINGS_KEY = "koeiBrideSettings_v1";
 const PROGRESS_KEY = "koeiBrideProgress_v1";
 const SAVE_NOTICE_KEY = "koeiBrideSaveNoticeSeen_v1";
-const SAVE_SCHEMA_VERSION = 5;
+const SAVE_SCHEMA_VERSION = 6;
+const GAME_VERSION = "1.3.0";
 
 const DEFAULT_SETTINGS = { soundOn: true, speedLevel: 3 };
 const SPEED_TABLE = { 1: 90, 2: 65, 3: 45, 4: 25, 5: 10 };
@@ -49,6 +53,7 @@ const FACE_TABLE = {
 
 let settings = loadSettings();
 let game = createFreshGameState();
+let autoSaveWarningShown = false;
 
 const el = {
   game: document.querySelector("#game"),
@@ -160,19 +165,11 @@ function migrateLegacySave(data) {
     migrated.flags.chapter2Clear = true;
   }
 
-  // 第3章旧版セーブは、新しい場所・証拠構成で駅から再開できるよう章内状態だけを初期化する。
-  // 第1章・第2章のクリア記録と証拠は保持する。
-  if (migrated.flags.chapter3Started && !migrated.flags.chapter3Clear && migrated.flags.c3SchemaVersion !== 2) {
-    Object.keys(migrated.flags).filter(key => key.startsWith("c3")).forEach(key => {
-      migrated.flags[key] = clone(initialFlags[key] ?? false);
-    });
-    Object.keys(migrated.evidence).filter(key => key.startsWith("c3")).forEach(key => {
-      migrated.evidence[key] = false;
-    });
+  // 第3章の仕様更新では取得済み証拠や章内フラグを初期化しない。
+  // 旧画面IDだけを現行画面へ読み替え、進行状態は保持する。
+  if (migrated.flags.chapter3Started) {
     migrated.flags.c3SchemaVersion = 2;
-    migrated.flags.c3UnlockedLocations = ["C3_STATION"];
-    migrated.currentSpotId = "C3_STATION";
-    migrated.sceneId = "C3_STATION_DAY";
+    if (migrated.sceneId === "C3_HIKONE_DEEP") migrated.sceneId = "C3_HIKONE_BODY_REVEAL";
   }
 
   // 第2章の途中セーブを新しい再訪条件へ引き継ぐ。
@@ -257,6 +254,11 @@ function migrateLegacySave(data) {
     const compatibleKey = key.replace(/^K3:/, "K2:");
     if (!(compatibleKey in migrated.actionHistory)) migrated.actionHistory[compatibleKey] = value;
   });
+
+  migrated.saveVersion = SAVE_SCHEMA_VERSION;
+  migrated.schemaVersion = SAVE_SCHEMA_VERSION;
+  migrated.gameVersion = GAME_VERSION;
+  migrated.savedAt ??= null;
 
   return migrated;
 }
@@ -866,6 +868,7 @@ function executeAction(command, action) {
     else if (action.nextScene) renderScene(action.nextScene);
     else if (action.quiz) startQuiz(action.quiz);
     else if (action.chapterEnd && game.flags.chapter3Started) {
+      saveGame({ slot: "auto", silent: true });
       showStoryProgressPrompt("第3章", "第3章を終える", showChapterThreeEnding);
     }
     else if (action.chapterEnd) showChapterEndPrompt();
@@ -881,6 +884,7 @@ function returnToCommandsAfterAction() {
   game.activeQuiz = null;
   setNextIndicator(false);
   showMainCommands();
+  saveGame({ slot: "auto", silent: true });
 }
 
 function showStoryProgressPrompt(label, buttonText, callback) {
@@ -1814,6 +1818,7 @@ function showLocationIdle() {
   if (el.message) el.message.textContent = scene.idleText ?? "";
 
   showMainCommands();
+  saveGame({ slot: "auto", silent: true });
 }
 
 function renderBackground(path) {
@@ -1859,8 +1864,68 @@ function clearEvidenceImage() {
   el.game?.classList.remove("mobile-evidence-focus");
 }
 
+function getSaveKeys(slot) {
+  const primary = slot === "manual" ? SAVE_KEY : AUTOSAVE_KEY;
+  return { primary, backup: `${primary}${SAVE_BACKUP_SUFFIX}`, pending: `${primary}${SAVE_PENDING_SUFFIX}` };
+}
+
+function parseSaveRecord(raw, key, slot, source) {
+  if (!raw) return null;
+  try {
+    const data = JSON.parse(raw);
+    if (!data || typeof data !== "object" || Array.isArray(data)) return null;
+    if (!data.flags || typeof data.flags !== "object" || !data.evidence || typeof data.evidence !== "object") return null;
+    if (typeof data.sceneId !== "string" && typeof data.currentSpotId !== "string") return null;
+    return { key, slot, source, raw, data };
+  } catch {
+    return null;
+  }
+}
+
+function getSaveSlotRecords() {
+  const records = [];
+  for (const slot of ["manual", "auto"]) {
+    const keys = getSaveKeys(slot);
+    let candidates = [];
+    try {
+      candidates = [
+        parseSaveRecord(localStorage.getItem(keys.primary), keys.primary, slot, "primary"),
+        parseSaveRecord(localStorage.getItem(keys.backup), keys.backup, slot, "backup"),
+        parseSaveRecord(localStorage.getItem(keys.pending), keys.pending, slot, "pending")
+      ].filter(Boolean);
+    } catch (error) {
+      console.warn("セーブ一覧を読み込めませんでした。", error);
+    }
+    candidates.sort((a, b) => {
+      const aTime = Date.parse(a.data.savedAt ?? "") || 0;
+      const bTime = Date.parse(b.data.savedAt ?? "") || 0;
+      if (aTime !== bTime) return bTime - aTime;
+      const priority = { pending: 3, primary: 2, backup: 1 };
+      return priority[b.source] - priority[a.source];
+    });
+    records.push(...candidates);
+  }
+  return records.sort((a, b) => (Date.parse(b.data.savedAt ?? "") || 0) - (Date.parse(a.data.savedAt ?? "") || 0));
+}
+
+function formatSaveRecord(record) {
+  const data = record.data;
+  const flags = data.flags ?? {};
+  const chapter = Number(data.chapter) || (flags.chapter3Started ? 3 : flags.chapter2Started ? 2 : 1);
+  const scene = scenes[data.sceneId];
+  const spotLabel = movementMap.spots?.[data.currentSpotId]?.label;
+  const location = data.currentLocation || scene?.location || spotLabel || data.currentSpotId || "場所不明";
+  const date = data.savedAt ? new Date(data.savedAt) : null;
+  const dateText = date && !Number.isNaN(date.getTime())
+    ? new Intl.DateTimeFormat("ja-JP", { dateStyle: "medium", timeStyle: "short" }).format(date)
+    : "保存日時不明";
+  const slotLabel = record.slot === "manual" ? "手動セーブ" : "オートセーブ";
+  const recovery = record.source === "primary" ? "" : "（復旧候補）";
+  return `${slotLabel}${recovery}｜第${chapter}章｜${location}｜${dateText}`;
+}
+
 function hasSaveData() {
-  try { return !!localStorage.getItem(SAVE_KEY); } catch { return false; }
+  return getSaveSlotRecords().length > 0;
 }
 
 function isChapterUnlocked(chapterNumber) {
@@ -1905,8 +1970,24 @@ function renderTitleScene(scene) {
 
   const beginChapterOne = () => {
     game = createFreshGameState();
-    try { localStorage.removeItem(SAVE_KEY); } catch {}
     renderScene("OP01");
+  };
+  const renderSaveSelection = () => {
+    ui.innerHTML = "";
+    const heading = document.createElement("div");
+    heading.className = "chapter-select-heading";
+    heading.textContent = "セーブデータを選ぶ";
+    ui.appendChild(heading);
+    const records = getSaveSlotRecords();
+    if (!records.length) {
+      const empty = document.createElement("p");
+      empty.textContent = "読み込めるセーブデータがありません。";
+      ui.appendChild(empty);
+    }
+    records.forEach(record => {
+      ui.appendChild(makeButton(formatSaveRecord(record), () => loadGame(record.key)));
+    });
+    ui.appendChild(makeButton("タイトルへ戻る", renderMenu));
   };
   const renderMenu = () => {
     ui.innerHTML = "";
@@ -1916,6 +1997,7 @@ function renderTitleScene(scene) {
     ui.append(
       makeButton("はじめから", beginChapterOne),
       resume,
+      makeButton("セーブデータを選ぶ", renderSaveSelection),
       makeButton("章を選ぶ", renderChapterSelection),
       makeButton("設定", openSettings),
       makeButton("終了", () => showSimpleMessage("ゲームを終了する場合は、このタブまたはウィンドウを閉じてください。"))
@@ -2093,6 +2175,8 @@ function openHelp() {
   list.className = "save-help-list";
   [
     "セーブデータは、このブラウザの保存領域（localStorage）に保存されます。",
+    "手動セーブとオートセーブは別々に保存されます。タイトルの「セーブデータを選ぶ」で、章・場所・日時を確認できます。",
+    "保存形式の更新前のデータはバックアップとして残し、読み込み時に新しい形式へ引き継ぎます。",
     "同じPC・同じブラウザでのみ利用できます。別のPCや別のブラウザには引き継がれません。",
     "シークレットモードでは、終了時にセーブデータが消える場合があります。",
     "ブラウザの閲覧データ・サイトデータを削除すると、セーブデータや章クリア情報も消える場合があります。",
@@ -2160,37 +2244,104 @@ function openSettings() {
   overlay.body.append(soundRow, speedTitle, speedGroup, saveSummary);
 }
 
-function saveGame() {
+function makeSaveSnapshot() {
+  refreshC2LocationUnlocks();
+  refreshChapterThreeLocationUnlocks();
+  syncChapterProgressFromFlags();
+  const scene = scenes[game.sceneId];
+  const chapter = game.flags.chapter3Started || game.flags.chapter3Clear ? 3
+    : game.flags.chapter2Started || game.flags.chapter2Clear ? 2 : 1;
+  const location = scene?.location || movementMap.spots?.[game.currentSpotId]?.label || game.currentSpotId || "";
+  return {
+    saveVersion: SAVE_SCHEMA_VERSION,
+    schemaVersion: SAVE_SCHEMA_VERSION,
+    gameVersion: GAME_VERSION,
+    savedAt: new Date().toISOString(),
+    chapter,
+    currentLocation: location,
+    sceneId: game.sceneId,
+    currentSpotId: game.currentSpotId,
+    flags: game.flags,
+    evidence: game.evidence,
+    actionHistory: game.actionHistory
+  };
+}
+
+function writeVerifiedSave(slot, snapshot) {
+  const keys = getSaveKeys(slot);
+  const serialized = JSON.stringify(snapshot);
+  const oldPrimary = localStorage.getItem(keys.primary);
+
+  // 保留ステージへ先に書き、読み戻せることを確認してから本体を更新する。
+  localStorage.setItem(keys.pending, serialized);
+  const pendingReadback = localStorage.getItem(keys.pending);
+  if (pendingReadback !== serialized || !parseSaveRecord(pendingReadback, keys.pending, slot, "pending")) {
+    throw new Error("pending save verification failed");
+  }
+
+  if (oldPrimary && parseSaveRecord(oldPrimary, keys.primary, slot, "primary")) {
+    localStorage.setItem(keys.backup, oldPrimary);
+    if (localStorage.getItem(keys.backup) !== oldPrimary) throw new Error("backup verification failed");
+  }
+
+  localStorage.setItem(keys.primary, serialized);
+  const saved = localStorage.getItem(keys.primary);
+  if (saved !== serialized || !parseSaveRecord(saved, keys.primary, slot, "primary")) {
+    throw new Error("primary save verification failed");
+  }
+
+  // 本体の保存確認が済むまではpendingを残し、途中失敗から復旧できるようにする。
+  localStorage.removeItem(keys.pending);
+  return true;
+}
+
+function saveGame({ slot = "auto", silent = true } = {}) {
   try {
-    refreshC2LocationUnlocks();
-    refreshChapterThreeLocationUnlocks();
-    syncChapterProgressFromFlags();
-    localStorage.setItem(SAVE_KEY, JSON.stringify({
-      schemaVersion: SAVE_SCHEMA_VERSION,
-      sceneId: game.sceneId,
-      currentSpotId: game.currentSpotId,
-      flags: game.flags,
-      evidence: game.evidence,
-      actionHistory: game.actionHistory
-    }));
+    const snapshot = makeSaveSnapshot();
+    const key = getSaveKeys(slot).primary;
+    console.debug("SAVE START", { key, saveVersion: snapshot.saveVersion, chapter: snapshot.chapter, scene: snapshot.sceneId, savedAt: snapshot.savedAt });
+    writeVerifiedSave(slot, snapshot);
+    console.debug("SAVE SUCCESS", { key, savedAt: snapshot.savedAt });
+    autoSaveWarningShown = false;
     return true;
   } catch (error) {
-    console.warn(error);
-    showSimpleMessage("セーブできませんでした。");
+    console.warn("セーブに失敗しました。既存データは保持しています。", error);
+    if (!silent) showSimpleMessage("セーブできませんでした。以前のセーブデータは残っています。空き容量を確認して、もう一度お試しください。");
+    else if (!autoSaveWarningShown) {
+      autoSaveWarningShown = true;
+      showSimpleMessage("自動セーブできませんでした。メニューから手動セーブしてください。");
+    }
     return false;
   }
 }
 
-function loadGame() {
-  try {
-    const raw = localStorage.getItem(SAVE_KEY);
-    if (!raw) return showSimpleMessage("セーブデータがありません。");
+function getLatestSaveRecord() {
+  return getSaveSlotRecords().sort((a, b) => {
+    const aTime = Date.parse(a.data.savedAt ?? "") || 0;
+    const bTime = Date.parse(b.data.savedAt ?? "") || 0;
+    return bTime - aTime;
+  })[0] ?? null;
+}
 
-    const data = migrateLegacySave(JSON.parse(raw));
+function loadGame(storageKey = null) {
+  try {
+    const records = getSaveSlotRecords();
+    console.debug("LOAD START", { keysFound: records.map(item => item.key) });
+    const record = storageKey
+      ? records.find(item => item.key === storageKey)
+      : getLatestSaveRecord();
+    if (!record) return showSimpleMessage("読み込めるセーブデータがありません。");
+
+    const original = record.data;
+    const data = migrateLegacySave(original);
+    console.debug("LOAD RECORD", { key: record.key, source: record.source, saveVersion: original.saveVersion ?? original.schemaVersion ?? 1, migration: original.saveVersion !== SAVE_SCHEMA_VERSION || original.schemaVersion !== SAVE_SCHEMA_VERSION });
+    const needsMigration = original.saveVersion !== SAVE_SCHEMA_VERSION || original.schemaVersion !== SAVE_SCHEMA_VERSION;
     game = createFreshGameState();
     game.flags = { ...game.flags, ...(data.flags ?? {}) };
     game.evidence = { ...game.evidence, ...(data.evidence ?? {}) };
     game.actionHistory = data.actionHistory ?? {};
+    game.sceneId = data.sceneId ?? data.currentSpotId ?? "H1";
+    game.currentSpotId = data.currentSpotId ?? scenes[game.sceneId]?.spotId ?? null;
     const kugaRoomClosedRestored = updateKugaHouseInfoCompletion();
     const telegramRestored = game.flags.chapter2Started && ensureTelegramEvidence();
     refreshC2LocationUnlocks();
@@ -2198,15 +2349,20 @@ function loadGame() {
     syncChapterProgressFromFlags();
 
     if (el.commandPanel) el.commandPanel.style.display = "";
-    renderScene(data.sceneId ?? data.currentSpotId ?? "H1");
-    if (telegramRestored || kugaRoomClosedRestored) saveGame();
+    renderScene(game.sceneId);
+    if (needsMigration || telegramRestored || kugaRoomClosedRestored || record.source !== "primary") {
+      // 移行後のスナップショットは別のオートセーブへ保存し、元の手動セーブを残す。
+      saveGame({ slot: "auto", silent: true });
+    }
+    if (record.source !== "primary") showSimpleMessage("バックアップまたは一時保存からデータを復旧しました。元の保存データも残しています。");
+    console.debug("LOAD SUCCESS", { chapter: game.flags.chapter3Started ? 3 : game.flags.chapter2Started ? 2 : 1, scene: game.sceneId, currentSpotId: game.currentSpotId });
     if (game.flags.chapter3Started && game.flags.chapter3Clear) showChapterThreeEnding();
     else if (game.flags.chapter2Started && game.flags.chapter2Clear && !game.flags.chapter3Started) showChapterTwoEnding();
     else if (game.flags.chapter2Started && game.flags.c2_reported && !game.flags.chapter3Started) showChapterEndPrompt();
     else if (game.flags.chapter1Clear && !game.flags.chapter2Started) showChapterOneEnding();
   } catch (error) {
     console.error(error);
-    showSimpleMessage("セーブデータを読み込めませんでした。");
+    showSimpleMessage("セーブデータを読み込めませんでした。保存データは削除していません。");
   }
 }
 
@@ -2216,7 +2372,7 @@ function openSystemMenu() {
   const items = [
     ["証拠を見る", openEvidenceList],
     ["セーブ", () => {
-      if (!saveGame()) return;
+      if (!saveGame({ slot: "manual", silent: false })) return;
       if (!hasSeenSaveNotice()) {
         markSaveNoticeSeen();
         const notice = makeOverlay("セーブしました");

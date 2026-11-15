@@ -160,19 +160,14 @@
     });
 
   d.scenes.C3_HIKONE_ENTRY = loc("C3_HIKONE", "彦根港・入口", "bg_hikone_port",
-    "夜の港は静まり、入口には人影が少ない。", {
-      look: [action("hikone_entry_view", "港の入口", [narrate("観光船の運航は終了している。乗船場の灯りは消えている。")])],
+    "夜の港は静まり、入口には人影がない。", {
+      look: [action("hikone_entry_view", "港の入口", [narrate("観光船の運航はすでに休止されているようだ。乗船場の灯りは消えている。")])],
       move: [action("to_hikone_pier", "船着き場へ進む", [narrate("岸壁に沿って、船着き場へ進んだ。")], { nextScene: "C3_HIKONE_PIER" })]
     });
   d.scenes.C3_HIKONE_PIER = loc("C3_HIKONE", "彦根港・船着き場", "bg_hikone_pier",
     "月明かりと街灯が、人気のない岸壁を照らしている。", {
       look: [action("hikone_pier_view", "船着き場", [narrate("船は停まっていない。小屋の照明も消えている。")])],
-      move: [action("back_hikone_entry", "入口へ戻る", [narrate("入口の方へ戻った。")], { nextScene: "C3_HIKONE_ENTRY" }), action("to_hikone_deep", "港の奥へ進む", [narrate("街灯から離れた、港の奥へ進んだ。")], { nextScene: "C3_HIKONE_DEEP" })]
-    });
-  d.scenes.C3_HIKONE_DEEP = loc("C3_HIKONE", "彦根港・奥", "bg_hikone_pier",
-    "街灯の届かない岸壁の奥は、暗く静まり返っている。", {
-      look: [action("hikone_deep_view", "港の奥", [narrate("街灯から離れた場所へ進む。地面に誰かがうつ伏せに倒れている。")], { nextScene: "C3_HIKONE_BODY_REVEAL" })],
-      move: [action("back_hikone_pier", "船着き場へ戻る", [narrate("船着き場の方へ戻った。")], { nextScene: "C3_HIKONE_PIER" })]
+      move: [action("back_hikone_entry", "入口へ戻る", [narrate("入口の方へ戻った。")], { nextScene: "C3_HIKONE_ENTRY" }), action("to_hikone_deep", "港の奥へ進む", [narrate("港の奥へ進むと、地面に人が倒れていた。")], { nextScene: "C3_HIKONE_BODY_REVEAL" })]
     });
   d.scenes.C3_HIKONE_BODY_REVEAL = loc("C3_HIKONE", "彦根港・奥", "bg_hikone_kuga_found",
     "街灯の届かない岸壁の奥に、誰かが倒れている。", {
