@@ -3113,3 +3113,9 @@ textarea {
     padding: 5px 10px !important;
   }
 }
+
+
+/* 第3章でも立ち絵は出さず、話者の顔写真だけを表示する。 */
+.game-shell.chapter-three-active .speaker-portrait-wrap:not([hidden]) {
+  display: block !important;
+}

@@ -43,7 +43,8 @@ const FACE_TABLE = {
   cleaner: "images/faces/face_cleaner.webp",
   kamiya: "images/faces/face_kamiya.webp",
   portReception: "images/faces/face_otsu_port_reception.webp",
-  potteryOwner: "images/faces/face_pottery_owner.webp"
+  potteryOwner: "images/faces/face_pottery_owner.webp",
+  kuga: "images/faces/face_kuga.webp"
 };
 
 let settings = loadSettings();
@@ -141,6 +142,38 @@ function migrateLegacySave(data) {
   migrated.flags = { ...(data.flags ?? {}) };
   migrated.evidence = { ...(data.evidence ?? {}) };
   migrated.actionHistory = { ...(data.actionHistory ?? {}) };
+
+  // 第2章セーブに誤って混在した第3章の一時フラグを切り離す。
+  // 第2章のクリア記録は別の進行ストアに残すため、第3章の解放状態は保たれる。
+  if (migrated.flags.chapter2Started && !migrated.flags.chapter3Started) {
+    migrated.flags.chapter3Clear = false;
+    Object.keys(migrated.flags).filter(key => key.startsWith("c3")).forEach(key => {
+      migrated.flags[key] = Array.isArray(initialFlags[key]) ? [] : false;
+    });
+    Object.keys(migrated.evidence).filter(key => key.startsWith("c3")).forEach(key => {
+      migrated.evidence[key] = false;
+    });
+  }
+  // 第3章からのセーブは、前章のクリア状態だけを前提条件として補う。
+  if (migrated.flags.chapter3Started) {
+    migrated.flags.chapter1Clear = true;
+    migrated.flags.chapter2Clear = true;
+  }
+
+  // 第3章旧版セーブは、新しい場所・証拠構成で駅から再開できるよう章内状態だけを初期化する。
+  // 第1章・第2章のクリア記録と証拠は保持する。
+  if (migrated.flags.chapter3Started && !migrated.flags.chapter3Clear && migrated.flags.c3SchemaVersion !== 2) {
+    Object.keys(migrated.flags).filter(key => key.startsWith("c3")).forEach(key => {
+      migrated.flags[key] = clone(initialFlags[key] ?? false);
+    });
+    Object.keys(migrated.evidence).filter(key => key.startsWith("c3")).forEach(key => {
+      migrated.evidence[key] = false;
+    });
+    migrated.flags.c3SchemaVersion = 2;
+    migrated.flags.c3UnlockedLocations = ["C3_STATION"];
+    migrated.currentSpotId = "C3_STATION";
+    migrated.sceneId = "C3_STATION_DAY";
+  }
 
   // 第2章の途中セーブを新しい再訪条件へ引き継ぐ。
   // 旧版では紗月の部屋が第2章開始時に解放されていたため、その解放済み状態を閉じ戻さない。
@@ -283,6 +316,7 @@ function markChapterCleared(chapterNumber) {
 function syncChapterProgressFromFlags() {
   if (game?.flags?.chapter1Clear) markChapterCleared(1);
   if (game?.flags?.chapter2Clear) markChapterCleared(2);
+  if (game?.flags?.chapter3Clear) markChapterCleared(3);
 }
 
 function hasSeenSaveNotice() {
@@ -299,6 +333,18 @@ function markSaveNoticeSeen() {
   } catch (error) {
     console.warn("セーブ案内の確認状態を保存できませんでした。", error);
   }
+}
+
+function resetChapterThreeSession() {
+  if (!game?.flags) return;
+  game.flags.chapter3Started = false;
+  game.flags.chapter3Clear = false;
+  Object.keys(game.flags).filter(key => key.startsWith("c3")).forEach(key => {
+    game.flags[key] = clone(initialFlags[key] ?? false);
+  });
+  Object.keys(game.evidence ?? {}).filter(key => key.startsWith("c3")).forEach(key => {
+    game.evidence[key] = false;
+  });
 }
 
 function ensureAudioContext() {
@@ -406,9 +452,12 @@ function skipTyping() {
 
 function showSpeaker(speakerId) {
   const char = characters[speakerId];
+  const speakerName = ["canalShopkeeper", "shrineStaff"].includes(speakerId)
+    ? "店の人"
+    : (char?.name ?? "");
 
   if (el.speaker) {
-    el.speaker.textContent = char?.name ?? "";
+    el.speaker.textContent = speakerName;
     el.speaker.hidden = false;
   }
 
@@ -420,6 +469,9 @@ function showSpeaker(speakerId) {
   } else {
     hidePortrait();
   }
+
+  // 立ち絵はこの作品の会話画面では使わない。人物は名前欄と既存の顔写真だけで表示する。
+  el.characterLayer?.replaceChildren();
 }
 
 function hidePortrait() {
@@ -436,6 +488,7 @@ function hideSpeaker() {
     el.speaker.hidden = true;
   }
   hidePortrait();
+  el.characterLayer?.replaceChildren();
 }
 
 function clearMessage() {
@@ -593,8 +646,11 @@ function hasAvailableActions(command) {
   if (command === "show") return getAvailablePresentTargets().length > 0;
 
   if (command === "move") {
-    return Object.entries(movementMap?.spots ?? {})
+    const localMoveAvailable = (scene.commands?.move ?? [])
+      .some(action => isActionAvailable(action, "move"));
+    const destinationAvailable = Object.entries(movementMap?.spots ?? {})
       .some(([id]) => id !== game.currentSpotId && isSpotUnlocked(id));
+    return localMoveAvailable || destinationAvailable;
   }
 
   if (command === "evidence") {
@@ -610,9 +666,9 @@ function hasAvailableActions(command) {
 
 function updateCommandAvailability() {
   const pairs = [["talk",el.cmdTalk],["ask",el.cmdAsk],["look",el.cmdLook],["search",el.cmdSearch],["show",el.cmdShow],["move",el.cmdMove],["evidence",el.cmdEvidence]];
-  const c2 = !!game.flags.chapter2Started;
-  el.game?.classList.toggle("chapter-two-active", c2);
-  const ordered = c2 ? [el.cmdTalk,el.cmdAsk,el.cmdLook,el.cmdSearch,el.cmdShow,el.cmdMove,el.cmdEvidence] : [el.cmdTalk,el.cmdAsk,el.cmdLook,el.cmdSearch,el.cmdEvidence,el.cmdMove];
+  const chapterWithSevenCommands = !!(game.flags.chapter2Started || game.flags.chapter3Started);
+  el.game?.classList.toggle("chapter-two-active", chapterWithSevenCommands);
+  const ordered = chapterWithSevenCommands ? [el.cmdTalk,el.cmdAsk,el.cmdLook,el.cmdSearch,el.cmdShow,el.cmdMove,el.cmdEvidence] : [el.cmdTalk,el.cmdAsk,el.cmdLook,el.cmdSearch,el.cmdEvidence,el.cmdMove];
   ordered.forEach((button,index)=>{ if(button){ button.style.order=String(index); const n=button.querySelector(".command-no"); if(n)n.textContent=String(index+1); } });
 
   pairs.forEach(([command, button]) => {
@@ -686,7 +742,20 @@ function applyEffects(effect) {
   if (effect.setFlags) Object.assign(game.flags, effect.setFlags);
   if (effect.evidence) Object.assign(game.evidence, effect.evidence);
   refreshC2LocationUnlocks();
+  refreshChapterThreeLocationUnlocks();
   syncChapterProgressFromFlags();
+}
+
+function refreshChapterThreeLocationUnlocks() {
+  if (!game?.flags || !game.flags.chapter3Started) return;
+  if (!Array.isArray(game.flags.c3UnlockedLocations)) game.flags.c3UnlockedLocations = [];
+  const unlocked = game.flags.c3UnlockedLocations;
+  const add = id => { if (id && !unlocked.includes(id)) unlocked.push(id); };
+  if (game.currentSpotId?.startsWith("C3_")) add(game.currentSpotId);
+  Object.entries(movementMap?.spots ?? {}).forEach(([id, spot]) => {
+    if (!id.startsWith("C3_")) return;
+    if (spot.unlockFlag && game.flags[spot.unlockFlag]) add(id);
+  });
 }
 
 function refreshC2LocationUnlocks() {
@@ -767,7 +836,9 @@ function appendActionButton(command, action) {
   const button = document.createElement("button");
   button.type = "button";
   button.className = "command-subchoice-button";
-  button.textContent = action.label;
+  const isChapterThreeLocalShopkeeper = game.flags.chapter3Started &&
+    command === "talk" && ["C3_CANAL", "C3_SHRINE"].includes(game.currentSpotId);
+  button.textContent = isChapterThreeLocalShopkeeper ? "店の人" : action.label;
   button.addEventListener("click", event => {
     event.stopPropagation();
     ensureAudioContext();
@@ -788,12 +859,20 @@ function executeAction(command, action) {
   if (action.image) showEvidenceImage(action.image);
 
   const afterLines = () => {
-    if (action.quiz) startQuiz(action.quiz);
+    // 証拠画像は会話を読み終えてクリックした時点で閉じる。
+    clearEvidenceImage();
+    if (action.chapter3ParkingEvidence && areChapterThreeParkingFindingsReady()) startChapterThreeCallsToKuga();
+    else if (action.chapter3AfterRecords && areChapterThreeLockerRecordsReviewed()) unlockChapterThreeHikone();
+    else if (action.nextScene) renderScene(action.nextScene);
+    else if (action.quiz) startQuiz(action.quiz);
+    else if (action.chapterEnd && game.flags.chapter3Started) {
+      showStoryProgressPrompt("第3章", "第3章を終える", showChapterThreeEnding);
+    }
     else if (action.chapterEnd) showChapterEndPrompt();
     else if (!maybeAdvanceInvestigation()) returnToCommandsAfterAction();
   };
 
-  if (action.lines?.length) startLines(action.lines, afterLines, { autoFinishLastLine: true });
+  if (action.lines?.length) startLines(action.lines, afterLines, { autoFinishLastLine: false });
   else afterLines();
 }
 
@@ -825,7 +904,8 @@ function showStoryProgressPrompt(label, buttonText, callback) {
 }
 
 function showChapterEndPrompt() {
-  if (game.flags.chapter2Started) showStoryProgressPrompt("第2章", "第2章を終える", showChapterTwoEnding);
+  if (game.flags.chapter3Started) showStoryProgressPrompt("第3章", "第3章を終える", showChapterThreeEnding);
+  else if (game.flags.chapter2Started) showChapterTwoEnding();
   else showStoryProgressPrompt("第1章", "第1章を終える", showChapterOneEnding);
 }
 
@@ -859,6 +939,9 @@ function isC2FinalReportReady() {
 }
 
 function maybeAdvanceInvestigation() {
+  // 第3章の会話後に第1・第2章の進行案内を割り込ませない。
+  if (game.flags.chapter3Started) return false;
+
   if (isC2FinalReportReady() && !game.flags.c2_reportReturnPromptShown) {
     game.flags.c2_reportReturnPromptShown = true;
     saveGame();
@@ -1123,9 +1206,12 @@ function showChapterOneEnding() {
 }
 
 function startChapterTwo() {
+  // 第2章を始めるとき、第3章固有の進行状態は引き継がない。
+  resetChapterThreeSession();
   // 第1章クリア・第2章直接開始のどちらでも、既存の写真電報だけを補完する。
   ensureTelegramEvidence();
   game.flags.chapter2Started = true;
+  game.flags.chapter2Clear = false;
   game.flags.chapter1Clear = true;
   game.flags.c2_hotelEntered = true;
   game.currentSpotId = "C2_HOTEL";
@@ -1148,14 +1234,120 @@ function showChapterTwoEnding() {
   const panel = document.createElement("section");
   panel.className = "chapter-ending-panel";
   const title = document.createElement("p");
-  title.textContent = "第2章　十八年前の警告　完";
+  title.textContent = "第2章『十八年前の警告』完";
   const body = document.createElement("p");
-  body.textContent = "紗月は久我清志のいる近江八幡へ向かった可能性が高い。事故の真相を確かめるため、次は久我本人に会う必要がある。";
+  body.textContent = "紗月が近江八幡へ向かった可能性が高い。第2章をクリアしました。";
   const next = document.createElement("p");
-  next.textContent = "第3章へ続く";
+  next.textContent = "第3章「港に残された影」が選べるようになりました。";
   panel.append(title, body, next);
+  const beginNext = document.createElement("button");
+  beginNext.type = "button";
+  beginNext.className = "deduction-next-button";
+  beginNext.textContent = "第3章を始める";
+  beginNext.addEventListener("click", () => startChapterThree());
+  panel.appendChild(beginNext);
   el.deductionLayer.appendChild(panel);
   saveGame();
+}
+
+function startChapterThree() {
+  resetChapterThreeSession();
+  game.flags.chapter1Clear = true;
+  game.flags.chapter2Clear = true;
+  game.flags.chapter3Started = true;
+  game.flags.c3TimeEvening = false;
+  game.flags.c3TimeNight = false;
+  game.flags.c3UnlockedLocations = [];
+  game.flags.c3UnlockedLocations.push("C3_STATION");
+  game.evidence.satsukiPhoto = true;
+  game.currentSpotId = "C3_STATION";
+  game.sceneId = "C3_STATION_DAY";
+  refreshChapterThreeLocationUnlocks();
+  renderScene("C3_STATION_DAY");
+  startLines([
+    { narrator: "第3章　港に残された影" },
+    { narrator: "紗月の足取りを追い、七条は近江八幡へ向かった。" }
+  ], () => { showLocationIdle(); saveGame(); }, { autoFinishLastLine: false });
+  saveGame();
+}
+
+function startChapterThreeFromSelection() {
+  game = createFreshGameState();
+  game.flags.chapter1Clear = true;
+  game.flags.chapter2Clear = true;
+  game.flags.chapter3Started = true;
+  game.flags.biwakoLineDirectionKnown = true;
+  game.evidence.telegram = true;
+  game.evidence.satsukiPhoto = true;
+  startChapterThree();
+}
+
+function showChapterThreeEnding() {
+  game.flags.chapter3Clear = true;
+  game.flags.chapter2Clear = true;
+  game.flags.chapter1Clear = true;
+  syncChapterProgressFromFlags();
+  enterDeductionScreen();
+  game.activeQuiz = null;
+  const panel = document.createElement("section");
+  panel.className = "chapter-ending-panel";
+  const title = document.createElement("p");
+  title.textContent = "第3章『港に残された影』完";
+  const body = document.createElement("p");
+  body.textContent = "近江八幡で紗月の足取りを追っていた七条。真実を伝えるはずだった久我が殺害されていた！謎は深まる。紗月はどこに。久我を殺した犯人は誰？";
+  const next = document.createElement("p");
+  next.textContent = "第4章へ続く";
+  const back = document.createElement("button");
+  back.type = "button";
+  back.className = "deduction-next-button";
+  back.textContent = "タイトルへ戻る";
+  back.addEventListener("click", () => renderScene("T00"));
+  panel.append(title, body, next, back);
+  el.deductionLayer.appendChild(panel);
+  saveGame();
+}
+
+function areChapterThreeLockerRecordsReviewed() {
+  return !!game.flags.c3LockerOpened &&
+    ["c3KugaMemoRead", "c3NewsArticleRead", "c3InspectionRecordRead", "c3PassbookRead"]
+      .every(flag => !!game.flags[flag]);
+}
+
+function unlockChapterThreeHikone() {
+  if (!areChapterThreeLockerRecordsReviewed() || game.flags.c3HikonePortUnlocked) return;
+  game.flags.c3LockerRecordsReviewed = true;
+  saveGame();
+  startLines([
+    { narrator: "ロッカーに残されていた資料を、すべて確認した。" }
+  ], () => {
+    game.flags.c3HikonePortUnlocked = true;
+    refreshChapterThreeLocationUnlocks();
+    saveGame();
+    showLocationIdle();
+  }, { autoFinishLastLine: false });
+}
+
+function areChapterThreeParkingFindingsReady() {
+  return !!game.flags.chapter3Started &&
+    ["c3ParkScuffSeen", "c3ParkTireTracksSeen", "c3BloodSeen", "c3WhiteNailSeen"]
+      .every(flag => !!game.flags[flag]) && !game.flags.c3KugaCalledAgain;
+}
+
+function startChapterThreeCallsToKuga() {
+  if (!areChapterThreeParkingFindingsReady()) return;
+  startLines([
+    { speaker: "shichijo", text: "紗月さんが、ここでいなくなった可能性がある……。久我さんに確かめた方がいいかもしれない。" },
+    { narrator: "七条は久我へ電話をかけた。呼び出し音が続く。久我は電話に出ない。" },
+    { speaker: "shichijo", text: "……もう一度かけてみよう。" },
+    { narrator: "七条は再び久我へ電話をかけた。呼び出し音は続いたが、応答はなかった。" },
+    { speaker: "shichijo", text: "やはりつながらない。何かあったのだろうか。" }
+  ], () => {
+    game.flags.c3KugaUnreachable = true;
+    game.flags.c3KugaCalledAgain = true;
+    game.flags.c3TimeNight = true;
+    saveGame();
+    showLocationIdle();
+  });
 }
 
 const PRESENT_TARGETS_BY_SPOT = window.KOEI_GAME_DATA.chapter2PresentTargets ?? {
@@ -1175,7 +1367,10 @@ const PRESENTABLE_EVIDENCE = {
   potteryOwner: ["potteryShard"],
   kamiya: ["telegram", "oldAccidentArticle", "fragmentMemo", "travelMemo", "kugaWarning"],
   librarian: ["oldAccidentArticle"],
-  templeStaff: ["ishiyamaderaBookmark"]
+  templeStaff: ["ishiyamaderaBookmark"],
+  taxiDriver: ["satsukiPhoto"],
+  canalShopkeeper: ["satsukiPhoto"],
+  shrineStaff: ["satsukiPhoto"]
 };
 
 function getAvailablePresentTargets() {
@@ -1183,7 +1378,12 @@ function getAvailablePresentTargets() {
   return candidates.filter(([id, , metFlag]) =>
     !!game.flags[metFlag] &&
     (PRESENTABLE_EVIDENCE[id] ?? []).some(key => !!game.evidence[key])
-  );
+  ).map(([id, label, metFlag]) => {
+    const displayLabel = game.flags.chapter3Started && ["canalShopkeeper", "shrineStaff"].includes(id)
+      ? "店の人"
+      : label;
+    return [id, displayLabel, metFlag];
+  });
 }
 
 function isPresentableEvidence(targetId, key) {
@@ -1236,6 +1436,7 @@ function presentEvidenceTo(targetId, key) {
   if (!getAvailablePresentTargets().some(([id]) => id === targetId) || !isPresentableEvidence(targetId, key)) {
     return showCommandFeedback("この場所では、その証拠を見せられない。");
   }
+  const chapterThreeResponse = window.KOEI_GAME_DATA.chapter3PresentResponses?.[targetId]?.[key];
   const responses = {
     hotelStaff: { telegram: [{ speaker: "hotelStaff", text: "受付記録や担当者の記憶からは、誰が紙を用意したかまでは分かりません。" }] },
     soichiro: {
@@ -1312,7 +1513,14 @@ function presentEvidenceTo(targetId, key) {
     librarian: { oldAccidentArticle: [{ speaker: "librarian", text: "この記事は当時の地方紙の縮刷版です。前後の記事も閲覧できます。" }] },
     templeStaff: { ishiyamaderaBookmark: [{ speaker: "templeStaff", text: "石山寺と記された古いしおりですね。意匠の詳細は、寺の資料で確認できるかもしれません。" }] }
   };
-  const lines = responses[targetId]?.[key] ?? [{ narrator: "相手は証拠を見たが、今のところ新しい情報は得られなかった。" }];
+  let lines = chapterThreeResponse?.lines ?? responses[targetId]?.[key] ?? [{ narrator: "相手は証拠を見たが、今のところ新しい情報は得られなかった。" }];
+  if (chapterThreeResponse?.requiresAll && !chapterThreeResponse.requiresAll.every(flag => !!game.flags[flag])) {
+    lines = chapterThreeResponse.fallbackLines ?? [{ narrator: "相手は写真を見たが、思い当たることはないようだった。" }];
+  } else if (chapterThreeResponse?.setFlags) {
+    Object.assign(game.flags, chapterThreeResponse.setFlags);
+    refreshChapterThreeLocationUnlocks();
+    saveGame();
+  }
   // 宗一郎に警告文書を示した行為は、コマンド経路にかかわらず同じ進行フラグにする。
   if (targetId === "soichiro" && key === "kugaWarning") {
     game.flags.c2_soichiroSawWarning = true;
@@ -1344,7 +1552,13 @@ function presentEvidenceTo(targetId, key) {
   hideCommandPanel();
   const item = evidenceMaster[key];
   if (item?.image) showEvidenceImage(item.image);
-  startLines(lines, showLocationIdle);
+  startLines(lines, () => {
+    if (chapterThreeResponse?.setFlags?.c3TimeEvening && game.currentSpotId === "C3_CANAL" && game.sceneId === "C3_CANAL_DAY") {
+      renderScene("C3_CANAL_EVENING");
+      return;
+    }
+    showLocationIdle();
+  });
 }
 
 function showQuizFeedback(text, callback) {
@@ -1380,10 +1594,16 @@ function handleCommand(type) {
 
 function isSpotUnlocked(spotId) {
   if (!movementMap?.spots?.[spotId]) return false;
+  if (spotId.startsWith("C3_")) {
+    refreshChapterThreeLocationUnlocks();
+    return !!game.flags.chapter3Started && game.flags.c3UnlockedLocations.includes(spotId);
+  }
   if (spotId.startsWith("C2_")) {
     refreshC2LocationUnlocks();
-    return !!game.flags.chapter2Started && game.flags.c2UnlockedLocations.includes(spotId);
+    return !!game.flags.chapter2Started && !game.flags.chapter3Started && game.flags.c2UnlockedLocations.includes(spotId);
   }
+  // 第3章中は、旧章の場所を解放フラグにかかわらず候補から除外する。
+  if (game.flags.chapter3Started) return false;
   // 第2章の移動一覧には、今の章で解放された場所だけを表示する。
   if (game.flags.chapter2Started) return false;
   if (["H1", "H2", "H3", "H4"].includes(spotId)) return true;
@@ -1416,21 +1636,42 @@ function openMoveChoices() {
   setActiveCommand("move");
   showSubchoicePanel("move");
 
+  const localMoveActions = (getCurrentScene()?.commands?.move ?? [])
+    .filter(action => isActionAvailable(action, "move"));
+  // 久我の部屋は、鍵を託されるまで部屋内の「部屋を出る」操作だけを表示する。
+  if (game.flags.chapter3Started && game.sceneId === "C3_KUGA_ROOM") {
+    localMoveActions.forEach(action => appendActionButton("move", action));
+    if (!localMoveActions.length) showCommandFeedback("まだ聞けることがありそうだ。");
+    return;
+  }
+  // ロッカーの資料をすべて確かめるまで、駅から移動できない。
+  if (game.flags.chapter3Started && game.flags.c3LockerOpened && !areChapterThreeLockerRecordsReviewed()) {
+    return showCommandFeedback("まだ調べていないものがある。");
+  }
+
   // 現在地との隣接関係には制限しない。
   // 一度解放された場所なら、どこからでも直接移動できる。
   const destinations = Object.entries(movementMap.spots)
     .filter(([id]) => id !== game.currentSpotId && isSpotUnlocked(id))
     .map(([id, spot]) => ({ id, ...spot }));
-
-  if (!destinations.length) {
+  if (!destinations.length && !localMoveActions.length) {
     return showCommandFeedback("今は移動できる場所がありません。");
+  }
+
+  if (localMoveActions.length) {
+    const heading = document.createElement("div");
+    heading.className = "move-group-title";
+    heading.textContent = "この場所";
+    el.commandSubchoices?.appendChild(heading);
+    localMoveActions.forEach(action => appendActionButton("move", action));
   }
 
   const groups = [
     { title: "ホテル", ids: ["H1", "H2", "H3", "H4", "H5", "H6"] },
     { title: "桐生屋", ids: ["K1", "K2"] },
     { title: "京都駅", ids: ["S1", "S2", "S3", "S4", "S5"] },
-    { title: "第2章", ids: Object.keys(movementMap.spots).filter(id => id.startsWith("C2_")) }
+    { title: "第2章", ids: Object.keys(movementMap.spots).filter(id => id.startsWith("C2_")) },
+    { title: "第3章", ids: Object.keys(movementMap.spots).filter(id => id.startsWith("C3_")) }
   ];
 
   groups.forEach(group => {
@@ -1460,7 +1701,15 @@ function travelToSpot(spotId) {
   if (!isSpotUnlocked(spotId)) return;
   const spot = movementMap.spots[spotId];
   if (!spot) return;
-  renderScene(spot.sceneId);
+  if (game.flags.chapter3Started && game.flags.c3ReturnedFromRoom && !game.flags.c3TimeEvening && ["C3_CANAL", "C3_SHRINE"].includes(spotId)) {
+    game.flags.c3TimeEvening = true;
+  }
+  let sceneId = spot.sceneId;
+  if (spotId === "C3_STATION") sceneId = game.flags.c3TimeNight ? "C3_STATION_NIGHT" : "C3_STATION_DAY";
+  if (spotId === "C3_CANAL") sceneId = game.flags.c3TimeEvening ? "C3_CANAL_EVENING" : "C3_CANAL_DAY";
+  if (spotId === "C3_SHRINE") sceneId = game.flags.c3TimeEvening ? "C3_SHRINE_EVENING" : "C3_SHRINE_DAY";
+  if (spotId === "C3_APARTMENT") sceneId = game.flags.c3TimeEvening ? "C3_APARTMENT_EVENING" : "C3_APARTMENT";
+  renderScene(sceneId);
 }
 
 function selectEnterVariant(scene) {
@@ -1501,6 +1750,7 @@ function renderScene(sceneId) {
     if (roomVisitChanged) saveGame();
   }
   refreshC2LocationUnlocks();
+  refreshChapterThreeLocationUnlocks();
   game.activeQuiz = null;
   game.deductionMode = false;
   game.waitingForAdvance = false;
@@ -1512,7 +1762,8 @@ function renderScene(sceneId) {
   clearMessage();
 
   el.game?.classList.remove("title-screen", "chapter-screen", "deduction-screen");
-  el.game?.classList.toggle("chapter-two-active", !!game.flags.chapter2Started);
+  el.game?.classList.toggle("chapter-two-active", !!(game.flags.chapter2Started || game.flags.chapter3Started));
+  el.game?.classList.toggle("chapter-three-active", !!game.flags.chapter3Started);
 
   renderBackground(scene.background);
   renderLocation(scene.location);
@@ -1686,6 +1937,14 @@ function renderTitleScene(scene) {
     chapterTwo.disabled = !unlocked;
     chapterTwo.setAttribute("aria-disabled", String(!unlocked));
     ui.appendChild(chapterTwo);
+    const chapterThreeUnlocked = isChapterUnlocked(3);
+    const chapterThree = makeButton(
+      chapterThreeUnlocked ? "第3章　港に残された影" : "第3章　港に残された影　（第2章クリア後）",
+      () => renderScene("OP03")
+    );
+    chapterThree.disabled = !chapterThreeUnlocked;
+    chapterThree.setAttribute("aria-disabled", String(!chapterThreeUnlocked));
+    ui.appendChild(chapterThree);
     ui.appendChild(makeButton("タイトルへ戻る", renderMenu));
   }
 
@@ -1715,11 +1974,14 @@ function renderChapterScene(scene) {
     return b;
   };
 
+  const chapterNumber = scene.chapterNumber ?? 1;
+  const chapterStartLabel = chapterNumber === 3 ? "第3章をはじめる" : chapterNumber === 2 ? "第2章をはじめる" : "第1章をはじめる";
   ui.append(
-    makeButton(scene.chapterNumber === 2 ? "第2章をはじめる" : "第1章をはじめる", () => {
+    makeButton(chapterStartLabel, () => {
       if (el.choiceArea) el.choiceArea.innerHTML = "";
       if (el.commandPanel) el.commandPanel.style.display = "";
-      if (scene.chapterNumber === 2) startChapterTwoFromSelection();
+      if (chapterNumber === 3) startChapterThreeFromSelection();
+      else if (chapterNumber === 2) startChapterTwoFromSelection();
       else renderScene(scene.startScene);
     }),
     makeButton("つづきから", loadGame),
@@ -1901,6 +2163,7 @@ function openSettings() {
 function saveGame() {
   try {
     refreshC2LocationUnlocks();
+    refreshChapterThreeLocationUnlocks();
     syncChapterProgressFromFlags();
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       schemaVersion: SAVE_SCHEMA_VERSION,
@@ -1928,15 +2191,18 @@ function loadGame() {
     game.flags = { ...game.flags, ...(data.flags ?? {}) };
     game.evidence = { ...game.evidence, ...(data.evidence ?? {}) };
     game.actionHistory = data.actionHistory ?? {};
+    const kugaRoomClosedRestored = updateKugaHouseInfoCompletion();
     const telegramRestored = game.flags.chapter2Started && ensureTelegramEvidence();
     refreshC2LocationUnlocks();
+    refreshChapterThreeLocationUnlocks();
     syncChapterProgressFromFlags();
 
     if (el.commandPanel) el.commandPanel.style.display = "";
     renderScene(data.sceneId ?? data.currentSpotId ?? "H1");
-    if (telegramRestored) saveGame();
-    if (game.flags.chapter2Clear) showChapterTwoEnding();
-    else if (game.flags.chapter2Started && game.flags.c2_reported) showChapterEndPrompt();
+    if (telegramRestored || kugaRoomClosedRestored) saveGame();
+    if (game.flags.chapter3Started && game.flags.chapter3Clear) showChapterThreeEnding();
+    else if (game.flags.chapter2Started && game.flags.chapter2Clear && !game.flags.chapter3Started) showChapterTwoEnding();
+    else if (game.flags.chapter2Started && game.flags.c2_reported && !game.flags.chapter3Started) showChapterEndPrompt();
     else if (game.flags.chapter1Clear && !game.flags.chapter2Started) showChapterOneEnding();
   } catch (error) {
     console.error(error);

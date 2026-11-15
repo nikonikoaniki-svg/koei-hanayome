@@ -3040,24 +3040,16 @@ textarea {
   }
 }
 
-.chapter-select-heading {
-  color: #f5e5be;
-  font-size: clamp(18px, 1.4vw, 24px);
-  font-weight: 700;
-  letter-spacing: .12em;
-  text-shadow: 0 2px 8px rgba(0,0,0,.8);
-  padding: 2px 4px;
-}
-.title-ui-button:disabled {
-  opacity: .58 !important;
-  cursor: not-allowed !important;
-  filter: grayscale(.5);
-  transform: none !important;
-}
+/* 第2章の追加コマンド。第1章では「みせる」を隠して従来UIを保つ。 */
 #cmd-show { display: none; }
 .chapter-two-active #cmd-show { display: grid; }
 .chapter-two-active .command-main-buttons { max-height: min(46vh, 390px); overflow-y: auto; }
 .chapter-two-active .command-button { min-height: 48px !important; }
+
+
+.chapter-select-heading { color:#f5e5be; font-size:clamp(18px,1.4vw,24px); font-weight:700; letter-spacing:.12em; text-shadow:0 2px 8px rgba(0,0,0,.8); padding:2px 4px; }
+.title-ui-button:disabled { opacity:.58 !important; cursor:not-allowed !important; filter:grayscale(.5); transform:none !important; }
+
 
 /* 2026-10-23 タイトル・章開始メニューを全画面高に収める */
 .game-shell.title-screen .choice-area,
@@ -3128,6 +3120,12 @@ textarea {
     min-height: 34px !important;
     padding: 5px 10px !important;
   }
+}
+
+
+/* 第3章でも立ち絵は出さず、話者の顔写真だけを表示する。 */
+.game-shell.chapter-three-active .speaker-portrait-wrap:not([hidden]) {
+  display: block !important;
 }
 
 </style>
@@ -3279,6 +3277,7 @@ window.addEventListener("error", function (event) {
 </script>
 <script src="js/scenes.js"></script>
 <script src="js/chapter2.js"></script>
+<script src="js/chapter3.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
