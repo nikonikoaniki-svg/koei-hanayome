@@ -2335,7 +2335,6 @@ function loadGame(storageKey = null) {
     game.actionHistory = data.actionHistory ?? {};
     game.sceneId = data.sceneId ?? data.currentSpotId ?? "H1";
     game.currentSpotId = data.currentSpotId ?? scenes[game.sceneId]?.spotId ?? null;
-    const kugaRoomClosedRestored = updateKugaHouseInfoCompletion();
     const telegramRestored = game.flags.chapter2Started && ensureTelegramEvidence();
     refreshC2LocationUnlocks();
     refreshChapterThreeLocationUnlocks();
@@ -2343,7 +2342,7 @@ function loadGame(storageKey = null) {
 
     if (el.commandPanel) el.commandPanel.style.display = "";
     renderScene(game.sceneId);
-    if (needsMigration || telegramRestored || kugaRoomClosedRestored || record.source !== "primary") {
+    if (needsMigration || telegramRestored || record.source !== "primary") {
       // 移行後のスナップショットは別のオートセーブへ保存し、元の手動セーブを残す。
       saveGame({ slot: "auto", silent: true });
     }
@@ -2352,7 +2351,7 @@ function loadGame(storageKey = null) {
     if (game.flags.chapter3Started && game.flags.chapter3Clear) showChapterThreeEnding();
     else if (game.flags.chapter2Started && game.flags.chapter2Clear && !game.flags.chapter3Started) showChapterTwoEnding();
     else if (game.flags.chapter2Started && game.flags.c2_reported && !game.flags.chapter3Started) showChapterEndPrompt();
-    else if (game.flags.chapter1Clear && !game.flags.chapter2Started) showChapterOneEnding();
+    else if (game.flags.chapter1Clear && !game.flags.chapter2Started && !game.flags.chapter3Started) showChapterOneEnding();
   } catch (error) {
     console.error(error);
     showSimpleMessage("セーブデータを読み込めませんでした。保存データは削除していません。");
